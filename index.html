@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>io · yoyo · Principia Orthogona companion repo</title>
+<style>
+:root {
+  --gold:#0ABAB5; --gold-dim:#076b68;
+  --dark:#05080f; --surface:#0c1420; --surface2:#101e2e;
+  --text:#cdd8e8; --text-dim:#6a8099;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--dark); color:var(--text); font-family:Georgia,serif; font-size:18px; line-height:1.75; }
+.wrap { max-width:680px; margin:0 auto; padding:5rem 2rem 4rem; }
+.eyebrow { font-family:'Courier New',monospace; font-size:.72rem; letter-spacing:.3em; color:var(--gold); text-transform:uppercase; margin-bottom:1rem; }
+h1 { font-size:clamp(2.5rem,8vw,4.5rem); font-weight:400; letter-spacing:.06em; color:var(--text); margin-bottom:.3rem; }
+.spin { display:inline-block; animation: spin 3s linear infinite; }
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+.subtitle { font-size:1rem; color:var(--text-dim); font-style:italic; margin-bottom:2.5rem; }
+.gold-rule { border:none; border-top:1px solid var(--gold-dim); margin:2rem 0; opacity:.4; }
+p { margin-bottom:1.1rem; }
+em { color:var(--gold); font-style:normal; }
+.io-box { background:rgba(10,186,181,.06); border:1px solid rgba(10,186,181,.2); padding:1.2rem 1.5rem; margin:2rem 0; border-radius:4px; font-family:'Courier New',monospace; font-size:.85rem; letter-spacing:.05em; color:var(--gold); text-align:center; }
+.file-list { list-style:none; margin:1.5rem 0; }
+.file-list li { padding:.7rem 1rem; border:1px solid #1a2e42; border-radius:4px; margin-bottom:.6rem; background:var(--surface); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.file-list a { color:var(--gold); text-decoration:none; font-family:'Courier New',monospace; font-size:.85rem; }
+.file-list a:hover { text-decoration:underline; }
+.tag { font-size:.65rem; letter-spacing:.15em; color:var(--text-dim); font-family:'Courier New',monospace; text-transform:uppercase; }
+footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a2e42; font-size:.72rem; letter-spacing:.1em; color:var(--text-dim); text-align:center; }
+footer a { color:var(--gold-dim); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Principia Orthogona · Companion Repo</div>
+  <h1><span class="spin">io</span></h1>
+  <div class="subtitle">yoyo — an index that goes around, comes around</div>
+
+  <p>This repo holds proof templates, drafts, and loose material that orbits the
+  main Principia Orthogona / dm³ series without belonging to a single volume —
+  what goes around, comes around, like a yoyo on its string.</p>
+
+  <div class="io-box">
+    oi oi oi → reversed → io io io<br>
+    <span style="color:var(--text-dim); font-size:.75rem;">first-wave punk chant, run backwards, becomes the imaginary unit and the loop</span>
+  </div>
+
+  <p>The name is a small joke that is also the point: <em>io</em> is not the
+  opposite of real. Run a thing backwards and what looked like noise turns into
+  $i$ and a circle — exactly the move Book 6 opens with. See the
+  <a href="https://github.com/TOTOGT/AXLE" style="color:var(--gold)">AXLE repo</a>
+  for the formal side and <em>geometry/book6</em> for the prose framing.</p>
+
+  <hr class="gold-rule">
+
+  <h2 style="font-weight:400; font-size:1.1rem; color:var(--gold); margin-bottom:1rem;">Contents</h2>
+  <ul class="file-list">
+    <li>
+      <a href="https://github.com/TOTOGT/io/raw/refs/heads/main/PrincipiaOrthogona_7Proofs_Template.docx">PrincipiaOrthogona_7Proofs_Template.docx</a>
+      <span class="tag">7 proofs · template</span>
+    </li>
+  </ul>
+
+  <p style="font-size:.85rem; color:var(--text-dim);">Add new files above as the
+  repo grows. Each entry: a link, a one-line tag (status / theme / which volume
+  it feeds).</p>
+
+  <footer>
+    Principia Orthogona · companion repo <em>io</em> · index <em>yoyo</em><br>
+    Pablo Nogueira Grossi · G6 LLC · <a href="https://github.com/TOTOGT">github.com/TOTOGT</a>
+  </footer>
+</div>
+</body>
+</html>
