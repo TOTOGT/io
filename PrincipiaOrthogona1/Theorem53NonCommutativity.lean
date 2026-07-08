@@ -136,6 +136,15 @@ noncomputable def K_ex : CurvatureOp intManifold where
       simp only [negMap]; push_cast; ring
     exact h.le
 
+-- ROUND 3 FIX (from real CI run #13, after `change ℤ at q` was confirmed
+-- present in the live file but did NOT resolve the omega failure):
+-- `split_ifs at heq <;> omega` replaced with a fully manual by_cases/simp
+-- proof that never calls omega at all. Each branch is closed by an explicit,
+-- individually-checkable step (if_pos/if_neg rewriting + direct term
+-- construction), removing the dependency on omega's/split_ifs's automatic
+-- interaction with intManifold.carrier's reducibility, which was the
+-- suspected but unconfirmed root cause. Unverified until the next real CI
+-- run — this is a more defensive rewrite, not a diagnosed fix.
 noncomputable def F_ex : FoldOp intManifold where
   map := foldMap
   has_fold := ⟨(5 : ℤ), (6 : ℤ), by norm_num, by norm_num [foldMap]⟩
@@ -143,10 +152,30 @@ noncomputable def F_ex : FoldOp intManifold where
     apply Set.Finite.subset
       (Set.Finite.insert (0 : ℤ) (Set.Finite.insert 5 (Set.finite_singleton 6)))
     rintro p ⟨q, hqp, heq⟩
-    change ℤ at q
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
-    simp only [foldMap] at heq
-    split_ifs at heq <;> omega
+    unfold foldMap at heq
+    by_cases hq5 : q = 5
+    · subst hq5
+      by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hp6 : p = 6
+      · exact Or.inr (Or.inr hp6)
+      · simp only [if_pos rfl, if_neg hp5, if_neg hp6] at heq
+        exact Or.inl heq.symm
+    by_cases hq6 : q = 6
+    · subst hq6
+      by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hp6 : p = 6
+      · exact Or.inr (Or.inr hp6)
+      · simp only [if_neg hq5, if_pos rfl, if_neg hp5, if_neg hp6] at heq
+        exact Or.inl heq.symm
+    · by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hp6 : p = 6
+      · exact Or.inr (Or.inr hp6)
+      · simp only [if_neg hq5, if_neg hq6, if_neg hp5, if_neg hp6] at heq
+        exact absurd heq hqp
 
 noncomputable def U_ex : UnfoldOp intManifold where
   map := idMap
@@ -200,10 +229,30 @@ noncomputable def F_sym : FoldOp intManifold where
     apply Set.Finite.subset
       (Set.Finite.insert (0 : ℤ) (Set.Finite.insert 5 (Set.finite_singleton (-5))))
     rintro p ⟨q, hqp, heq⟩
-    change ℤ at q
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
-    simp only [foldSym] at heq
-    split_ifs at heq <;> omega
+    unfold foldSym at heq
+    by_cases hq5 : q = 5
+    · subst hq5
+      by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hpn5 : p = -5
+      · exact Or.inr (Or.inr hpn5)
+      · simp only [if_pos rfl, if_neg hp5, if_neg hpn5] at heq
+        exact Or.inl heq.symm
+    by_cases hqn5 : q = -5
+    · subst hqn5
+      by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hpn5 : p = -5
+      · exact Or.inr (Or.inr hpn5)
+      · simp only [if_neg hq5, if_pos rfl, if_neg hp5, if_neg hpn5] at heq
+        exact Or.inl heq.symm
+    · by_cases hp5 : p = 5
+      · exact Or.inr (Or.inl hp5)
+      by_cases hpn5 : p = -5
+      · exact Or.inr (Or.inr hpn5)
+      · simp only [if_neg hq5, if_neg hqn5, if_neg hp5, if_neg hpn5] at heq
+        exact absurd heq hqp
 
 theorem nonCommutativity_instance :
     GenerativeOp intManifold C_ex K_ex F_ex U_ex (5 : ℤ)
