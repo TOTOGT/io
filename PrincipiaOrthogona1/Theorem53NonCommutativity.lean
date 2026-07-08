@@ -143,12 +143,10 @@ noncomputable def F_ex : FoldOp intManifold where
     apply Set.Finite.subset
       (Set.Finite.insert (0 : ℤ) (Set.Finite.insert 5 (Set.finite_singleton 6)))
     rintro p ⟨q, hqp, heq⟩
+    change ℤ at q
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
     simp only [foldMap] at heq
-    first
-    | split_ifs at heq <;> omega
-    | (revert heq hqp; split_ifs <;> omega)
-    | simp_all
+    split_ifs at heq <;> omega
 
 noncomputable def U_ex : UnfoldOp intManifold where
   map := idMap
@@ -173,14 +171,15 @@ noncomputable def K_nd : CurvatureOp intManifold where
   kappa_star := 0
   drives_threshold := by
     intro x
+    change ℤ at x
     have key : (shrinkMap x) ^ 2 ≤ x ^ 2 := by
       simp only [shrinkMap]
       split_ifs with h1 h2
-      · have hx : 1 ≤ x := by first | omega | (revert h1; omega)
+      · have hx : 1 ≤ x := by omega
         nlinarith
-      · have hx : x ≤ -1 := by first | omega | (revert h1 h2; omega)
+      · have hx : x ≤ -1 := by omega
         nlinarith
-      · have hx : x = 0 := by first | omega | (revert h1 h2; omega)
+      · have hx : x = 0 := by omega
         subst hx; simp
     show ((shrinkMap x : ℤ) : ℝ) ^ 2 ≤ ((x : ℤ) : ℝ) ^ 2
     exact_mod_cast key
@@ -201,12 +200,10 @@ noncomputable def F_sym : FoldOp intManifold where
     apply Set.Finite.subset
       (Set.Finite.insert (0 : ℤ) (Set.Finite.insert 5 (Set.finite_singleton (-5))))
     rintro p ⟨q, hqp, heq⟩
+    change ℤ at q
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
     simp only [foldSym] at heq
-    first
-    | split_ifs at heq <;> omega
-    | (revert heq hqp; split_ifs <;> omega)
-    | simp_all
+    split_ifs at heq <;> omega
 
 theorem nonCommutativity_instance :
     GenerativeOp intManifold C_ex K_ex F_ex U_ex (5 : ℤ)
