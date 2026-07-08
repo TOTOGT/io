@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>io · yoyo · Principia Orthogona companion repo</title>
+<title>CatGT · Principia Orthogona — Formal Verification</title>
 <style>
 :root {
   --gold:#0ABAB5; --gold-dim:#076b68;
@@ -12,78 +12,91 @@
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { background:var(--dark); color:var(--text); font-family:Georgia,serif; font-size:18px; line-height:1.75; }
-.wrap { max-width:680px; margin:0 auto; padding:5rem 2rem 4rem; }
+.wrap { max-width:680px; margin:0 auto; padding:4rem 2rem 4rem; }
 .eyebrow { font-family:'Courier New',monospace; font-size:.72rem; letter-spacing:.3em; color:var(--gold); text-transform:uppercase; margin-bottom:1rem; }
-h1 { font-size:clamp(2.5rem,8vw,4.5rem); font-weight:400; letter-spacing:.06em; color:var(--text); margin-bottom:.3rem; }
-.spin { display:inline-block; animation: spin 3s linear infinite; }
-@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-.subtitle { font-size:1rem; color:var(--text-dim); font-style:italic; margin-bottom:2.5rem; }
+h1 { font-size:clamp(2rem,6vw,3rem); font-weight:400; letter-spacing:.02em; color:var(--text); margin-bottom:.4rem; }
+.subtitle { font-size:1rem; color:var(--text-dim); margin-bottom:2.5rem; }
 .gold-rule { border:none; border-top:1px solid var(--gold-dim); margin:2rem 0; opacity:.4; }
 p { margin-bottom:1.1rem; }
 em { color:var(--gold); font-style:normal; }
-.io-box { background:rgba(10,186,181,.06); border:1px solid rgba(10,186,181,.2); padding:1.2rem 1.5rem; margin:2rem 0; border-radius:4px; font-family:'Courier New',monospace; font-size:.85rem; letter-spacing:.05em; color:var(--gold); text-align:center; }
+h2 { font-weight:400; font-size:1.1rem; color:var(--gold); margin-bottom:1rem; margin-top:2.5rem; }
+.result { border:1px solid #1a2e42; border-radius:4px; padding:1.2rem 1.5rem; margin-bottom:1rem; background:var(--surface); }
+.result .name { font-family:'Courier New',monospace; color:var(--gold); font-size:.95rem; }
+.result .status { float:right; font-family:'Courier New',monospace; font-size:.7rem; letter-spacing:.05em; color:var(--text-dim); text-transform:uppercase; }
+.result .desc { font-size:.9rem; color:var(--text); margin-top:.5rem; clear:both; }
 .file-list { list-style:none; margin:1.5rem 0; }
 .file-list li { padding:.7rem 1rem; border:1px solid #1a2e42; border-radius:4px; margin-bottom:.6rem; background:var(--surface); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
 .file-list a { color:var(--gold); text-decoration:none; font-family:'Courier New',monospace; font-size:.85rem; }
 .file-list a:hover { text-decoration:underline; }
 .tag { font-size:.65rem; letter-spacing:.15em; color:var(--text-dim); font-family:'Courier New',monospace; text-transform:uppercase; }
-footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a2e42; font-size:.72rem; letter-spacing:.1em; color:var(--text-dim); text-align:center; }
+code { font-family:'Courier New',monospace; background:var(--surface2); padding:.1rem .35rem; border-radius:3px; font-size:.85em; }
+footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a2e42; font-size:.8rem; color:var(--text-dim); }
 footer a { color:var(--gold-dim); text-decoration:none; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Principia Orthogona · Companion Repo</div>
-  <h1><span class="spin">io</span></h1>
-  <div class="subtitle">yoyo — an index that goes around, comes around</div>
+  <div class="eyebrow">Principia Orthogona · Formal Verification</div>
+  <h1>CatGT — Catalytic Generative Theory</h1>
+  <div class="subtitle">Lean 4 / Mathlib4 formalization of the operator-chain framework applied to heterogeneous catalysis, with zeolite selectivity as the worked instance.</div>
 
-  <p>This repo holds proof templates, drafts, and loose material that orbits the
-  main Principia Orthogona / dm³ series without belonging to a single volume —
-  what goes around, comes around, like a yoyo on its string.</p>
+  <p>CatGT applies a general operator pipeline (compression, curvature, fold,
+  unfold) to a contact manifold model of catalytic reaction pathways. The
+  central applied result is the <strong>Helical Selectivity Principle</strong>:
+  a confinement bound explaining why pore geometry constrains product
+  selectivity in zeolite catalysis (e.g. HZSM-5 vs. HMCM-22 divergent
+  product distributions). A companion result, Theorem 5.3, establishes that
+  the operator chain is order-dependent in general — firing order affects
+  outcome — while also proving this is not universal: some configurations
+  provably commute.</p>
 
-  <div class="io-box">
-    oi oi oi → reversed → io io io<br>
-    <span style="color:var(--text-dim); font-size:.75rem;">first-wave punk chant, run backwards, becomes the imaginary unit and the loop</span>
-  </div>
-
-  <p>The name is a small joke that is also the point: <em>io</em> is not the
-  opposite of real. Run a thing backwards and what looked like noise turns into
-  $i$ and a circle — exactly the move Book 6 opens with. See the
-  <a href="https://github.com/TOTOGT/AXLE" style="color:var(--gold)">AXLE repo</a>
-  for the formal side and <em>geometry/book6</em> for the prose framing.</p>
+  <p>All results below are checked by the Lean 4 kernel, not hand-verified.
+  See <a href="https://github.com/TOTOGT/AXLE" style="color:var(--gold)">AXLE</a>
+  for the broader Principia Orthogona / dm&sup3; formalization this work sits
+  inside.</p>
 
   <hr class="gold-rule">
 
-  <h2 style="font-weight:400; font-size:1.1rem; color:var(--gold); margin-bottom:1rem;">Contents</h2>
+  <h2>Key results</h2>
+
+  <div class="result">
+    <span class="name">helical_selectivity</span><span class="status">closed &middot; 0 sorry</span>
+    <div class="desc">Confinement bound r &le; r*(J, &lambda;) on the helical radius of a confined trajectory, given positive curvature and coupling parameters. The formal core of the Helical Selectivity Principle.</div>
+  </div>
+
+  <div class="result">
+    <span class="name">thm_5_3_is_exactly_existential</span><span class="status">closed &middot; 0 sorry</span>
+    <div class="desc">Precise statement of Theorem 5.3: an existential claim, not universal. Some valid operator instances are order-dependent (firing order changes the result); other valid instances provably commute. Both are exhibited on the same manifold.</div>
+  </div>
+
+  <hr class="gold-rule">
+
+  <h2>Source</h2>
   <ul class="file-list">
     <li>
-      <a href="https://github.com/TOTOGT/io/raw/refs/heads/main/PrincipiaOrthogona_7Proofs_Template.docx">PrincipiaOrthogona_7Proofs_Template.docx</a>
-      <span class="tag">7 proofs · template</span>
-    </li>
-    <li>
       <a href="https://github.com/TOTOGT/io/blob/main/CatGT/CatGT_Main.lean">CatGT_Main.lean</a>
-      <span class="tag">CatGT · Lean 4 · helical_selectivity</span>
+      <span class="tag">core formalization</span>
     </li>
     <li>
       <a href="https://github.com/TOTOGT/io/blob/main/PrincipiaOrthogona1/Theorem53NonCommutativity.lean">Theorem53NonCommutativity.lean</a>
-      <span class="tag">CatGT · Lean 4 · theorem 5.3</span>
+      <span class="tag">theorem 5.3</span>
+    </li>
+    <li>
+      <a href="https://github.com/TOTOGT/io/raw/refs/heads/main/PrincipiaOrthogona_7Proofs_Template.docx">PrincipiaOrthogona_7Proofs_Template.docx</a>
+      <span class="tag">proof template &middot; reference</span>
     </li>
   </ul>
 
-  <p style="font-size:.85rem; color:var(--text-dim);"><em>io</em> is now also the
-  home for CatGT — the zeolite-catalysis instantiation of the operator chain,
-  split out of AXLE so it has its own build target and its own kernel check
-  instead of sitting among the monorepo's loose files. <code style="font-family:'Courier New',monospace;">lake build CatGT Theorem53</code>
-  runs both; see the workflow badge on the repo for the real, current status.</p>
-
-  <p style="font-size:.85rem; color:var(--text-dim);">Add new files above as the
-  repo grows. Each entry: a link, a one-line tag (status / theme / which volume
-  it feeds).</p>
+  <p style="font-size:.9rem; color:var(--text-dim);">Build: <code>lake build CatGT Theorem53</code>.
+  CI (GitHub Actions) runs the real Lean kernel on every push and prints the
+  axiom dependencies of each theorem &mdash; see the workflow file for the current
+  build status.</p>
 
   <footer>
-    Principia Orthogona · companion repo <em>io</em> · index <em>yoyo</em><br>
-    Pablo Nogueira Grossi · G6 LLC · <a href="https://github.com/TOTOGT">github.com/TOTOGT</a>
-    <div style="margin-top:1rem; opacity:.35; font-size:.65rem;">▸▸ <a href="io/io.html" style="color:var(--text-dim);">hidden track</a></div>
+    Pablo Nogueira Grossi &middot; G6 LLC<br>
+    <a href="https://github.com/TOTOGT">github.com/TOTOGT</a> &middot;
+    ORCID <a href="https://orcid.org/0009-0000-6496-2186">0009-0000-6496-2186</a> &middot;
+    Zenodo DOI <a href="https://doi.org/10.5281/zenodo.19117399">10.5281/zenodo.19117399</a>
   </footer>
 </div>
 </body>
