@@ -107,6 +107,16 @@ theorem foldMap_not_odd : ¬ (∀ x : ℤ, foldMap (-x) = -foldMap x) := by
   have h5 := h 5
   norm_num [foldMap] at h5
 
+-- ROUND 2 FIX (from real CI run #9, after @[reducible] resolved the Dist/
+-- HPow/LE/OfNat/Neg failures): several `omega`/`split_ifs <;> omega` calls
+-- that previously worked now fail with "no usable constraints found" or a
+-- spurious counterexample. Best guess: omega's own hypothesis-scanning does
+-- not always see through intManifold.carrier's reducibility the same way
+-- typeclass search does, so hypotheses stated over intManifold.carrier can
+-- go unused. Patched with `first | original-tactic | fallback` at each
+-- failing site rather than asserting a single fix, since this could not be
+-- verified against a real kernel. If CI still fails here, that confirms
+-- the guess was wrong and the real cause needs the actual error text again.
 @[reducible] noncomputable def intManifold : GenerativeManifold where
   carrier := ℤ
   Phi := fun x => (x : ℝ) ^ 2
@@ -135,7 +145,10 @@ noncomputable def F_ex : FoldOp intManifold where
     rintro p ⟨q, hqp, heq⟩
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
     simp only [foldMap] at heq
-    split_ifs at heq <;> omega
+    first
+    | split_ifs at heq <;> omega
+    | (revert heq hqp; split_ifs <;> omega)
+    | simp_all
 
 noncomputable def U_ex : UnfoldOp intManifold where
   map := idMap
@@ -150,7 +163,10 @@ noncomputable def C_nd : CompressionOp intManifold where
   injective := by
     intro x y h
     simp only [shiftMap] at h
-    omega
+    first
+    | omega
+    | (revert h; omega)
+    | simp_all
 
 noncomputable def K_nd : CurvatureOp intManifold where
   map := shrinkMap
@@ -160,11 +176,11 @@ noncomputable def K_nd : CurvatureOp intManifold where
     have key : (shrinkMap x) ^ 2 ≤ x ^ 2 := by
       simp only [shrinkMap]
       split_ifs with h1 h2
-      · have hx : 1 ≤ x := by omega
+      · have hx : 1 ≤ x := by first | omega | (revert h1; omega)
         nlinarith
-      · have hx : x ≤ -1 := by omega
+      · have hx : x ≤ -1 := by first | omega | (revert h1 h2; omega)
         nlinarith
-      · have hx : x = 0 := by omega
+      · have hx : x = 0 := by first | omega | (revert h1 h2; omega)
         subst hx; simp
     show ((shrinkMap x : ℤ) : ℝ) ^ 2 ≤ ((x : ℤ) : ℝ) ^ 2
     exact_mod_cast key
@@ -187,7 +203,10 @@ noncomputable def F_sym : FoldOp intManifold where
     rintro p ⟨q, hqp, heq⟩
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
     simp only [foldSym] at heq
-    split_ifs at heq <;> omega
+    first
+    | split_ifs at heq <;> omega
+    | (revert heq hqp; split_ifs <;> omega)
+    | simp_all
 
 theorem nonCommutativity_instance :
     GenerativeOp intManifold C_ex K_ex F_ex U_ex (5 : ℤ)
