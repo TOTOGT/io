@@ -74,5 +74,3 @@ jobs:
           echo "CatGT build: ${{ steps.build_catgt.outcome }}"
           echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
           exit 1
-Done
-Now each target builds and prints its own axioms independently — if CatGT fails (it currently shouldn't; its two "ad
