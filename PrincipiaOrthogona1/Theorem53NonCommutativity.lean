@@ -86,6 +86,14 @@ def GenerativeOp (M : GenerativeManifold)
 --     `-x = 5` and `x = -5` as syntactically distinct conditions and the
 --     resulting spurious branches were not closing automatically.
 -- ============================================================================
+-- FIX (from real CI failure, run #3): every synthesis error in the log
+-- (Dist, HPow, LE, OfNat, Neg all "failed to synthesize ... intManifold.
+-- carrier") traces back to one cause: typeclass search uses restricted
+-- "instances" transparency, which does not unfold a plain `noncomputable
+-- def` to see that intManifold.carrier reduces to Z. @[reducible] on
+-- intManifold (below) fixes this at the source for every downstream use,
+-- rather than patching dist/HPow/etc. individually at each call site.
+-- ============================================================================
 
 def idMap : ℤ -> ℤ := fun x => x
 def negMap : ℤ -> ℤ := fun x => -x
@@ -99,7 +107,7 @@ theorem foldMap_not_odd : ¬ (∀ x : ℤ, foldMap (-x) = -foldMap x) := by
   have h5 := h 5
   norm_num [foldMap] at h5
 
-noncomputable def intManifold : GenerativeManifold where
+@[reducible] noncomputable def intManifold : GenerativeManifold where
   carrier := ℤ
   Phi := fun x => (x : ℝ) ^ 2
   field := id
