@@ -1,4 +1,4 @@
-/-
+ /-
   CatGT_Main.lean
   Catalytic Generative Theory (CatGT) — Core Lean 4 Formalization
   Central theorem: Helical Selectivity Principle (HSP)
@@ -84,21 +84,24 @@ theorem ipr_between_zero_and_one {N : ℕ} (c : DNLSChain N)
     (hnonzero : ∑ n : Fin N, (Complex.abs (c.ψ n)) ^ 2 ≠ 0) :
     0 < IPR c ∧ IPR c ≤ 1 := by
   haveI : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+  -- ∑ ≠ 0 only gives "not every term is zero," not "every term is positive" —
+  -- Finset.sum_pos needs the latter. Extract a single witness index instead,
+  -- then use Finset.sum_pos' (nonneg everywhere + positive at one point).
+  have hex : ∃ n : Fin N, 0 < (Complex.abs (c.ψ n)) ^ 2 := by
+    by_contra hcon
+    push_neg at hcon
+    exact hnonzero (Finset.sum_eq_zero (fun n _ =>
+      le_antisymm (hcon n) (pow_nonneg (Complex.abs.nonneg _) 2)))
+  obtain ⟨n0, hn0⟩ := hex
+  have h4 : 0 < (Complex.abs (c.ψ n0)) ^ 4 := by
+    have heq : (Complex.abs (c.ψ n0)) ^ 4 = ((Complex.abs (c.ψ n0)) ^ 2) ^ 2 := by ring
+    rw [heq]; exact pow_pos hn0 2
   constructor
   · apply div_pos
-    · apply Finset.sum_pos
-      · intro n _
-        exact pow_pos ((Complex.abs.nonneg _).lt_of_ne' (by
-          intro h
-          simp [h, Finset.sum_eq_zero] at hnonzero)) 4
-      · exact Finset.univ_nonempty
-    · exact pow_pos (by
-        apply Finset.sum_pos
-        · intro n _
-          exact pow_pos (Complex.abs.nonneg _).lt_of_ne' (by
-            intro h
-            simp [← h] at hnonzero) 2
-        · exact Finset.univ_nonempty) 2
+    · exact Finset.sum_pos' (fun n _ => pow_nonneg (Complex.abs.nonneg _) 4)
+        ⟨n0, Finset.mem_univ n0, h4⟩
+    · exact pow_pos (Finset.sum_pos' (fun n _ => pow_nonneg (Complex.abs.nonneg _) 2)
+        ⟨n0, Finset.mem_univ n0, hn0⟩) 2
   · unfold IPR
     apply div_le_one_of_le
     · -- ∑ |ψ_n|⁴ ≤ (∑ |ψ_n|²)² via: |ψ_n|⁴ ≤ |ψ_n|² · ∑ |ψ_m|², sum both sides
