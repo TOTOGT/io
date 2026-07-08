@@ -1,0 +1,76 @@
+name: Verify Lean proofs (real kernel check)
+
+on:
+  push:
+    branches: [main]
+    paths: ["**.lean", "lakefile.toml", "lean-toolchain", ".github/workflows/verify-proofs.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache .lake
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: ${{ runner.os }}-lake-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}
+
+      - name: lake update
+        run: lake update
+
+      # CatGT and Theorem53 have zero imports between them - build and check
+      # each independently so a failure in one doesn't hide the other's result.
+
+      - name: Build CatGT
+        id: build_catgt
+        continue-on-error: true
+        run: lake build CatGT
+
+      - name: Print axioms - CatGT
+        if: steps.build_catgt.outcome == 'success'
+        run: |
+          cat > /tmp/CheckCatGT.lean <<'LEAN'
+          import CatGT.CatGT_Main
+          open CatGT
+          #print axioms helical_selectivity
+          #print axioms criticalRadius_pos
+          #print axioms criticalRadius_antitone
+          #print axioms selectivityFactor_eq
+          #print axioms ipr_between_zero_and_one
+          #print axioms reeb_orbit_is_integral
+          LEAN
+          lake env lean /tmp/CheckCatGT.lean
+
+      - name: Build Theorem53
+        id: build_theorem53
+        continue-on-error: true
+        run: lake build Theorem53
+
+      - name: Print axioms - Theorem53
+        if: steps.build_theorem53.outcome == 'success'
+        run: |
+          cat > /tmp/CheckTheorem53.lean <<'LEAN'
+          import PrincipiaOrthogona1.Theorem53NonCommutativity
+          open Theorem53NonCommutativity
+          #print axioms nonCommutativity_instance
+          #print axioms nonCommutativity_nondegenerate
+          #print axioms commuting_instance
+          #print axioms not_forall_order_dependent
+          #print axioms thm_5_3_is_exactly_existential
+          LEAN
+          lake env lean /tmp/CheckTheorem53.lean
+
+      - name: Fail workflow if either target failed
+        if: steps.build_catgt.outcome != 'success' || steps.build_theorem53.outcome != 'success'
+        run: |
+          echo "CatGT build: ${{ steps.build_catgt.outcome }}"
+          echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
+          exit 1
