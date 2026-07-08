@@ -37,7 +37,8 @@ import Mathlib.Topology.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset  -- fixed: .Basic no longer exists, split into this + Order variant
+import Mathlib.Algebra.Order.BigOperators.Group.Finset  -- for Finset.sum_pos
 
 open BigOperators Real Complex
 
