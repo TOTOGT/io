@@ -39,7 +39,6 @@ jobs:
         run: |
           cat > /tmp/CheckCatGT.lean <<'LEAN'
           import CatGT.CatGT_Main
-          open CatGT
           #print axioms helical_selectivity
           #print axioms criticalRadius_pos
           #print axioms criticalRadius_antitone
