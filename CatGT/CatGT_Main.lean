@@ -57,9 +57,9 @@ structure DNLSChain (N : ℕ) where
   /-- Inter-site coupling J (tunnelling / diffusivity analog) -/
   J : ℝ
   /-- On-site nonlinearity λ (binding energy analog) -/
-  λ : ℝ
+  lam : ℝ
   hJ : 0 < J
-  hλ : 0 < λ
+  hlam : 0 < lam
 
 /-- Inverse Participation Ratio — measures wavefunction localisation.
     IPR → 1/N: delocalised (mobile reactant, accessible pathway).
@@ -70,8 +70,8 @@ noncomputable def IPR {N : ℕ} (c : DNLSChain N) : ℝ :=
 
 /-- Critical attractor radius r*(λ) = √(J/λ).
     This is the central invariant of CatGT and the HSP. -/
-noncomputable def criticalRadius (J λ : ℝ) (hJ : 0 < J) (hλ : 0 < λ) : ℝ :=
-  Real.sqrt (J / λ)
+noncomputable def criticalRadius (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam) : ℝ :=
+  Real.sqrt (J / lam)
 
 /-!
 ## §2  IPR bounds
@@ -139,9 +139,9 @@ structure ReactionPathway (N : ℕ) where
   z : ℝ → ℝ
 
 /-- A pathway γ lies within the CatGT attractor tube if r(t) ≤ r*(λ) for all t. -/
-def withinAttractor (N : ℕ) (γ : ReactionPathway N) (J λ : ℝ)
-    (hJ : 0 < J) (hλ : 0 < λ) : Prop :=
-  ∀ t : ℝ, γ.r t ≤ criticalRadius J λ hJ hλ
+def withinAttractor (N : ℕ) (γ : ReactionPathway N) (J lam : ℝ)
+    (hJ : 0 < J) (hlam : 0 < lam) : Prop :=
+  ∀ t : ℝ, γ.r t ≤ criticalRadius J lam hJ hlam
 
 /-!
 ## §4  Helical Selectivity Principle (HSP) — Theorem 1 of CatGT
@@ -153,22 +153,22 @@ point x* of the operator pipeline G = U∘F∘K∘C.
 
 /-- The critical radius r*(λ) is strictly positive.
     Physical meaning: there is always a nonzero tube of accessible pathways. -/
-theorem criticalRadius_pos (J λ : ℝ) (hJ : 0 < J) (hλ : 0 < λ) :
-    0 < criticalRadius J λ hJ hλ := by
+theorem criticalRadius_pos (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam) :
+    0 < criticalRadius J lam hJ hlam := by
   unfold criticalRadius
   apply Real.sqrt_pos_of_pos
-  exact div_pos hJ hλ
+  exact div_pos hJ hlam
 
 /-- r*(λ) decreases as λ increases: stronger binding → tighter selectivity.
     This is the monotonicity backbone of the HSP. -/
 theorem criticalRadius_antitone (J : ℝ) (hJ : 0 < J) :
-    ∀ λ₁ λ₂ : ℝ, 0 < λ₁ → 0 < λ₂ → λ₁ ≤ λ₂ →
-    criticalRadius J λ₂ hJ (lt_of_lt_of_le hλ₁ hλ₁₂) ≤
-    criticalRadius J λ₁ hJ hλ₁ := by
-  intro λ₁ λ₂ hλ₁ hλ₂ hle
+    ∀ lam1 lam2 : ℝ, ∀ (h1 : 0 < lam1) (h2 : 0 < lam2), lam1 ≤ lam2 →
+    criticalRadius J lam2 hJ h2 ≤
+    criticalRadius J lam1 hJ h1 := by
+  intro lam1 lam2 h1 h2 hle
   unfold criticalRadius
   apply Real.sqrt_le_sqrt
-  apply div_le_div_of_nonneg_left (le_of_lt hJ) hλ₁ hle
+  apply div_le_div_of_nonneg_left (le_of_lt hJ) h1 hle
 
 /-- **Helical Selectivity Principle (HSP)** — formal statement of Theorem 1.
 
@@ -180,10 +180,10 @@ theorem criticalRadius_antitone (J : ℝ) (hJ : 0 < J) :
     requires Mathlib ODE existence theory — see catgt_dm3_transport below.
 
     Closed. Sorry-free. ✓ -/
-theorem helical_selectivity (J λ : ℝ) (hJ : 0 < J) (hλ : 0 < λ)
+theorem helical_selectivity (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam)
     (r_state : ℝ) (hr : 0 ≤ r_state)
-    (h_confined : r_state ^ 2 ≤ J / λ) :
-    r_state ≤ criticalRadius J λ hJ hλ := by
+    (h_confined : r_state ^ 2 ≤ J / lam) :
+    r_state ≤ criticalRadius J lam hJ hlam := by
   unfold criticalRadius
   rw [← Real.sqrt_sq hr]
   apply Real.sqrt_le_sqrt
@@ -192,16 +192,16 @@ theorem helical_selectivity (J λ : ℝ) (hJ : 0 < J) (hλ : 0 < λ)
 /-- Selectivity factor σ = 1 - J/(λ·r_pore²).
     Recovers the classical zeolite shape-selectivity factor of
     Weisz & Frilette (1960) and Csicsery (1984). -/
-noncomputable def selectivityFactor (J λ r_pore : ℝ)
-    (hJ : 0 < J) (hλ : 0 < λ) (hr : 0 < r_pore) : ℝ :=
-  1 - (criticalRadius J λ hJ hλ / r_pore) ^ 2
+noncomputable def selectivityFactor (J lam r_pore : ℝ)
+    (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) : ℝ :=
+  1 - (criticalRadius J lam hJ hlam / r_pore) ^ 2
 
-theorem selectivityFactor_eq (J λ r_pore : ℝ)
-    (hJ : 0 < J) (hλ : 0 < λ) (hr : 0 < r_pore) :
-    selectivityFactor J λ r_pore hJ hλ hr =
-    1 - J / (λ * r_pore ^ 2) := by
+theorem selectivityFactor_eq (J lam r_pore : ℝ)
+    (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) :
+    selectivityFactor J lam r_pore hJ hlam hr =
+    1 - J / (lam * r_pore ^ 2) := by
   unfold selectivityFactor criticalRadius
-  rw [div_pow, Real.sq_sqrt (div_nonneg (le_of_lt hJ) (le_of_lt hλ))]
+  rw [div_pow, Real.sq_sqrt (div_nonneg (le_of_lt hJ) (le_of_lt hlam))]
   ring
 
 /-!
@@ -217,12 +217,12 @@ noncomputable def dnlsStep {N : ℕ} (hN : 0 < N) (c : DNLSChain N) (dt : ℝ) :
     let next := c.ψ ⟨(n.val + 1) % N, Nat.mod_lt _ hN⟩
     let curr := c.ψ n
     let coupling : ℂ := -↑c.J * (next + prev)
-    let onsite : ℂ := -↑c.λ * (Complex.abs curr ^ 2 : ℝ) * curr
+    let onsite : ℂ := -↑c.lam * (Complex.abs curr ^ 2 : ℝ) * curr
     curr + ↑dt * Complex.I * (coupling + onsite)
   J := c.J
-  λ := c.λ
+  lam := c.lam
   hJ := c.hJ
-  hλ := c.hλ
+  hlam := c.hlam
 
 /-- Iterate the DNLS stepper for n steps. -/
 noncomputable def dnlsIterate {N : ℕ} (hN : 0 < N) (c : DNLSChain N)
@@ -241,7 +241,7 @@ noncomputable def dnlsNorm {N : ℕ} (c : DNLSChain N) : ℝ :=
      onsite term is purely imaginary).
     Full Lean proof requires Mathlib ODE.Basic — open obligation. -/
 theorem dnls_norm_conservation_ideal :
-    ∀ (J λ : ℝ) (hJ : 0 < J) (hλ : 0 < λ),
+    ∀ (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam),
     True := by trivial
 
 /-!
