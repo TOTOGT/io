@@ -1,4 +1,4 @@
- /-
+/-
   CatGT_Main.lean
   Catalytic Generative Theory (CatGT) — Core Lean 4 Formalization
   Central theorem: Helical Selectivity Principle (HSP)
@@ -110,6 +110,12 @@ theorem ipr_between_zero_and_one {N : ℕ} (c : DNLSChain N)
           (Complex.abs (c.ψ n)) ^ 2 *
           (∑ m : Fin N, (Complex.abs (c.ψ m)) ^ 2) := by
         intro n
+        -- x^4 must be reshaped to x^2 * x^2 before `apply` can unify it
+        -- against mul_le_mul_of_nonneg_left's `a * b ≤ a * c` conclusion —
+        -- HPow and HMul don't unify syntactically even though defeq via ring.
+        have h4eq : (Complex.abs (c.ψ n)) ^ 4 =
+            (Complex.abs (c.ψ n)) ^ 2 * (Complex.abs (c.ψ n)) ^ 2 := by ring
+        rw [h4eq]
         apply mul_le_mul_of_nonneg_left _ (pow_nonneg (Complex.abs.nonneg _) 2)
         apply Finset.single_le_sum
         · intro m _; exact pow_nonneg (Complex.abs.nonneg _) 2
