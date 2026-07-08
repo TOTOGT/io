@@ -83,14 +83,14 @@ theorem ipr_between_zero_and_one {N : ℕ} (c : DNLSChain N)
     (hN : 0 < N)
     (hnonzero : ∑ n : Fin N, (Complex.abs (c.ψ n)) ^ 2 ≠ 0) :
     0 < IPR c ∧ IPR c ≤ 1 := by
+  haveI : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   constructor
   · apply div_pos
     · apply Finset.sum_pos
       · intro n _
-        exact pow_pos (Complex.abs.pos (by
+        exact pow_pos ((Complex.abs.nonneg _).lt_of_ne' (by
           intro h
-          simp [h] at hnonzero
-          simp [Finset.sum_eq_zero] at hnonzero)) 4
+          simp [h, Finset.sum_eq_zero] at hnonzero)) 4
       · exact Finset.univ_nonempty
     · exact pow_pos (by
         apply Finset.sum_pos
@@ -242,7 +242,9 @@ noncomputable def dnlsNorm {N : ℕ} (c : DNLSChain N) : ℝ :=
     Full Lean proof requires Mathlib ODE.Basic — open obligation. -/
 theorem dnls_norm_conservation_ideal :
     ∀ (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam),
-    True := by trivial
+    True := by
+  intro J lam hJ hlam
+  trivial
 
 /-!
 ## §6  Reeb orbit is an integral curve of the CatGT contact structure
