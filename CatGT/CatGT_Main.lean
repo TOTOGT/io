@@ -117,9 +117,10 @@ theorem ipr_between_zero_and_one {N : ℕ} (c : DNLSChain N)
             (Complex.abs (c.ψ n)) ^ 2 * (Complex.abs (c.ψ n)) ^ 2 := by ring
         rw [h4eq]
         apply mul_le_mul_of_nonneg_left _ (pow_nonneg (Complex.abs.nonneg _) 2)
-        apply Finset.single_le_sum
-        · intro m _; exact pow_nonneg (Complex.abs.nonneg _) 2
-        · exact Finset.mem_univ n
+        -- `apply Finset.single_le_sum` fails to higher-order-unify `?f ?a` against
+        -- the goal; naming `f` explicitly turns it into a plain defeq check instead.
+        exact Finset.single_le_sum (f := fun m => Complex.abs (c.ψ m) ^ 2)
+          (fun m _ => pow_nonneg (Complex.abs.nonneg _) 2) (Finset.mem_univ n)
       calc ∑ n : Fin N, (Complex.abs (c.ψ n)) ^ 4
           ≤ ∑ n : Fin N, (Complex.abs (c.ψ n)) ^ 2 *
               ∑ m : Fin N, (Complex.abs (c.ψ m)) ^ 2 :=
