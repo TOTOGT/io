@@ -67,9 +67,46 @@ jobs:
           LEAN
           lake env lean /tmp/CheckTheorem53.lean
 
-      - name: Fail workflow if either target failed
-        if: steps.build_catgt.outcome != 'success' || steps.build_theorem53.outcome != 'success'
+      - name: Build ZeoliteProofs
+        id: build_zeolite_proofs
+        continue-on-error: true
+        run: lake build ZeoliteProofs
+
+      - name: Print axioms - ZeoliteProofs
+        if: steps.build_zeolite_proofs.outcome == 'success'
+        run: |
+          cat > /tmp/CheckZeoliteProofs.lean <<'LEAN'
+          import zeolite_operator_order.CatGT_PROOFS_COMPLETE
+          open CatGT
+          #print axioms NonCommutativity
+          #print axioms ZSM5_SupportsAromatics
+          #print axioms MCM22_PermitsAromatics
+          #print axioms MainTheorem_OperatorOrderDeterminesSelectivity
+          #print axioms ContactMorphismScaling
+          #print axioms Prediction1_DRIFTS_Sequence
+          #print axioms Prediction2_CokeSpatialSegregation
+          #print axioms Prediction3_AcidSiteRelocation
+          #print axioms Selectivity_Bijection_With_OperatorOrder
+          LEAN
+          lake env lean /tmp/CheckZeoliteProofs.lean
+
+      # CatGT_v2.lean is a known, explicitly-labeled theorem-stub file (every
+      # proof body is `sorry`, some helper predicates are referenced before
+      # their definitions). We still build it in CI so the failure is real
+      # and visible in logs, but it does not gate overall pass/fail below --
+      # unlike CatGT/Theorem53/ZeoliteProofs, nothing has ever claimed this
+      # file's theorems are complete, so a red step here is expected and is
+      # not swept under the rug -- it's just not treated as a regression.
+      - name: Build ZeoliteV2Stub (expected to fail - stub file, not gating)
+        id: build_zeolite_v2
+        continue-on-error: true
+        run: lake build ZeoliteV2Stub
+
+      - name: Fail workflow if a claimed-complete target failed
+        if: steps.build_catgt.outcome != 'success' || steps.build_theorem53.outcome != 'success' || steps.build_zeolite_proofs.outcome != 'success'
         run: |
           echo "CatGT build: ${{ steps.build_catgt.outcome }}"
           echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
+          echo "ZeoliteProofs build: ${{ steps.build_zeolite_proofs.outcome }}"
+          echo "ZeoliteV2Stub build (informational, non-gating): ${{ steps.build_zeolite_v2.outcome }}"
           exit 1
