@@ -12,6 +12,15 @@
 -- operator firing order determines zeolite selectivity. Full proofs
 -- would require integration with Mathlib's differential geometry and
 -- dynamical systems libraries.
+--
+-- 2026-07-10: added `import Mathlib` -- this file used ℝ, ℂ with no
+-- import at all, so it would have failed on the very first type
+-- reference rather than on the forward-reference/sorry issues that are
+-- the actually interesting part of why it doesn't compile. This import
+-- doesn't change any theorem logic; it's still expected to fail (see
+-- lakefile.toml note on ZeoliteV2Stub) for the reasons already documented.
+
+import Mathlib
 
 namespace CatGT
 
