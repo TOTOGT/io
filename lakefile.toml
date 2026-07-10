@@ -1,5 +1,5 @@
 name = "io"
-defaultTargets = ["CatGT", "Theorem53", "ZeoliteCatGT"]
+defaultTargets = ["CatGT", "Theorem53", "ZeoliteProofs", "ZeoliteV2Stub"]
 
 [[require]]
 name = "mathlib"
@@ -17,11 +17,19 @@ roots = ["PrincipiaOrthogona1.Theorem53NonCommutativity"]
 # Added 2026-07-10: the zeolite operator-order paper's Lean files were sitting
 # in Downloads, never wired into any lakefile, so the "6 closed / 3 admits"
 # and "no sorry" claims made about them were never actually kernel-checked.
-# This wires them in so CI has a real chance to check them for the first time.
-# CatGT_v2.lean in particular is expected to have real compile issues (see
-# zeolite_operator_order/CatGT_PROOFS_COMPLETE.lean's header/footer notes for
-# the honest sorry-count audit of the companion proof file) -- a red build
-# here is a useful, expected result, not a sign the wiring is wrong.
+# Split into two independent targets (same reasoning as CatGT/Theorem53 above)
+# so a failure in one doesn't hide the other's real result.
 [[lean_lib]]
-name = "ZeoliteCatGT"
-roots = ["zeolite_operator_order.CatGT_PROOFS_COMPLETE", "zeolite_operator_order.CatGT_v2"]
+name = "ZeoliteProofs"
+roots = ["zeolite_operator_order.CatGT_PROOFS_COMPLETE"]
+
+# CatGT_v2.lean is an explicit theorem-stub file (every theorem body is
+# `sorry`, plus several forward references to helper predicates defined
+# later in the same file). It is expected to fail to compile outright --
+# that's a correct, informative result, not a sign the wiring is wrong.
+# It's wired in and built in CI, but does not gate the workflow's pass/fail
+# status (see "Fail workflow if" step below) since it was never claimed to
+# be complete.
+[[lean_lib]]
+name = "ZeoliteV2Stub"
+roots = ["zeolite_operator_order.CatGT_v2"]
