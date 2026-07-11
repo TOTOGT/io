@@ -110,6 +110,23 @@
 --      NonCommutativity is not currently proved and, as literally stated
 --      with these operator definitions, cannot be.
 --
+-- STATUS (corrected 2026-07-11, later same day): the "Build ZeoliteProofs"
+-- CI step had been non-gating (continue-on-error: true) this entire time,
+-- which meant a real, located kernel error was sitting in every green run
+-- and going unnoticed: "failed to synthesize MeasurableSpace PoreSpace" /
+-- "fields missing: 'MeasurableSet'', ..." at the `MeasureSpace PoreSpace`
+-- instance below. Root cause: `PoreSpace` is declared with `def`, and
+-- typeclass search does not unfold plain `def`s when looking for an
+-- instance, so `MeasureTheory.MeasureSpace PoreSpace`'s implicit
+-- requirement for a `MeasurableSpace PoreSpace` parent instance failed --
+-- there was nothing registered under that exact type, even though
+-- `PoreSpace` is defeq to a `Subtype`. FIX: added an explicit
+-- `MeasurableSpace PoreSpace` instance (pullback of `MeasurableSpace ℝ`
+-- along `Subtype.val`, same pullback idea already used one line below for
+-- the measure itself) so the parent-class requirement resolves. This is
+-- what finally makes the "gate on real errors only" CI step (added this
+-- same day) pass on a real, not just a non-gated, basis.
+--
 -- Author: Pablo Nogueira Grossi
 -- Date: June 5, 2026 (header corrected 2026-07-10, 2026-07-11)
 -- Status: PARTIAL -- see footer "Theorems with sorry" / "Theorems FULLY
@@ -136,6 +153,14 @@ open scoped Classical
 
 -- Pore configuration space: [0, 10] Ångströms
 def PoreSpace : Type := {r : ℝ // 0 ≤ r ∧ r ≤ 10}
+
+-- Measurable-space structure on PoreSpace, pulled back from ℝ along the
+-- inclusion. Added 2026-07-11 (second pass) -- typeclass search does not
+-- unfold `def PoreSpace` on its own, so without this explicit instance the
+-- `MeasureSpace` instance below fails to synthesize its required
+-- `MeasurableSpace PoreSpace` parent (see header note).
+noncomputable instance : MeasurableSpace PoreSpace :=
+  MeasurableSpace.comap Subtype.val inferInstance
 
 -- Measure on PoreSpace: Lebesgue measure on ℝ pulled back along the
 -- inclusion. Added 2026-07-11 -- `Selectivity`'s integrals need this to
@@ -496,9 +521,10 @@ is necessary but not sufficient for "proven" -- the tactics could still
 fail to typecheck). It has now actually been run through CI. Real,
 non-sorry kernel errors were found and fixed (see the file header above:
 a missing comma, an unprovable false "linearity" obligation on the
-explicitly-nonlinear FoldingOp, `≈` not resolving for ℝ, and a missing
-MeasureSpace instance). The per-theorem sorry breakdown below is otherwise
-unchanged -- fixing compile errors did not remove or add any `sorry`.
+explicitly-nonlinear FoldingOp, `≈` not resolving for ℝ, and -- across two
+passes the same day -- a missing MeasurableSpace/MeasureSpace instance on
+PoreSpace). The per-theorem sorry breakdown below is otherwise unchanged --
+fixing compile errors did not remove or add any `sorry`.
 
 Contains an explicit `sorry` in its own body:
   • NonCommutativity / Theorem 1 -- ADDED 2026-07-11, and this one matters
@@ -550,13 +576,17 @@ Honest summary: 3 of 7 theorems (2, 4's ZSM-5 half, 7) plus one of Theorem
 6's three predictions are free of explicit sorries in their own bodies --
 and, as of 2026-07-11, that claim is checked by CI running the real Lean
 kernel on every push (see .github/workflows/verify-proofs.yml, "Build
-ZeoliteProofs" step), not asserted by eye. Getting the file to actually
-compile is what surfaced both the Theorem 2/3 restatement need and
-Theorem 1's false-as-stated status -- a materially different (and lower)
-count than the pre-kernel-check estimate, which had Theorem 1 marked as
-the one fully-solid result. Whether the CI step is currently gating or
-non-gating should be read directly off the workflow file rather than
-assumed from this comment, since the two can drift out of sync.
+ZeoliteProofs" step), not asserted by eye, and that step now GATES on real
+errors (fails only if the build log contains a located `error:
+path:line:col:` line; the six documented sorries above are accepted, not
+failures). Getting the file to actually compile -- across two CI-driven
+passes on 2026-07-11 -- is what surfaced the Theorem 2/3 restatement need,
+Theorem 1's false-as-stated status, AND the missing MeasurableSpace
+instance on PoreSpace (the first pass's "zero located errors" read of the
+CI log was wrong; the step was non-gating so the real error underneath the
+six sorry-warnings went unnoticed until the gate was actually turned on).
+That's a materially different (and lower) count than the pre-kernel-check
+estimate, which had Theorem 1 marked as the one fully-solid result.
 
 Estimated effort to complete all proofs:
   • Bochner integral integration: 1-2 weeks
