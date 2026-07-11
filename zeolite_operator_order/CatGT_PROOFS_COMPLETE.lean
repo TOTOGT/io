@@ -353,7 +353,7 @@ by
 -- scale = 6.0/4.5 > 0, but the def itself carries no such hypothesis), so
 -- both halves of the domain proof are left as explicit sorries alongside
 -- the pre-existing one, rather than forcing an invalid `norm_num` through.
-def ContactMorphism (scale : ℝ) : Wavefunction → Wavefunction :=
+noncomputable def ContactMorphism (scale : ℝ) : Wavefunction → Wavefunction :=
   fun ψ r =>
     (Real.sqrt scale : ℂ) *
     ψ ⟨r.val * scale, by
@@ -446,8 +446,17 @@ by
 
   constructor
   · -- Injectivity: different orders map to different selectivities
-    intros x y hf
-    omega
+    -- FIXED 2026-07-11: `omega` can't see this at all -- hf is an equation
+    -- over ℝ (0 vs 0.35), not something omega's linear-arithmetic-over-
+    -- integers decision procedure touches, and it never used hf regardless.
+    -- Case-split on the two possible values (ord < 2) and use hf directly:
+    -- matching cases close by rfl, mismatched cases make hf a false real
+    -- equation (0 = 0.35), closed by norm_num.
+    intro x y hf
+    obtain ⟨xv, hxv⟩ := x
+    obtain ⟨yv, hyv⟩ := y
+    simp only [Subtype.mk.injEq]
+    interval_cases xv <;> interval_cases yv <;> first | rfl | (exfalso; norm_num at hf)
 
   constructor
   · simp
