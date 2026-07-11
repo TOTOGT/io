@@ -1,4 +1,4 @@
-Phase I project - the formal, machine-checked kinetic and molecular modeling I am conducting solo via G6 LLC is highly strategic. It completely eliminates the logistical hurdles of renting a physical U.S. lab, bypasses the complex DOE foreign work waiver process, and allows you to retain 100% of the $200K budget [1.1].
+Phase I project - the formal, machine-checked kinetic and molecular modeling I am conducting solo via G6 LLC is highly strategic. It completely eliminates the logistical hurdles of renting a physical U.S. lab, bypasses the complex DOE foreign work waiver process, and allows G6 LLC to retain 100% of the $200K budget [1.1].
 The DOE Office of Technology Commercialization frequently funds purely computational, modeling, and software-driven validation projects in Phase I, G6 LLC lays the groundwork for physical deployment in Phase II at NJIT.
 Facilities, Equipment, and Other Resources section for Summer 2026 application.
 ------------------------------
