@@ -346,15 +346,20 @@ by
 -- ============================================================================
 
 -- Contact transformation: scaling
+-- FIXED 2026-07-11: `Complex.sqrt` is not a Mathlib constant (real sqrt
+-- coerced into ℂ is what's meant). Also, the domain-membership proof called
+-- `norm_num`/`mul_nonneg` on `0 ≤ scale` for a fully generic `scale : ℝ` --
+-- that's not provable in general (ContactMorphism is only ever invoked at
+-- scale = 6.0/4.5 > 0, but the def itself carries no such hypothesis), so
+-- both halves of the domain proof are left as explicit sorries alongside
+-- the pre-existing one, rather than forcing an invalid `norm_num` through.
 def ContactMorphism (scale : ℝ) : Wavefunction → Wavefunction :=
   fun ψ r =>
-    Complex.sqrt scale *
+    (Real.sqrt scale : ℂ) *
     ψ ⟨r.val * scale, by
       constructor
-      · exact mul_nonneg (by norm_num : 0 ≤ scale) r.property.1
-      · have : r.val * scale ≤ 10 * scale := by
-          exact mul_le_mul_of_nonneg_right r.property.2 (by norm_num : 0 ≤ scale)
-        sorry -- Requires bounded domain assumption
+      · sorry -- Requires 0 ≤ scale (true at the call site, not in general)
+      · sorry -- Requires bounded domain assumption
     ⟩
 
 theorem ContactMorphismScaling (ψ₀ : Wavefunction) :
@@ -503,9 +508,13 @@ Contains an explicit `sorry` in its own body:
     numerical integral bounds from the DNLS simulation -- unrelated to the
     restatement above, and unrelated to Theorem 1's issue since Theorem 3
     doesn't use FoldingOp's bundled linearity or rely on non-commutativity)
-  • ContactMorphism def + ContactMorphismScaling / Theorem 5 (one in the
-    helper definition (domain-boundedness), one in the theorem itself
-    (Sasaki-metric contact geometry))
+  • ContactMorphism def + ContactMorphismScaling / Theorem 5 (two in the
+    helper definition as of 2026-07-11 -- domain-boundedness plus a
+    0 ≤ scale side-condition that a broken `norm_num` call was silently
+    failing to discharge for generic scale -- one more in the theorem
+    itself (Sasaki-metric contact geometry). Also fixed a genuine compile
+    error here: `Complex.sqrt` is not a Mathlib name; real sqrt coerced to
+    ℂ is what was meant)
   • Prediction1_DRIFTS_Sequence (depends on DNLS time-stepping output not
     derived in-file)
   • Prediction3_AcidSiteRelocation (depends on an unformalized model of
