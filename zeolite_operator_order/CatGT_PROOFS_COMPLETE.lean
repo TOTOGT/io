@@ -483,7 +483,7 @@ end CatGT
 -- NOTES ON COMPLETE FORMALIZATION
 -- ============================================================================
 
-{-
+/-
 CORRECTED 2026-07-10: this note previously said "This file contains PROVEN
 Lean 4 theorems" and listed Selectivity_Bijection as needing a sorry it does
 not actually contain in the code above, while failing to flag that
@@ -573,4 +573,11 @@ Theorem 3's S ≈ 0.35-0.40 figure is cited "from DNLS simulation" rather than
 derived analytically). Don't cite that document as "fully sufficient" for
 publication without re-checking those specific steps.
 
--}
+FIXED 2026-07-11: this whole block used `{-`/`-}` as comment delimiters,
+which is Haskell/OCaml syntax, not Lean 4's (`/-`/`-/`). That meant this
+"comment" was never actually a comment at all -- the lexer read `{` and `-`
+as ordinary tokens and everything below was parsed as (invalid) top-level
+code, which is what finally surfaced as parse errors once every earlier
+blocking error in the file was fixed. This bug predates all of this week's
+changes; it was simply never reached before.
+-/
