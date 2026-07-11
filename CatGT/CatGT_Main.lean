@@ -41,9 +41,8 @@
   Total: 8 closed · 0 sorries · 0 vacuous statements.
 -/
 
-import Mathlib.Analysis.SpecialFunctions.Pow.NNRpow
 import Mathlib.Analysis.SpecialFunctions.Sqrt
-import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.Complex.Basic
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Tactic
 
