@@ -16,14 +16,55 @@
 -- if compiled). Honest count: 1 of 7 theorems is sorry-free in isolation;
 -- 0 of 7 are sorry-free once transitive calls are accounted for.
 --
--- NOT KERNEL-CHECKED: no Lean toolchain was reachable in the sandbox this
--- correction was made in. This header fix only corrects the PROSE claim to
--- match what the code visibly contains -- it does not newly verify or
--- invalidate any proof. Run `lake build` / `#print axioms` for the real
--- answer before citing a specific count anywhere.
+-- STATUS (corrected 2026-07-11): this file has now actually been run
+-- through CI (verify-proofs.yml, "Build ZeoliteProofs" step) instead of
+-- being assessed by eye. That surfaced real kernel errors beyond the six
+-- `sorry`s above, none of which were syntax typos:
+--
+--   1. Missing comma in ConstraintOp's structure literal -- a plain
+--      parse error ("unexpected token ':='; expected '}'").
+--
+--   2. FoldingOp is explicitly commented as a *nonlinear* self-interaction
+--      term, but earlier drafts wrapped every operator (ConstraintOp,
+--      FoldingOp, and their composites) in a `LinearOperator` structure
+--      that bundles a proof obligation that the operator IS linear. For
+--      FoldingOp that obligation is false -- CI shows `ring` failing on a
+--      genuinely unequal goal (expand |a*psi1+b*psi2|^2 and it does not
+--      distribute), not a missing tactic. No honest proof term closes it.
+--      FIX: removed the LinearOperator bundling entirely. Operators below
+--      are now plain `Wavefunction -> Wavefunction` functions (`Operator`).
+--      None of the 7 theorems' own proofs ever used the bundled
+--      `.linearity` field, so this changes zero theorem statements or
+--      proof content -- it only deletes a decorative, unprovable
+--      obligation that was never load-bearing. (It also silently fixes a
+--      second latent bug: Theorem 5 passes bare `id` where a
+--      `LinearOperator` was required, which never type-checked either.)
+--
+--   3. `≈` (the `HasEquiv`/`Setoid` notation) does not resolve for `ℝ` --
+--      there is no generic Setoid instance registered for real numbers.
+--      Theorems 2, 4, and 7 used `≈ 0` / `≈ 0.35`, but their own proof
+--      bodies already establish *exact* equality (e.g. Theorem 2 shows the
+--      aromatic integral is exactly 0, so selectivity = 0/total = 0).
+--      FIX: replaced `≈` with `=` in all four call sites -- this states
+--      exactly what is proved, not a weaker approximation.
+--
+--   4. `Selectivity`'s integral needed a `MeasureTheory.MeasureSpace
+--      PoreSpace` instance (none existed) and a `Decidable` instance for
+--      `if`-conditions on opaque Props like `IsAromaticRegion`. FIX: added
+--      a pullback of Lebesgue measure via `Subtype.val`, and
+--      `open scoped Classical` for decidability. `Selectivity` itself also
+--      needed `noncomputable` (it wasn't marked, which is itself a
+--      compile error once the above is fixed).
+--
+-- The six `sorry`s the 2026-07-10 header already disclosed (Theorems 3, 5,
+-- and all three Prediction theorems) are UNCHANGED by this pass -- they are
+-- open numerical/geometric gaps (DNLS simulation values, Sasaki-metric
+-- contact geometry), not something a mechanical CI-error fix should paper
+-- over. This pass is only about making the file's sorry/error count
+-- verifiable BY THE KERNEL instead of by eye.
 --
 -- Author: Pablo Nogueira Grossi
--- Date: June 5, 2026 (header corrected 2026-07-10)
+-- Date: June 5, 2026 (header corrected 2026-07-10, 2026-07-11)
 -- Status: PARTIAL -- see footer "Theorems with sorry" / "Theorems FULLY
 -- PROVEN" for the accurate, per-theorem breakdown.
 
@@ -40,6 +81,8 @@ import Mathlib
 
 namespace CatGT
 
+open scoped Classical
+
 -- ============================================================================
 -- TYPE THEORY: Configuration Space and Operators
 -- ============================================================================
@@ -47,14 +90,21 @@ namespace CatGT
 -- Pore configuration space: [0, 10] Ångströms
 def PoreSpace : Type := {r : ℝ // 0 ≤ r ∧ r ≤ 10}
 
+-- Measure on PoreSpace: Lebesgue measure on ℝ pulled back along the
+-- inclusion. Added 2026-07-11 -- `Selectivity`'s integrals need this to
+-- elaborate at all; it previously had no MeasureSpace instance.
+noncomputable instance : MeasureTheory.MeasureSpace PoreSpace where
+  volume := MeasureTheory.Measure.comap Subtype.val MeasureTheory.volume
+
 -- Wavefunction on the pore (L² integrable)
 def Wavefunction : Type := PoreSpace → ℂ
 
--- Operator type: Linear transformation on wavefunctions
-structure LinearOperator where
-  apply : Wavefunction → Wavefunction
-  linearity : ∀ (ψ₁ ψ₂ : Wavefunction) (a b : ℂ),
-    apply (fun r => a * ψ₁ r + b * ψ₂ r) = fun r => a * apply ψ₁ r + b * apply ψ₂ r
+-- Operator type: a transformation on wavefunctions. Earlier drafts bundled
+-- a `linearity` proof obligation here, but FoldingOp (below) is explicitly
+-- nonlinear, so that obligation was false and unprovable for it. None of
+-- the theorems in this file rely on operators actually being linear, so
+-- operators are plain functions with no bundled proof.
+def Operator : Type := Wavefunction → Wavefunction
 
 -- Probability density
 noncomputable def Probability (ψ : Wavefunction) (r : PoreSpace) : ℝ :=
@@ -65,30 +115,21 @@ noncomputable def Probability (ψ : Wavefunction) (r : PoreSpace) : ℝ :=
 -- ============================================================================
 
 -- Constraint operator: aperture gate (step function)
-noncomputable def ConstraintOp (r_aperture : ℝ) : LinearOperator :=
-  { apply := fun ψ r => if r.val ≤ r_aperture then ψ r else 0
-        linearity := by intros; funext r; split_ifs <;> ring }
+noncomputable def ConstraintOp (r_aperture : ℝ) : Operator :=
+  fun ψ r => if r.val ≤ r_aperture then ψ r else 0
 
 -- Folding operator: nonlinear bifurcation (self-interaction)
-def FoldingOp (lam : ℂ) : LinearOperator :=
-  { apply := fun ψ r => ψ r + lam * (Complex.abs (ψ r))^2 * ψ r
-    linearity := by
-      intros ψ₁ ψ₂ a b
-      simp [Pi.add_apply, Pi.mul_apply]
-      ring }
+def FoldingOp (lam : ℂ) : Operator :=
+  fun ψ r => ψ r + lam * (Complex.abs (ψ r))^2 * ψ r
 
 -- Commutator: [A, B] = AB - BA
-def Commutator (A B : LinearOperator) : LinearOperator :=
-  { apply := fun ψ r => A.apply (B.apply ψ) r - B.apply (A.apply ψ) r
-    linearity := by
-      intros ψ₁ ψ₂ a b
-      simp [LinearOperator.apply, Pi.add_apply, Pi.mul_apply]
-      ring }
+def Commutator (A B : Operator) : Operator :=
+  fun ψ r => A (B ψ) r - B (A ψ) r
 
 -- Theorem 1: Non-commutativity
 theorem NonCommutativity (r_aperture : ℝ) (lam : ℂ) :
   ∃ (ψ : Wavefunction),
-    (Commutator (ConstraintOp r_aperture) (FoldingOp lam)).apply ψ ≠ fun _ => 0 :=
+    Commutator (ConstraintOp r_aperture) (FoldingOp lam) ψ ≠ fun _ => 0 :=
 by
   -- Construct a test wavefunction: Gaussian centered at r_aperture/2
   let ψ : Wavefunction := fun r =>
@@ -97,8 +138,7 @@ by
   use ψ
 
   -- Compute commutator at boundary r = r_aperture
-  unfold Commutator ConstraintOp FoldingOp
-  simp [LinearOperator.apply]
+  simp only [Commutator, ConstraintOp, FoldingOp]
 
   -- At r slightly below aperture: both K and F apply
   -- At r slightly above aperture: only F applies in ψ, but K kills it
@@ -143,22 +183,21 @@ by
 def IsAromaticRegion (r : PoreSpace) : Prop := r.val > 5
 
 -- Selectivity: fraction of wavefunction in aromatic region
-def Selectivity (ψ : Wavefunction) : ℝ :=
+noncomputable def Selectivity (ψ : Wavefunction) : ℝ :=
   let aromatic_prob := ∫ (r : PoreSpace), if IsAromaticRegion r then Probability ψ r else 0
   let total_prob := ∫ (r : PoreSpace), Probability ψ r
   aromatic_prob / total_prob
 
 -- ZSM-5 operator sequence: C→K→F→U
-def ZSM5Sequence (C K F U : LinearOperator) : LinearOperator :=
-  { apply := fun ψ => U.apply (F.apply (K.apply (C.apply ψ)))
-    linearity := by intros; simp [LinearOperator.apply]; ring }
+def ZSM5Sequence (C K F U : Operator) : Operator :=
+  fun ψ => U (F (K (C ψ)))
 
 -- Theorem 2: ZSM-5 produces linear products
-theorem ZSM5_SupportsAromatics (C K F U : LinearOperator)
+theorem ZSM5_SupportsAromatics (C K F U : Operator)
     (r_aperture : ℝ) (h_zsm5 : K = ConstraintOp r_aperture) (h_r : r_aperture = 4.5) :
   ∀ (ψ₀ : Wavefunction),
-    let ψ_final := (ZSM5Sequence C K F U).apply ψ₀
-    Selectivity ψ_final ≈ 0 :=
+    let ψ_final := ZSM5Sequence C K F U ψ₀
+    Selectivity ψ_final = 0 :=
 by
   intro ψ₀
 
@@ -166,10 +205,10 @@ by
   rw [h_zsm5, h_r] at *
 
   -- After C: wavefunction becomes localized
-  let ψ₁ := C.apply ψ₀
+  let ψ₁ := C ψ₀
 
   -- After K: support restricted to r < 4.5
-  let ψ₂ := (ConstraintOp 4.5).apply ψ₁
+  let ψ₂ := (ConstraintOp 4.5) ψ₁
 
   -- After K, no amplitude at r > 5 (aromatic region)
   have no_aromatics : ∀ r : PoreSpace, r.val > 5 → ψ₂ r = 0 := by
@@ -202,15 +241,14 @@ by
 -- ============================================================================
 
 -- MCM-22 operator sequence: C→F→K→U
-def MCM22Sequence (C F K U : LinearOperator) : LinearOperator :=
-  { apply := fun ψ => U.apply (K.apply (F.apply (C.apply ψ)))
-    linearity := by intros; simp [LinearOperator.apply]; ring }
+def MCM22Sequence (C F K U : Operator) : Operator :=
+  fun ψ => U (K (F (C ψ)))
 
 -- Theorem 3: MCM-22 permits aromatic formation
-theorem MCM22_PermitsAromatics (C F K U : LinearOperator)
+theorem MCM22_PermitsAromatics (C F K U : Operator)
     (r_aperture : ℝ) (h_mcm22 : K = ConstraintOp r_aperture) (h_r : r_aperture = 6.0) :
   ∃ (ψ₀ : Wavefunction),
-    let ψ_final := (MCM22Sequence C F K U).apply ψ₀
+    let ψ_final := MCM22Sequence C F K U ψ₀
     Selectivity ψ_final > 0.2 :=
 by
   -- Use a supercage-spanning wavefunction
@@ -222,15 +260,15 @@ by
   rw [h_mcm22, h_r] at *
 
   -- After C: localization
-  let ψ₁ := C.apply ψ₀
+  let ψ₁ := C ψ₀
 
   -- After F: nonlinear spreading (wavefunction broadens)
-  let ψ₂ := (FoldingOp 1).apply ψ₁
+  let ψ₂ := (FoldingOp 1) ψ₁
 
   -- F does NOT restrict support; wavefunction spreads toward r ≈ 5-6 Å (aromatic region)
 
   -- After K: constraint at r = 6.0
-  let ψ₃ := (ConstraintOp 6.0).apply ψ₂
+  let ψ₃ := (ConstraintOp 6.0) ψ₂
 
   -- But aromatic amplitudes in [4.5, 6.0] are ALREADY FORMED before K is applied
   -- K traps them, not prevents them
@@ -258,11 +296,11 @@ by
 -- ============================================================================
 
 theorem MainTheorem_OperatorOrderDeterminesSelectivity
-    (C K F U : LinearOperator) (r_aperture : ℝ) :
+    (C K F U : Operator) (r_aperture : ℝ) :
   (∃ (ψ₀ : Wavefunction),
-    Selectivity ((ZSM5Sequence C K F U).apply ψ₀) ≈ 0) ∧
+    Selectivity (ZSM5Sequence C K F U ψ₀) = 0) ∧
   (∃ (ψ₀ : Wavefunction),
-    Selectivity ((MCM22Sequence C F K U).apply ψ₀) > 0.2) :=
+    Selectivity (MCM22Sequence C F K U ψ₀) > 0.2) :=
 by
   constructor
   · -- ZSM-5 case
@@ -297,8 +335,8 @@ theorem ContactMorphismScaling (ψ₀ : Wavefunction) :
   ∃ (φ : Wavefunction → Wavefunction) (k : ℝ),
     -- MCM-22 dynamics equal scaled ZSM-5 dynamics
     ∀ (t : ℝ),
-      (Selectivity ((MCM22Sequence id (FoldingOp 1) (ConstraintOp 6) id).apply ψ₀) : ℝ) =
-      k * (Selectivity ((ZSM5Sequence id (ConstraintOp 4.5) (FoldingOp 1) id).apply ψ₀) : ℝ) :=
+      (Selectivity (MCM22Sequence id (FoldingOp 1) (ConstraintOp 6) id ψ₀) : ℝ) =
+      k * (Selectivity (ZSM5Sequence id (ConstraintOp 4.5) (FoldingOp 1) id ψ₀) : ℝ) :=
 by
   use ContactMorphism (6.0 / 4.5), (6.0 / 4.5)
   intro t
@@ -367,11 +405,11 @@ theorem Selectivity_Bijection_With_OperatorOrder :
     -- f maps operator orders {0: C→K→F→U, 1: C→F→K→U} to selectivities
     Function.Injective f ∧
 
-    -- Order 0 (C→K→F→U) maps to S ≈ 0
-    f ⟨0, by norm_num⟩ ≈ 0 ∧
+    -- Order 0 (C→K→F→U) maps to S = 0
+    f ⟨0, by norm_num⟩ = 0 ∧
 
-    -- Order 1 (C→F→K→U) maps to S ≈ 0.35
-    f ⟨1, by norm_num⟩ ≈ 0.35 :=
+    -- Order 1 (C→F→K→U) maps to S = 0.35
+    f ⟨1, by norm_num⟩ = 0.35 :=
 by
   use fun ord => if ord.val = 0 then 0 else 0.35
 
@@ -410,21 +448,28 @@ CORRECTED 2026-07-10: this note previously said "This file contains PROVEN
 Lean 4 theorems" and listed Selectivity_Bijection as needing a sorry it does
 not actually contain in the code above, while failing to flag that
 MainTheorem's "fully proven" status is undercut by a transitive dependency.
-Replaced with an accounting checked directly against the source above
-(still not kernel-compiled -- "no explicit `sorry` in this theorem's own
-tactic block" is necessary but not sufficient for "proven"; the tactics
-could still fail to typecheck).
+Replaced with an accounting checked directly against the source above.
+
+CORRECTED 2026-07-11: the accounting below was, until now, still only a
+visual sorry-audit ("no explicit sorry in this theorem's own tactic block"
+is necessary but not sufficient for "proven" -- the tactics could still
+fail to typecheck). It has now actually been run through CI. Real,
+non-sorry kernel errors were found and fixed (see the file header above:
+a missing comma, an unprovable false "linearity" obligation on the
+explicitly-nonlinear FoldingOp, `≈` not resolving for ℝ, and a missing
+MeasureSpace instance). The per-theorem sorry breakdown below is otherwise
+unchanged -- fixing compile errors did not remove or add any `sorry`.
 
 Contains an explicit `sorry` in its own body:
-  • MCM22_PermitsAromatics / Theorem 3 (lines ~223, 229) -- two sorries,
-    both standing in for numerical integral bounds from the DNLS simulation
-  • ContactMorphism def + ContactMorphismScaling / Theorem 5 (lines ~270,
-    291) -- one in the helper definition (domain-boundedness), one in the
-    theorem itself (Sasaki-metric contact geometry)
-  • Prediction1_DRIFTS_Sequence (line ~311) -- depends on DNLS time-stepping
-    output not derived in-file
-  • Prediction3_AcidSiteRelocation (line ~336) -- depends on an unformalized
-    model of acid-site relocation effects
+  • MCM22_PermitsAromatics / Theorem 3 (two sorries, standing in for
+    numerical integral bounds from the DNLS simulation)
+  • ContactMorphism def + ContactMorphismScaling / Theorem 5 (one in the
+    helper definition (domain-boundedness), one in the theorem itself
+    (Sasaki-metric contact geometry))
+  • Prediction1_DRIFTS_Sequence (depends on DNLS time-stepping output not
+    derived in-file)
+  • Prediction3_AcidSiteRelocation (depends on an unformalized model of
+    acid-site relocation effects)
 
 No explicit `sorry` in its own body:
   • NonCommutativity / Theorem 1
@@ -443,9 +488,12 @@ No explicit `sorry` in its own body:
     `sorry`. Treat it as open until Theorem 3 closes.
 
 Honest summary: 3 of 7 theorems (1, 2, 7) plus one of Theorem 6's three
-predictions are free of explicit sorries in their own bodies. None of this
-has been kernel-checked in any session so far -- treat all of it as
-"passed a visual sorry-audit," not "verified."
+predictions are free of explicit sorries in their own bodies -- and, as of
+2026-07-11, that claim is checked by CI running the real Lean kernel on
+every push (see .github/workflows/verify-proofs.yml, "Build ZeoliteProofs"
+step), not asserted by eye. Whether that step is currently gating or
+non-gating in CI should be read directly off that workflow file rather than
+assumed from this comment, since the two can drift out of sync.
 
 Estimated effort to complete all proofs:
   • Bochner integral integration: 1-2 weeks
@@ -454,12 +502,6 @@ Estimated effort to complete all proofs:
 
   Total: ~4-8 weeks with a Mathlib expert (unverified estimate, not re-derived
   in this correction pass)
-
-CORRECTED: this note previously said "the current file is 75% complete."
-By explicit-sorry count that's closer to 3/7 theorems plus one of three
-predictions sorry-free -- call it roughly 45%, not 75%, and that's before
-kernel-checking any of it. Use the per-theorem breakdown above rather than
-a single percentage; it's the part that's actually checkable by reading.
 
 The algebraic proofs (ALGEBRAIC_PROOFS_ALL_7_THEOREMS.md) are the primary
 citable derivations for now -- but note they have their own open gaps (e.g.
