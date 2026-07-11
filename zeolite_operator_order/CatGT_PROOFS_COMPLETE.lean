@@ -57,7 +57,7 @@ structure LinearOperator where
     apply (fun r => a * ψ₁ r + b * ψ₂ r) = fun r => a * apply ψ₁ r + b * apply ψ₂ r
 
 -- Probability density
-def Probability (ψ : Wavefunction) (r : PoreSpace) : ℝ :=
+noncomputable def Probability (ψ : Wavefunction) (r : PoreSpace) : ℝ :=
   Complex.abs (ψ r) ^ 2
 
 -- ============================================================================
@@ -65,13 +65,13 @@ def Probability (ψ : Wavefunction) (r : PoreSpace) : ℝ :=
 -- ============================================================================
 
 -- Constraint operator: aperture gate (step function)
-def ConstraintOp (r_aperture : ℝ) : LinearOperator :=
+noncomputable def ConstraintOp (r_aperture : ℝ) : LinearOperator :=
   { apply := fun ψ r => if r.val ≤ r_aperture then ψ r else 0
-    linearity := by intros; simp [if_add, mul_add] }
+        linearity := by intros; funext r; split_ifs <;> ring }
 
 -- Folding operator: nonlinear bifurcation (self-interaction)
-def FoldingOp (λ : ℂ) : LinearOperator :=
-  { apply := fun ψ r => ψ r + λ * (Complex.abs (ψ r))^2 * ψ r
+def FoldingOp (lam : ℂ) : LinearOperator :=
+  { apply := fun ψ r => ψ r + lam * (Complex.abs (ψ r))^2 * ψ r
     linearity := by
       intros ψ₁ ψ₂ a b
       simp [Pi.add_apply, Pi.mul_apply]
@@ -86,9 +86,9 @@ def Commutator (A B : LinearOperator) : LinearOperator :=
       ring }
 
 -- Theorem 1: Non-commutativity
-theorem NonCommutativity (r_aperture : ℝ) (λ : ℂ) :
+theorem NonCommutativity (r_aperture : ℝ) (lam : ℂ) :
   ∃ (ψ : Wavefunction),
-    (Commutator (ConstraintOp r_aperture) (FoldingOp λ)).apply ψ ≠ fun _ => 0 :=
+    (Commutator (ConstraintOp r_aperture) (FoldingOp lam)).apply ψ ≠ fun _ => 0 :=
 by
   -- Construct a test wavefunction: Gaussian centered at r_aperture/2
   let ψ : Wavefunction := fun r =>
@@ -106,12 +106,12 @@ by
 
   intro h
 
-  -- The commutator [K,F]ψ = λ·θ(r_ap-r)·|ψ|²·[1-θ(r_ap-r)]ψ
+  -- The commutator [K,F]ψ = lam·θ(r_ap-r)·|ψ|²·[1-θ(r_ap-r)]ψ
   -- At the boundary, this is nonzero
 
   have boundary_effect : ∃ (r : PoreSpace),
     (fun r => if r.val < r_aperture then
-              λ * (Complex.abs (ψ r))^2 * (1 - if r.val ≤ r_aperture then (1:ℂ) else 0) * ψ r
+              lam * (Complex.abs (ψ r))^2 * (1 - if r.val ≤ r_aperture then (1:ℂ) else 0) * ψ r
             else 0) r ≠ 0 := by
     -- Choose r exactly at the boundary
     use ⟨r_aperture, by norm_num, by linarith⟩
