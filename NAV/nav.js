@@ -164,7 +164,7 @@
                  '<div class="io-spacer"></div>',
                  '<div style="position:relative;">',
                    '<button id="io-lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Select language">',
-                     '<span id="io-lang-flag">' + getCurrentFlag() + '</span>',
+                     '<span id="io-lang-flag" class="notranslate" translate="no">' + getCurrentFlag() + '</span>',
                      '<span id="io-lang-label">' + getCurrentLabel() + '</span>',
                      '<span style="opacity:.5">v</span>',
                    '</button>',
