@@ -16,6 +16,24 @@ name: Verify proofs
 # This catches real regressions (typos, broken proofs, new errors)
 # while accepting the currently-documented, disclosed sorries.
 # Non-gating: ZeoliteV2Stub (explicit stub, every body is sorry).
+#
+# REINSTATED 2026-07-11: earlier revisions of this file (see commits
+# 11e6cc7, bd61b75) printed each theorem's axiom dependencies via
+# `#print axioms` after a successful build -- this is how a "closed ·
+# 0 sorry" claim in README.md gets checked at the kernel level instead
+# of by eye (a theorem with no sorry in its own body can still inherit
+# `sorryAx` transitively from something it calls, which only
+# `#print axioms` surfaces). That step was dropped somewhere between
+# then and the 2026-07-11 "stray Lean source" incident (see note above)
+# and README.md kept claiming CI does this after it no longer did.
+# Restored below, one step per gating target, with the theorem names
+# matching the files' current (post-restatement) content -- the old
+# CatGT list referenced `reeb_orbit_is_integral`, which no longer
+# exists in CatGT_Main.lean, so that list has been corrected too.
+# These steps are informational only (never fail the build): a
+# `sorryAx` in the output is expected and fine for e.g. ZeoliteProofs'
+# six documented sorries -- the point is to make that fact visible in
+# every CI log, not to gate on it.
 
 on:
   push:
@@ -44,7 +62,40 @@ jobs:
         with:
           build-args: "CatGT Theorem53"
 
+      - name: Print axioms - CatGT
+        run: |
+          cat > /tmp/CheckCatGT.lean <<'LEAN'
+          import CatGT.CatGT_Main
+          open CatGT
+          #print axioms criticalRadius_pos
+          #print axioms criticalRadius_antitone
+          #print axioms helical_selectivity
+          #print axioms selectivityFactor_eq
+          #print axioms ipr_le_one
+          #print axioms ipr_pos
+          #print axioms ipr_between_zero_and_one
+          #print axioms catgt_dm3_transport
+          #print axioms ensemble_scaling_forms_diverge
+          LEAN
+          lake env lean /tmp/CheckCatGT.lean
+
+      - name: Print axioms - Theorem53
+        run: |
+          cat > /tmp/CheckTheorem53.lean <<'LEAN'
+          import PrincipiaOrthogona1.Theorem53NonCommutativity
+          open Theorem53NonCommutativity
+          #print axioms foldMap_not_odd
+          #print axioms nonCommutativity_instance
+          #print axioms nonCommutativity_nondegenerate
+          #print axioms commuting_instance
+          #print axioms exists_order_dependent
+          #print axioms not_forall_order_dependent
+          #print axioms thm_5_3_is_exactly_existential
+          LEAN
+          lake env lean /tmp/CheckTheorem53.lean
+
       - name: Build ZeoliteProofs (gated on real errors; sorries are documented, not failures)
+        id: build_zeolite
         run: |
           set -o pipefail
           lake build ZeoliteProofs 2>&1 | tee zeolite_build.log
@@ -59,6 +110,24 @@ jobs:
           fi
           echo "Build reported failure only due to sorry warnings (Lean's standard nonzero exit for incomplete proofs) -- treating as pass."
           exit 0
+
+      - name: Print axioms - ZeoliteProofs
+        if: steps.build_zeolite.outcome == 'success'
+        run: |
+          cat > /tmp/CheckZeoliteProofs.lean <<'LEAN'
+          import zeolite_operator_order.CatGT_PROOFS_COMPLETE
+          open CatGT
+          #print axioms NonCommutativity
+          #print axioms ZSM5_SupportsAromatics
+          #print axioms MCM22_PermitsAromatics
+          #print axioms MainTheorem_OperatorOrderDeterminesSelectivity
+          #print axioms ContactMorphismScaling
+          #print axioms Prediction1_DRIFTS_Sequence
+          #print axioms Prediction2_CokeSpatialSegregation
+          #print axioms Prediction3_AcidSiteRelocation
+          #print axioms Selectivity_Bijection_With_OperatorOrder
+          LEAN
+          lake env lean /tmp/CheckZeoliteProofs.lean
 
       - name: Build ZeoliteV2Stub (non-gating, expected to fail)
         continue-on-error: true
