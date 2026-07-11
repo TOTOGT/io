@@ -142,7 +142,16 @@ def Commutator (A B : Operator) : Operator :=
   fun ψ r => A (B ψ) r - B (A ψ) r
 
 -- Theorem 1: Non-commutativity
-theorem NonCommutativity (r_aperture : ℝ) (lam : ℂ) :
+-- ADDED 2026-07-11: `r_aperture` was universally quantified with no bound,
+-- but the proof constructs a PoreSpace point AT r_aperture, which needs
+-- 0 ≤ r_aperture ≤ 10 -- otherwise `by norm_num` / `by linarith` have
+-- nothing to prove from. This was never caught because the file had never
+-- compiled this far before. Physically apertures live inside the pore
+-- (every other theorem in this file pins r_aperture to a specific value
+-- like 4.5 or 6.0, well within [0,10]), so restricting the range here
+-- matches the model rather than changing it.
+theorem NonCommutativity (r_aperture : ℝ) (lam : ℂ)
+    (h_range : 0 ≤ r_aperture ∧ r_aperture ≤ 10) :
   ∃ (ψ : Wavefunction),
     Commutator (ConstraintOp r_aperture) (FoldingOp lam) ψ ≠ fun _ => 0 :=
 by
@@ -169,11 +178,11 @@ by
               lam * (Complex.abs (ψ r))^2 * (1 - if r.val ≤ r_aperture then (1:ℂ) else 0) * ψ r
             else 0) r ≠ 0 := by
     -- Choose r exactly at the boundary
-    use ⟨r_aperture, by norm_num, by linarith⟩
+    use ⟨r_aperture, h_range.1, h_range.2⟩
     simp [if_pos, if_neg]
 
     -- ψ at boundary is nonzero (Gaussian never zero)
-    have gauss_nonzero : ψ ⟨r_aperture, by norm_num, by linarith⟩ ≠ 0 := by
+    have gauss_nonzero : ψ ⟨r_aperture, h_range.1, h_range.2⟩ ≠ 0 := by
       simp [ψ]
       norm_num [Complex.exp_ne_zero]
 
