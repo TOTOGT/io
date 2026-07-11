@@ -2,7 +2,7 @@
 
 _repo: `io` — imaginary origin_
 
-Lean 4 / Mathlib4 formalization of the operator-chain framework applied to
+Lean 4 / Mathlib4 formalization of the dm3 operator-chain framework applied to
 heterogeneous catalysis, with zeolite selectivity as the worked instance.
 Part of the [Principia Orthogona](https://github.com/TOTOGT/AXLE) series.
 
