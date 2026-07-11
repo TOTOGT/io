@@ -63,6 +63,21 @@
 -- over. This pass is only about making the file's sorry/error count
 -- verifiable BY THE KERNEL instead of by eye.
 --
+--   5. Getting past errors 1-4 surfaced a SEVENTH, previously-hidden gap:
+--      ZSM5_SupportsAromatics (Theorem 2) proves a fact about ψ₂ (the
+--      wavefunction right after C,K are applied), then tries to conclude
+--      Selectivity is 0 for ψ_final = U(F(ψ₂)) -- the state after the FULL
+--      C→K→F→U sequence. Those are not the same wavefunction, and F, U are
+--      universally-quantified arbitrary operators with no constraint
+--      preventing them from moving amplitude back into the aromatic region.
+--      As stated, this theorem is not provable by this argument (possibly
+--      not true at all without extra hypotheses on F/U). This was never
+--      caught before because the file never compiled far enough to reach
+--      it. Left as an explicit `sorry` with a note in-line rather than
+--      silently forced through -- this is a modeling question (what should
+--      F, U be assumed to satisfy?), not a tactic gap, and needs a call
+--      from whoever owns the physics, not a kernel-check pass.
+--
 -- Author: Pablo Nogueira Grossi
 -- Date: June 5, 2026 (header corrected 2026-07-10, 2026-07-11)
 -- Status: PARTIAL -- see footer "Theorems with sorry" / "Theorems FULLY
@@ -119,7 +134,7 @@ noncomputable def ConstraintOp (r_aperture : ℝ) : Operator :=
   fun ψ r => if r.val ≤ r_aperture then ψ r else 0
 
 -- Folding operator: nonlinear bifurcation (self-interaction)
-def FoldingOp (lam : ℂ) : Operator :=
+noncomputable def FoldingOp (lam : ℂ) : Operator :=
   fun ψ r => ψ r + lam * (Complex.abs (ψ r))^2 * ψ r
 
 -- Commutator: [A, B] = AB - BA
@@ -138,7 +153,7 @@ by
   use ψ
 
   -- Compute commutator at boundary r = r_aperture
-  simp only [Commutator, ConstraintOp, FoldingOp]
+  unfold Commutator ConstraintOp FoldingOp
 
   -- At r slightly below aperture: both K and F apply
   -- At r slightly above aperture: only F applies in ψ, but K kills it
@@ -212,29 +227,33 @@ by
 
   -- After K, no amplitude at r > 5 (aromatic region)
   have no_aromatics : ∀ r : PoreSpace, r.val > 5 → ψ₂ r = 0 := by
-    intros r hr
-    unfold ConstraintOp
-    simp [if_neg]
-    linarith
+    intro r hr
+    show (if r.val ≤ (4.5:ℝ) then ψ₁ r else 0) = 0
+    rw [if_neg (by linarith)]
 
   -- Therefore selectivity is zero
   unfold Selectivity
-  simp [Probability, IsAromaticRegion]
+  simp only [Probability, IsAromaticRegion]
 
   -- The aromatic contribution is zero
   have aromatic_zero : (∫ (r : PoreSpace),
     if r.val > 5 then Complex.abs (ψ₂ r) ^ 2 else 0) = 0 := by
-    apply integral_eq_zero_of_ae
-    apply ae_of_all
+    apply MeasureTheory.integral_eq_zero_of_ae
+    apply MeasureTheory.ae_of_all
     intro r
     by_cases h : r.val > 5
     · simp [h, no_aromatics r h]
     · simp [h]
 
-  rw [aromatic_zero]
-
-  -- Therefore selectivity = 0 / total = 0
-  norm_num
+  -- NOTE (2026-07-11): ψ_final = U (F ψ₂), not ψ₂ itself -- see header/commit
+  -- message. aromatic_zero is a true fact about ψ₂ (right after C,K), but
+  -- the goal here is about Selectivity of the FULL C→K→F→U output. Without
+  -- a hypothesis constraining F and U (e.g. that they don't move amplitude
+  -- into r > 5), this `rw` does not close the goal -- flagging with `sorry`
+  -- rather than forcing a false rewrite, pending a decision on how to state
+  -- this theorem honestly (add hypotheses on F/U, or restate the claim to
+  -- be about the post-C,K intermediate state only).
+  sorry
 
 -- ============================================================================
 -- THEOREM 3: MCM-22 SELECTIVITY (C→F→K→U PERMITS AROMATICS)
@@ -461,6 +480,13 @@ MeasureSpace instance). The per-theorem sorry breakdown below is otherwise
 unchanged -- fixing compile errors did not remove or add any `sorry`.
 
 Contains an explicit `sorry` in its own body:
+  • ZSM5_SupportsAromatics / Theorem 2 -- ADDED 2026-07-11. The proof
+    establishes a fact about the intermediate wavefunction after C,K only,
+    then needed it to hold for the wavefunction after the full C→K→F→U
+    sequence. Those differ, and F, U are unconstrained, so the argument
+    does not close. See header note 5 above -- this is a modeling gap
+    (missing hypotheses on F/U), not a tactic failure, surfaced only now
+    that the file compiles far enough to reach it.
   • MCM22_PermitsAromatics / Theorem 3 (two sorries, standing in for
     numerical integral bounds from the DNLS simulation)
   • ContactMorphism def + ContactMorphismScaling / Theorem 5 (one in the
@@ -473,27 +499,29 @@ Contains an explicit `sorry` in its own body:
 
 No explicit `sorry` in its own body:
   • NonCommutativity / Theorem 1
-  • ZSM5_SupportsAromatics / Theorem 2
   • Prediction2_CokeSpatialSegregation (one of Theorem 6's three parts --
     the other two, Predictions 1 and 3, do contain sorry, so "Theorem 6" as
     a whole is not sorry-free)
   • Selectivity_Bijection_With_OperatorOrder / Theorem 7
   • MainTheorem_OperatorOrderDeterminesSelectivity / Theorem 4 -- BUT this
-    one needs a caveat, not a checkmark: its proof directly invokes
-    MCM22_PermitsAromatics (Theorem 3), which contains two sorries. A
-    theorem that calls a sorry-containing theorem inherits `sorryAx` in its
-    dependency graph -- `#print axioms MainTheorem_...` would show this if
-    compiled. So Theorem 4 is not actually sorry-free once transitive
-    dependencies count, even though nothing in its own tactic block says
-    `sorry`. Treat it as open until Theorem 3 closes.
+    one needs a caveat, not a checkmark: its proof directly invokes BOTH
+    ZSM5_SupportsAromatics (Theorem 2, now sorried, see above) and
+    MCM22_PermitsAromatics (Theorem 3, two sorries). A theorem that calls a
+    sorry-containing theorem inherits `sorryAx` in its dependency graph --
+    `#print axioms MainTheorem_...` would show this if compiled. So Theorem
+    4 is not actually sorry-free once transitive dependencies count, even
+    though nothing in its own tactic block says `sorry`. Treat it as open
+    until Theorems 2 and 3 close.
 
-Honest summary: 3 of 7 theorems (1, 2, 7) plus one of Theorem 6's three
+Honest summary: 2 of 7 theorems (1, 7) plus one of Theorem 6's three
 predictions are free of explicit sorries in their own bodies -- and, as of
 2026-07-11, that claim is checked by CI running the real Lean kernel on
 every push (see .github/workflows/verify-proofs.yml, "Build ZeoliteProofs"
-step), not asserted by eye. Whether that step is currently gating or
-non-gating in CI should be read directly off that workflow file rather than
-assumed from this comment, since the two can drift out of sync.
+step), not asserted by eye. Getting the file to actually compile is what
+surfaced the Theorem 2 gap above -- a strictly more honest (if lower)
+count than the pre-kernel-check estimate. Whether that CI step is currently
+gating or non-gating should be read directly off the workflow file rather
+than assumed from this comment, since the two can drift out of sync.
 
 Estimated effort to complete all proofs:
   • Bochner integral integration: 1-2 weeks
