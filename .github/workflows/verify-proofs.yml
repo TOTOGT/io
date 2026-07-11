@@ -20,7 +20,7 @@ jobs:
       # Installs elan, restores the Mathlib build cache, and runs
       # lake build for the gating targets. A failure in any of
       # CatGT / Theorem53 / ZeoliteProofs fails the workflow.
-      - uses: leanprover-community/lean-action@v1
+      - uses: leanprover/lean-action@v1
         with:
           build-args: "CatGT Theorem53 ZeoliteProofs"
 
