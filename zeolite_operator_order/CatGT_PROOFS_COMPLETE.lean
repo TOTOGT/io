@@ -64,19 +64,51 @@
 -- verifiable BY THE KERNEL instead of by eye.
 --
 --   5. Getting past errors 1-4 surfaced a SEVENTH, previously-hidden gap:
---      ZSM5_SupportsAromatics (Theorem 2) proves a fact about ψ₂ (the
---      wavefunction right after C,K are applied), then tries to conclude
---      Selectivity is 0 for ψ_final = U(F(ψ₂)) -- the state after the FULL
---      C→K→F→U sequence. Those are not the same wavefunction, and F, U are
---      universally-quantified arbitrary operators with no constraint
---      preventing them from moving amplitude back into the aromatic region.
---      As stated, this theorem is not provable by this argument (possibly
---      not true at all without extra hypotheses on F/U). This was never
---      caught before because the file never compiled far enough to reach
---      it. Left as an explicit `sorry` with a note in-line rather than
---      silently forced through -- this is a modeling question (what should
---      F, U be assumed to satisfy?), not a tactic gap, and needs a call
---      from whoever owns the physics, not a kernel-check pass.
+--      ZSM5_SupportsAromatics (Theorem 2) and MCM22_PermitsAromatics
+--      (Theorem 3) each proved a fact about the state right after C,K (resp.
+--      C,F,K) are applied, then tried to conclude something about the
+--      selectivity of the FULL C→K→F→U (resp. C→F→K→U) output. Those are
+--      different wavefunctions, and the dropped operator (F,U for Thm 2; U
+--      for Thm 3) was universally quantified with no constraint preventing
+--      it from moving amplitude back into the aromatic region -- so the
+--      original claims didn't follow from the proofs given. RESTATED
+--      2026-07-11 (owner's call): both theorems now claim exactly what's
+--      proved -- selectivity of the intermediate state right after the
+--      constraint operator fires, not the full 4-operator sequence. F/U
+--      are dropped from the statements rather than kept as decorative,
+--      unused parameters. MainTheorem was updated to match.
+--
+--   6. A further, more serious issue surfaced once Theorem 1 itself
+--      (NonCommutativity) got past its own compile errors: the specific
+--      operator definitions in THIS file make the theorem's own claim
+--      false. ConstraintOp and FoldingOp are both literally pointwise --
+--      each acts on ψ(r) using only the value at that same r, with no
+--      coupling to neighboring points. For any pointwise "kill-or-pass"
+--      gate composed with any pointwise map that sends 0 to 0 (FoldingOp
+--      does: F(0) = 0 + lam*|0|^2*0 = 0), the two operators commute
+--      identically -- there is no r at which [K,F]ψ(r) can be nonzero, so
+--      `boundary_effect` was trying to prove a genuinely false statement,
+--      not failing on a wrong tactic or a wrong witness point.
+--      Cross-checked directly against the author's own published paper
+--      (zeolite_selectivity_final_v2_1.pdf): there, the Fold operator's
+--      physical content is the discrete nonlinear Schrödinger equation --
+--      i dψ_n/dt = -J(ψ_{n+1}+ψ_{n-1}) - λ|ψ_n|²ψ_n -- which explicitly
+--      couples NEIGHBORING lattice sites. That coupling is exactly what a
+--      pointwise Lean encoding of F drops, and exactly what would be needed
+--      for K and F to actually fail to commute. The paper's own citable
+--      Lean formalisation (CatGT_Main.lean + DustyPlasma.lean, see AXLE
+--      repo) does not attempt this operator-algebra proof at all -- it
+--      verifies scalar facts (positivity, monotonicity, the r*(λ)=√(J/λ)
+--      identity) and states the deep geometric claim (Theorem 3, Global
+--      Contactomorphism) as an explicitly named OPEN CONJECTURE rather than
+--      forcing it through. This file (CatGT_PROOFS_COMPLETE.lean) predates
+--      or diverges from that more honest scoping. NOT fixed in this pass --
+--      a correct fix means reformalizing FoldingOp as a genuine multi-site
+--      DNLS-style operator (matching the file's own footer estimate of
+--      weeks of work), not a tactic change. Left as-is with h_range added
+--      only to unblock the OTHER (unrelated) unconstrained-r_aperture bug;
+--      NonCommutativity is not currently proved and, as literally stated
+--      with these operator definitions, cannot be.
 --
 -- Author: Pablo Nogueira Grossi
 -- Date: June 5, 2026 (header corrected 2026-07-10, 2026-07-11)
@@ -150,54 +182,21 @@ def Commutator (A B : Operator) : Operator :=
 -- (every other theorem in this file pins r_aperture to a specific value
 -- like 4.5 or 6.0, well within [0,10]), so restricting the range here
 -- matches the model rather than changing it.
+-- NOTE (2026-07-11): see header item 6 -- with ConstraintOp and FoldingOp
+-- both literally pointwise (act on ψ(r) using only the value at r, and
+-- FoldingOp(0) = 0), K and F provably commute everywhere, so this
+-- statement is false for these operator definitions, not just hard to
+-- prove. `sorry`d rather than left with tactics that can never close a
+-- false goal. A real proof needs FoldingOp reformalized as a genuine
+-- multi-site DNLS-style operator (coupling neighboring lattice points, per
+-- the author's own published model) -- see header note 6 for the full
+-- explanation and citation.
 theorem NonCommutativity (r_aperture : ℝ) (lam : ℂ)
     (h_range : 0 ≤ r_aperture ∧ r_aperture ≤ 10) :
   ∃ (ψ : Wavefunction),
     Commutator (ConstraintOp r_aperture) (FoldingOp lam) ψ ≠ fun _ => 0 :=
 by
-  -- Construct a test wavefunction: Gaussian centered at r_aperture/2
-  let ψ : Wavefunction := fun r =>
-    Complex.exp (-(r.val - r_aperture/2)^2 / (2 * 0.5^2))
-
-  use ψ
-
-  -- Compute commutator at boundary r = r_aperture
-  unfold Commutator ConstraintOp FoldingOp
-
-  -- At r slightly below aperture: both K and F apply
-  -- At r slightly above aperture: only F applies in ψ, but K kills it
-  -- This creates a boundary discontinuity that makes [K,F] ≠ 0
-
-  intro h
-
-  -- The commutator [K,F]ψ = lam·θ(r_ap-r)·|ψ|²·[1-θ(r_ap-r)]ψ
-  -- At the boundary, this is nonzero
-
-  have boundary_effect : ∃ (r : PoreSpace),
-    (fun r => if r.val < r_aperture then
-              lam * (Complex.abs (ψ r))^2 * (1 - if r.val ≤ r_aperture then (1:ℂ) else 0) * ψ r
-            else 0) r ≠ 0 := by
-    -- Choose r exactly at the boundary
-    use ⟨r_aperture, h_range.1, h_range.2⟩
-    simp [if_pos, if_neg]
-
-    -- ψ at boundary is nonzero (Gaussian never zero)
-    have gauss_nonzero : ψ ⟨r_aperture, h_range.1, h_range.2⟩ ≠ 0 := by
-      simp [ψ]
-      norm_num [Complex.exp_ne_zero]
-
-    -- Product is nonzero
-    nlinarith [gauss_nonzero]
-
-  -- This contradicts h (which says the commutator is always zero)
-  obtain ⟨r, hr⟩ := boundary_effect
-
-  have : ((fun _ => (0:ℂ)) r : ℂ) = 0 := by simp
-
-  rw [show (fun _ => (0:ℂ)) = (fun _ => 0) by rfl] at h
-
-  rw [← h]
-  exact hr
+  sorry
 
 -- ============================================================================
 -- THEOREM 2: ZSM-5 SELECTIVITY (C→K→F→U SUPPRESSES AROMATICS)
@@ -217,16 +216,21 @@ def ZSM5Sequence (C K F U : Operator) : Operator :=
   fun ψ => U (F (K (C ψ)))
 
 -- Theorem 2: ZSM-5 produces linear products
-theorem ZSM5_SupportsAromatics (C K F U : Operator)
-    (r_aperture : ℝ) (h_zsm5 : K = ConstraintOp r_aperture) (h_r : r_aperture = 4.5) :
+-- RESTATED 2026-07-11: originally claimed Selectivity was 0 for the FULL
+-- C→K→F→U output, but the proof only ever established a fact about the
+-- state right after C,K -- F, U are unconstrained operators with nothing
+-- stopping them from moving probability back into the aromatic region, so
+-- that claim doesn't follow (see commit history). Restated to claim only
+-- what's actually proved: the intermediate state after C→K has zero
+-- aromatic selectivity. F, U are dropped from the statement entirely
+-- rather than kept as unused/misleading parameters.
+theorem ZSM5_SupportsAromatics (C : Operator)
+    (r_aperture : ℝ) (h_r : r_aperture = 4.5) :
   ∀ (ψ₀ : Wavefunction),
-    let ψ_final := ZSM5Sequence C K F U ψ₀
-    Selectivity ψ_final = 0 :=
+    Selectivity (ConstraintOp r_aperture (C ψ₀)) = 0 :=
 by
   intro ψ₀
-
-  -- Apply operators in sequence
-  rw [h_zsm5, h_r] at *
+  rw [h_r]
 
   -- After C: wavefunction becomes localized
   let ψ₁ := C ψ₀
@@ -240,7 +244,7 @@ by
     show (if r.val ≤ (4.5:ℝ) then ψ₁ r else 0) = 0
     rw [if_neg (by linarith)]
 
-  -- Therefore selectivity is zero
+  show Selectivity ψ₂ = 0
   unfold Selectivity
   simp only [Probability, IsAromaticRegion]
 
@@ -254,15 +258,8 @@ by
     · simp [h, no_aromatics r h]
     · simp [h]
 
-  -- NOTE (2026-07-11): ψ_final = U (F ψ₂), not ψ₂ itself -- see header/commit
-  -- message. aromatic_zero is a true fact about ψ₂ (right after C,K), but
-  -- the goal here is about Selectivity of the FULL C→K→F→U output. Without
-  -- a hypothesis constraining F and U (e.g. that they don't move amplitude
-  -- into r > 5), this `rw` does not close the goal -- flagging with `sorry`
-  -- rather than forcing a false rewrite, pending a decision on how to state
-  -- this theorem honestly (add hypotheses on F/U, or restate the claim to
-  -- be about the post-C,K intermediate state only).
-  sorry
+  rw [aromatic_zero]
+  norm_num
 
 -- ============================================================================
 -- THEOREM 3: MCM-22 SELECTIVITY (C→F→K→U PERMITS AROMATICS)
@@ -273,11 +270,14 @@ def MCM22Sequence (C F K U : Operator) : Operator :=
   fun ψ => U (K (F (C ψ)))
 
 -- Theorem 3: MCM-22 permits aromatic formation
-theorem MCM22_PermitsAromatics (C F K U : Operator)
-    (r_aperture : ℝ) (h_mcm22 : K = ConstraintOp r_aperture) (h_r : r_aperture = 6.0) :
+-- RESTATED 2026-07-11: same issue as Theorem 2 (see note there) -- the
+-- original claimed something about the FULL C→F→K→U output, but the proof
+-- only ever established a fact about the state right after C,F,K. U is
+-- dropped from the statement entirely.
+theorem MCM22_PermitsAromatics (C F : Operator)
+    (r_aperture : ℝ) (h_r : r_aperture = 6.0) :
   ∃ (ψ₀ : Wavefunction),
-    let ψ_final := MCM22Sequence C F K U ψ₀
-    Selectivity ψ_final > 0.2 :=
+    Selectivity (ConstraintOp r_aperture (F (C ψ₀))) > 0.2 :=
 by
   -- Use a supercage-spanning wavefunction
   let ψ₀ : Wavefunction := fun r =>
@@ -285,13 +285,13 @@ by
 
   use ψ₀
 
-  rw [h_mcm22, h_r] at *
+  rw [h_r]
 
   -- After C: localization
   let ψ₁ := C ψ₀
 
   -- After F: nonlinear spreading (wavefunction broadens)
-  let ψ₂ := (FoldingOp 1) ψ₁
+  let ψ₂ := F ψ₁
 
   -- F does NOT restrict support; wavefunction spreads toward r ≈ 5-6 Å (aromatic region)
 
@@ -301,6 +301,7 @@ by
   -- But aromatic amplitudes in [4.5, 6.0] are ALREADY FORMED before K is applied
   -- K traps them, not prevents them
 
+  show Selectivity ψ₃ > 0.2
   unfold Selectivity
 
   -- Aromatic region [5, 6] has significant amplitude from ψ₃
@@ -323,25 +324,22 @@ by
 -- THEOREM 4: OPERATOR ORDER DETERMINES SELECTIVITY [MAIN]
 -- ============================================================================
 
+-- RESTATED 2026-07-11: updated to match the restated Theorem 2/3 (post-C,K
+-- / post-C,F,K states, not the full C,K,F,U / C,F,K,U sequences -- see
+-- notes above). K, U no longer appear: Theorem 2's claim never involved F
+-- or U, and Theorem 3's never involved U.
 theorem MainTheorem_OperatorOrderDeterminesSelectivity
-    (C K F U : Operator) (r_aperture : ℝ) :
+    (C F : Operator) :
   (∃ (ψ₀ : Wavefunction),
-    Selectivity (ZSM5Sequence C K F U ψ₀) = 0) ∧
+    Selectivity (ConstraintOp 4.5 (C ψ₀)) = 0) ∧
   (∃ (ψ₀ : Wavefunction),
-    Selectivity (MCM22Sequence C F K U ψ₀) > 0.2) :=
+    Selectivity (ConstraintOp 6.0 (F (C ψ₀))) > 0.2) :=
 by
   constructor
-  · -- ZSM-5 case
-    use fun r => Complex.exp (-(r.val - 2)^2 / 0.5)
-    apply ZSM5_SupportsAromatics
-    · rfl
-    · norm_num
-
+  · -- ZSM-5 case: holds for every ψ₀, so any witness works
+    exact ⟨fun _ => 0, ZSM5_SupportsAromatics C 4.5 rfl (fun _ => 0)⟩
   · -- MCM-22 case
-    use fun r => Complex.exp (-(r.val - 3)^2 / (2 * 1.5^2))
-    apply MCM22_PermitsAromatics
-    · rfl
-    · norm_num
+    exact MCM22_PermitsAromatics C F 6.0 rfl
 
 -- ============================================================================
 -- THEOREM 5: CONTACT MORPHISM (SCALING LAW)
@@ -489,15 +487,22 @@ MeasureSpace instance). The per-theorem sorry breakdown below is otherwise
 unchanged -- fixing compile errors did not remove or add any `sorry`.
 
 Contains an explicit `sorry` in its own body:
-  • ZSM5_SupportsAromatics / Theorem 2 -- ADDED 2026-07-11. The proof
-    establishes a fact about the intermediate wavefunction after C,K only,
-    then needed it to hold for the wavefunction after the full C→K→F→U
-    sequence. Those differ, and F, U are unconstrained, so the argument
-    does not close. See header note 5 above -- this is a modeling gap
-    (missing hypotheses on F/U), not a tactic failure, surfaced only now
-    that the file compiles far enough to reach it.
+  • NonCommutativity / Theorem 1 -- ADDED 2026-07-11, and this one matters
+    most: it's not a missing tactic, the statement is FALSE for the
+    operator definitions actually written in this file. ConstraintOp and
+    FoldingOp are both pointwise (act on ψ(r) using only the value at r),
+    and FoldingOp(0)=0, so K and F provably commute everywhere -- there is
+    no witness. Cross-checked against the author's own published paper
+    (zeolite_selectivity_final_v2_1.pdf): there, the Fold operator's real
+    content is the DNLS equation, which explicitly couples NEIGHBORING
+    lattice sites. That coupling is what makes non-commutativity possible,
+    and it's exactly what a pointwise Lean encoding drops. See header note
+    6 for the full explanation. This needs FoldingOp reformalized as a
+    genuine multi-site operator to be provable -- not addressed here.
   • MCM22_PermitsAromatics / Theorem 3 (two sorries, standing in for
-    numerical integral bounds from the DNLS simulation)
+    numerical integral bounds from the DNLS simulation -- unrelated to the
+    restatement above, and unrelated to Theorem 1's issue since Theorem 3
+    doesn't use FoldingOp's bundled linearity or rely on non-commutativity)
   • ContactMorphism def + ContactMorphismScaling / Theorem 5 (one in the
     helper definition (domain-boundedness), one in the theorem itself
     (Sasaki-metric contact geometry))
@@ -507,30 +512,33 @@ Contains an explicit `sorry` in its own body:
     acid-site relocation effects)
 
 No explicit `sorry` in its own body:
-  • NonCommutativity / Theorem 1
+  • ZSM5_SupportsAromatics / Theorem 2 -- RESTATED 2026-07-11 (owner's
+    call). Originally claimed selectivity=0 for the full C→K→F→U output,
+    but only ever proved it for the state right after C,K (F, U were
+    unconstrained and could reintroduce aromatic amplitude). Restated to
+    claim exactly the post-C,K fact; F, U dropped from the statement.
   • Prediction2_CokeSpatialSegregation (one of Theorem 6's three parts --
     the other two, Predictions 1 and 3, do contain sorry, so "Theorem 6" as
     a whole is not sorry-free)
   • Selectivity_Bijection_With_OperatorOrder / Theorem 7
-  • MainTheorem_OperatorOrderDeterminesSelectivity / Theorem 4 -- BUT this
-    one needs a caveat, not a checkmark: its proof directly invokes BOTH
-    ZSM5_SupportsAromatics (Theorem 2, now sorried, see above) and
-    MCM22_PermitsAromatics (Theorem 3, two sorries). A theorem that calls a
-    sorry-containing theorem inherits `sorryAx` in its dependency graph --
-    `#print axioms MainTheorem_...` would show this if compiled. So Theorem
-    4 is not actually sorry-free once transitive dependencies count, even
-    though nothing in its own tactic block says `sorry`. Treat it as open
-    until Theorems 2 and 3 close.
+  • MainTheorem_OperatorOrderDeterminesSelectivity / Theorem 4 -- restated
+    2026-07-11 to match Theorem 2/3's new scope (drops K, U). Its ZSM-5
+    conjunct now follows from the sorry-free Theorem 2. Its MCM-22 conjunct
+    still inherits Theorem 3's two sorries -- `#print axioms
+    MainTheorem_...` would show this if compiled. Treat that half as open
+    until Theorem 3 closes; the ZSM-5 half is genuinely closed.
 
-Honest summary: 2 of 7 theorems (1, 7) plus one of Theorem 6's three
-predictions are free of explicit sorries in their own bodies -- and, as of
-2026-07-11, that claim is checked by CI running the real Lean kernel on
-every push (see .github/workflows/verify-proofs.yml, "Build ZeoliteProofs"
-step), not asserted by eye. Getting the file to actually compile is what
-surfaced the Theorem 2 gap above -- a strictly more honest (if lower)
-count than the pre-kernel-check estimate. Whether that CI step is currently
-gating or non-gating should be read directly off the workflow file rather
-than assumed from this comment, since the two can drift out of sync.
+Honest summary: 3 of 7 theorems (2, 4's ZSM-5 half, 7) plus one of Theorem
+6's three predictions are free of explicit sorries in their own bodies --
+and, as of 2026-07-11, that claim is checked by CI running the real Lean
+kernel on every push (see .github/workflows/verify-proofs.yml, "Build
+ZeoliteProofs" step), not asserted by eye. Getting the file to actually
+compile is what surfaced both the Theorem 2/3 restatement need and
+Theorem 1's false-as-stated status -- a materially different (and lower)
+count than the pre-kernel-check estimate, which had Theorem 1 marked as
+the one fully-solid result. Whether the CI step is currently gating or
+non-gating should be read directly off the workflow file rather than
+assumed from this comment, since the two can drift out of sync.
 
 Estimated effort to complete all proofs:
   • Bochner integral integration: 1-2 weeks
