@@ -76,8 +76,22 @@ presence here is the owner's call, not something to change unprompted.
 
 ## CI structure (verify-proofs.yml)
 
-- `CatGT`, `Theorem53`: gating, built via `leanprover/lean-action@v1`,
-  each followed by an informational `#print axioms` step.
+- `Theorem53`: **fully isolated** — its own `leanprover/lean-action@v1`
+  invocation (`build-args: "Theorem53"` only), own `id`, own
+  `continue-on-error: true` + explicit "Fail workflow if Theorem53 did
+  not build" gate, own `#print axioms` step gated on its own success.
+  Nothing about its pass/fail status can be affected by CatGT,
+  ZeoliteProofs, or anything else in this job. This is deliberate: this
+  repo exists to give Theorem 5.3 (Non-Commutativity) a clean citation
+  target isolated from AXLE/PrincipiaVol1's legacy breakage (see the
+  file's own header), and the whole point is lost if its CI badge is
+  entangled with some other target's health.
+- `CatGT`: same independent pattern (own `lean-action@v1` invocation,
+  own id, own gate, own axiom-print) — separated from `Theorem53` on
+  2026-07-12. Before that they were built together in one combined
+  `lean-action@v1` step, which meant a CatGT break would silently
+  prevent Theorem53's own axiom-print from ever running even though
+  Theorem53 itself was fine.
 - `ZeoliteProofs`: gating on real, located Lean errors only (grep for
   `error: path:line:col:` in the build log) — a plain nonzero exit from
   `lake build` because of `sorry`s is expected and NOT a failure. Also
@@ -87,7 +101,15 @@ presence here is the owner's call, not something to change unprompted.
   stub, every body is `sorry`). No axiom-printing — there's nothing to
   check.
 
-If you add a new gating `.lean` target, follow the `ZeoliteProofs`
-pattern (explicit build step + grep-for-real-errors gate + axiom-print
-step), not a bare `continue-on-error: true` — that's what let a real
-error hide for a full day previously.
+As of 2026-07-12, `#print axioms` on all 7 `Theorem53` theorems and all
+9 `CatGT` theorems shows only `[propext, Classical.choice, Quot.sound]`
+— zero `sorryAx`. Both are genuinely closed; nothing there currently
+needs proof work. If that ever regresses, fix the proof in the specific
+file, not the CI wiring — don't loosen a gate to paper over a real break.
+
+If you add a new gating `.lean` target, give it this same fully-isolated
+pattern (own build step + own `continue-on-error` + explicit fail-check
++ axiom-print step) rather than bundling it into another target's build
+command or relying on a bare `continue-on-error: true` with no explicit
+gate — either of those is what let entanglement and a full day of a
+hidden real error happen previously.
