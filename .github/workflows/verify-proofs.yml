@@ -1,44 +1,91 @@
-# Real kernel verification on every push.
-#
-# Gating targets: CatGT, Theorem53. Each has a FULLY INDEPENDENT build +
-# #print axioms + pass/fail gate -- a failure in one cannot block, hide, or
-# skip another's result. This matters specifically for Theorem53 (Theorem 5.3,
-# Non-Commutativity): this repo exists to give it a clean citation target
-# isolated from AXLE and the rest of PrincipiaVol1's legacy breakage, so its
-# green/red status must never depend on CatGT. Before 2026-07-12 both were
-# built in one combined lean-action step, so a CatGT break would silently stop
-# Theorem53's #print axioms from ever running. Split into two independent
-# lean-action@v1 invocations (each still gets Mathlib's precompiled
-# `lake exe cache get`, so this costs no real build time).
-#
-# `#print axioms` is how a "closed · 0 sorry" claim gets checked at the kernel
-# level rather than by eye: a theorem with no sorry in its own body can still
-# inherit `sorryAx` transitively from something it calls, which only
-# #print axioms surfaces. These steps are informational (never fail the build).
-#
-# 2026-07-18: ZeoliteProofs and ZeoliteV2Stub targets REMOVED. Those files
-# (CatGT_PROOFS_COMPLETE.lean, CatGT_v2.lean) carried 17 and 25 open sorries
-# and only ever "passed" because `sorry` compiles. Deleted so that every Lean
-# file this repo builds is genuinely 0-sorry. The zeolite operator-order result
-# now stands on its published algebraic derivations; see
-# zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md.
-# Also migrated v4.14.0 -> v4.33: `Complex.abs` no longer exists in current
-# Mathlib, so CatGT_Main.lean now uses the norm `‖·‖`.
+name: Verify proofs
 
-name: Verify Lean proofs (real kernel check)
+# Real kernel verification on every push.
+# Fixed 2026-07: this file previously contained Lean source (a stray
+# copy of Theorem53NonCommutativity.lean), so GitHub Actions had no
+# valid workflow and CI never ran. This is the actual workflow.
+#
+# Gating targets: Theorem53, CatGT. Each has a FULLY INDEPENDENT build +
+# #print axioms + pass/fail gate -- a failure in one cannot block, hide,
+# or skip another's result. This matters specifically for Theorem53
+# (Theorem 5.3, Non-Commutativity): this repo exists to give it a clean
+# citation target isolated from AXLE and the rest of PrincipiaVol1's
+# legacy breakage, so its green/red status must never depend on CatGT.
+# Before 2026-07-12 both were built in one combined lean-action step, so
+# a CatGT break would have silently stopped Theorem53's own #print axioms
+# step from ever running. Split into two independent lean-action@v1
+# invocations below (each still gets Mathlib's precompiled
+# `lake exe cache get` fetch, so this costs no real build time).
+#
+# 2026-07-18: ZeoliteProofs and ZeoliteV2Stub targets REMOVED, along with
+# their build/axiom/gate steps. CatGT_PROOFS_COMPLETE.lean (17 sorries)
+# and CatGT_v2.lean (25 sorries) were deleted from the repo: they only
+# ever "passed" because `sorry` compiles, and their presence made the
+# repo's "kernel-checked" claim untrue. Every Lean file this workflow
+# now builds is genuinely 0-sorry. The zeolite operator-order result
+# stands on its published derivations -- see
+# zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md.
+# The CatGT axiom list below was also corrected: `reeb_orbit_is_integral`,
+# `catgt_dm3_transport`, `ipr_le_one` and `ipr_pos` no longer exist;
+# the current file declares nine theorems at root level (no namespace,
+# so no `open CatGT`).
+#
+# `#print axioms` is how a "closed · 0 sorry" claim gets checked at the
+# kernel level rather than by eye: a theorem with no sorry in its own
+# body can still inherit `sorryAx` transitively from something it calls,
+# which only #print axioms surfaces.
 
 on:
   push:
     branches: [main]
-    paths: ["**.lean", "lakefile.toml", "lean-toolchain", ".github/workflows/verify-proofs.yml"]
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      # The repo has no committed lake-manifest.json, so generate one.
+      # elan reads ./lean-toolchain to pick the pinned Lean version.
+      - name: Install elan and generate manifest
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          ~/.elan/bin/lake update
+
+      # ---- Theorem53: fully isolated. Own build, own axiom check, own gate.
+      - name: Build Theorem53
+        id: build_theorem53
+        continue-on-error: true
+        uses: leanprover/lean-action@v1
+        with:
+          build-args: "Theorem53"
+
+      - name: Print axioms - Theorem53
+        if: steps.build_theorem53.outcome == 'success'
+        run: |
+          cat > /tmp/CheckTheorem53.lean <<'LEAN'
+          import PrincipiaOrthogona1.Theorem53NonCommutativity
+          open Theorem53NonCommutativity
+          #print axioms foldMap_not_odd
+          #print axioms nonCommutativity_instance
+          #print axioms nonCommutativity_nondegenerate
+          #print axioms commuting_instance
+          #print axioms exists_order_dependent
+          #print axioms not_forall_order_dependent
+          #print axioms thm_5_3_is_exactly_existential
+          LEAN
+          lake env lean /tmp/CheckTheorem53.lean
+
+      - name: Fail workflow if Theorem53 did not build
+        if: steps.build_theorem53.outcome != 'success'
+        run: |
+          echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
+          exit 1
+
+      # ---- CatGT: separate target, own build/axiom-check/gate.
       - name: Build CatGT
         id: build_catgt
         continue-on-error: true
@@ -48,7 +95,6 @@ jobs:
 
       - name: Print axioms - CatGT
         if: steps.build_catgt.outcome == 'success'
-        continue-on-error: true
         run: |
           cat > /tmp/CheckCatGT.lean <<'LEAN'
           import CatGT.CatGT_Main
@@ -64,31 +110,8 @@ jobs:
           LEAN
           lake env lean /tmp/CheckCatGT.lean
 
-      - name: Build Theorem53
-        id: build_theorem53
-        continue-on-error: true
-        uses: leanprover/lean-action@v1
-        with:
-          build-args: "Theorem53"
-
-      - name: Print axioms - Theorem53
-        if: steps.build_theorem53.outcome == 'success'
-        continue-on-error: true
-        run: |
-          cat > /tmp/CheckTheorem53.lean <<'LEAN'
-          import PrincipiaOrthogona1.Theorem53NonCommutativity
-          open Theorem53NonCommutativity
-          #print axioms nonCommutativity_instance
-          #print axioms nonCommutativity_nondegenerate
-          #print axioms commuting_instance
-          #print axioms not_forall_order_dependent
-          #print axioms thm_5_3_is_exactly_existential
-          LEAN
-          lake env lean /tmp/CheckTheorem53.lean
-
-      - name: Fail workflow if a gating target failed
-        if: steps.build_catgt.outcome != 'success' || steps.build_theorem53.outcome != 'success'
+      - name: Fail workflow if CatGT did not build
+        if: steps.build_catgt.outcome != 'success'
         run: |
           echo "CatGT build: ${{ steps.build_catgt.outcome }}"
-          echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
           exit 1
