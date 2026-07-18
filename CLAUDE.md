@@ -166,3 +166,34 @@ hidden real error happen previously.
     works on both v4.14 and v4.33.
 16. **`λ` is reserved syntax** in Lean 4 and can never be an identifier. Use `lam` /
     `hlam`.
+
+---
+
+## The false commutator lemma is NOT confined to this repo (found 2026-07-18)
+
+The Theorem 1 error corrected here — asserting `[K,F] ≠ 0` for a 0/1 gate and a
+**pointwise** fold `ψ + λ|ψ|²ψ`, escaping via a δ boundary term that does not
+exist — originated elsewhere and propagated. Confirmed carriers outside this repo,
+in `~/geometry`:
+
+- `book4/chIV-orthogonality.html`, Lemma 5.3 "Distributional Commutator" —
+  the **injection point**
+- `ALGEBRAIC_PROOFS_D1_RIBOSWITCH.md` (D1)
+- `ch18-zeolite-noncommutativity.html` (D2) — presents it as Book 3's central commutator
+- `ALGEBRAIC_PROOFS_CH7_CRYSTALLINE_RETURN.md`, Ch7-T1 Step 5 (Saturn hexagon)
+
+**The 5.3 number collides.** Vol I §5.3 ("the operators C, K, F, U do not
+commute; the sequence is order-dependent") is TRUE and is what this repo's
+`Theorem53NonCommutativity.lean` verifies. `book4`'s *Lemma* 5.3 is a different,
+false claim wearing the same number. Downstream files cite "5.3" meaning either
+one — always check which before touching anything.
+
+Full ledger, detection greps, and repair guidance: `~/geometry/CLAUDE.md`,
+section "KNOWN DEFECT: the false commutator lemma." Keep that ledger current —
+this repo holds the machine-checked refutation the other records need to cite:
+`zeolite_operator_order/ZeoliteCommutation.lean` (`gate_commutes`,
+`coupling_not_commute`, `gate_fold_not_commute`; axioms clean, no `sorryAx`).
+
+Do **not** let anyone "fix" `PrincipiaOrthogona1/Theorem53NonCommutativity.lean`
+on account of this. It is a different, existential, chain-level claim, it is
+kernel-verified, and it is fine. Similar number, unrelated statement.

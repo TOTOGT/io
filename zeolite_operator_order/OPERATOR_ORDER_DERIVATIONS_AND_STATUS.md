@@ -38,7 +38,8 @@ propagated into the central mechanism. §1 and §2 replace it.
 
 Both facts below are kernel-checked on a 3-site ring with real amplitudes (so
 `|v|²v = v³`). The finite setting is deliberate: it makes the claims decidable and
-independently reproducible rather than rhetorical.
+independently reproducible rather than rhetorical. The proofs (together with §2's
+`gate_fold_not_commute`) live in `ZeoliteCommutation.lean` in this directory.
 
 ```lean
 def coupling (v : Fin 3 → ℝ) : Fin 3 → ℝ := ![v 1 + v 2, v 0 + v 2, v 0 + v 1]
@@ -102,7 +103,16 @@ coupling term for the mechanism to exist at all.**
 Let the fold be `F = F_coupling ∘ F_onsite` — spreading *and* on-site nonlinearity —
 not the pointwise map alone. Then:
 
-- `[gate, F] ≠ 0`, because `F` now contains the coupling. — [MODEL, resting on §1.2]
+- `[gate, F] ≠ 0`, in existential form — kernel-checked 2026-07-18:
+
+  ```lean
+  theorem gate_fold_not_commute :
+      gate (coupling (onsite psi)) ≠ coupling (onsite (gate psi))
+  ```
+
+  Witness `ψ = (1,1,0)`: gate-after-fold gives 1 at site 0 (the fold's coupling
+  spread amplitude there before the gate acted); fold-after-gate gives 0 (the
+  gate emptied the neighbours first). — **[VERIFIED]**
 - Folding inside an **open** cavity spreads amplitude across sites that a
   later-applied gate then encloses; folding **after** gating spreads only within the
   already-restricted support. These are different states. — [MODEL]
@@ -153,7 +163,8 @@ permits them — is a **model prediction**, not a theorem.
 
 ## 5. Open items
 
-1. Formalise §2's `[gate, F] ≠ 0` for the corrected fold — the §1.2 lemma is the seed.
+1. ~~Formalise §2's `[gate, F] ≠ 0` for the corrected fold.~~ **Closed 2026-07-18**:
+   `gate_fold_not_commute` in `ZeoliteCommutation.lean`, kernel-checked.
 2. Re-derive Theorem 5 (contact morphism scaling), or withdraw it.
 3. Theorem 7's bijection needs a real argument, or removal.
 4. A closed-form selectivity, if obtainable, would upgrade §3 from simulation to derivation.
@@ -162,10 +173,12 @@ permits them — is a **model prediction**, not a theorem.
 
 ## 6. Reproducing the verification
 
-The two lemmas of §1 are self-contained and compile against Lean 4 / Mathlib with no
-`sorry` and no warnings. Paste the four definitions and both theorem statements into
-any Lean 4 + Mathlib environment (for example `live.lean-lang.org`) to re-check them
-independently. Verified July 18, 2026 against Lean `v4.33`.
+The three theorems (§1.1, §1.2, and §2's `gate_fold_not_commute`) are collected in
+`ZeoliteCommutation.lean` in this directory — self-contained, compiling against
+Lean 4 / Mathlib with no `sorry` and no errors, `#print axioms` showing only
+`[propext, Classical.choice, Quot.sound]` for each. Paste the file into any
+Lean 4 + Mathlib environment (for example `live.lean-lang.org`) to re-check it
+independently. Verified July 18, 2026 against Lean `v4.33.0-rc1`.
 
 Nothing marked [MODEL], [SIMULATION] or [OPEN] may be presented as proved — in this
 repository, or in any paper drawing on it.
