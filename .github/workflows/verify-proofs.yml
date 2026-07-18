@@ -5,52 +5,35 @@ name: Verify proofs
 # copy of Theorem53NonCommutativity.lean), so GitHub Actions had no
 # valid workflow and CI never ran. This is the actual workflow.
 #
-# Gating targets: CatGT, Theorem53, ZeoliteProofs. Every one of the three
-# now has a FULLY INDEPENDENT build + #print axioms + pass/fail gate --
-# a failure in one cannot block, hide, or skip another's result. This
-# matters specifically for Theorem53 (Theorem 5.3, Non-Commutativity):
-# this repo exists to give it a clean citation target isolated from AXLE
-# and the rest of PrincipiaVol1's legacy breakage (see that file's own
-# header), so its own green/red status must never depend on CatGT or
-# anything else. Before 2026-07-12 this was NOT true -- CatGT and
-# Theorem53 were built together in one combined
-# `leanprover/lean-action@v1` step, so a CatGT break would have silently
-# stopped Theorem53's own #print axioms step from ever running, even
-# though Theorem53 itself was fine. Split into two independent
-# lean-action@v1 invocations below (each still gets Mathlib's precompiled
+# Gating targets: Theorem53, CatGT. Each has a FULLY INDEPENDENT build +
+# #print axioms + pass/fail gate -- a failure in one cannot block, hide,
+# or skip another's result. This matters specifically for Theorem53
+# (Theorem 5.3, Non-Commutativity): this repo exists to give it a clean
+# citation target isolated from AXLE and the rest of PrincipiaVol1's
+# legacy breakage, so its green/red status must never depend on CatGT.
+# Before 2026-07-12 both were built in one combined lean-action step, so
+# a CatGT break would have silently stopped Theorem53's own #print axioms
+# step from ever running. Split into two independent lean-action@v1
+# invocations below (each still gets Mathlib's precompiled
 # `lake exe cache get` fetch, so this costs no real build time).
 #
-# ZeoliteProofs (CatGT_PROOFS_COMPLETE.lean) gates on real errors only:
-# as of 2026-07-11 the file kernel-checks cleanly with 6 documented
-# `sorry`s (see the file's own header/footer for the full audit) and
-# zero located Lean errors. `lake build` still exits nonzero whenever any
-# sorry is present -- that's standard Lean behavior, not a regression --
-# so that step below greps the build log for a located error
-# (`error: path:line:col:`) and only fails CI when one is found. This
-# catches real regressions (typos, broken proofs, new errors) while
-# accepting the currently-documented, disclosed sorries.
-# Non-gating: ZeoliteV2Stub (explicit stub, every body is sorry).
+# 2026-07-18: ZeoliteProofs and ZeoliteV2Stub targets REMOVED, along with
+# their build/axiom/gate steps. CatGT_PROOFS_COMPLETE.lean (17 sorries)
+# and CatGT_v2.lean (25 sorries) were deleted from the repo: they only
+# ever "passed" because `sorry` compiles, and their presence made the
+# repo's "kernel-checked" claim untrue. Every Lean file this workflow
+# now builds is genuinely 0-sorry. The zeolite operator-order result
+# stands on its published derivations -- see
+# zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md.
+# The CatGT axiom list below was also corrected: `reeb_orbit_is_integral`,
+# `catgt_dm3_transport`, `ipr_le_one` and `ipr_pos` no longer exist;
+# the current file declares nine theorems at root level (no namespace,
+# so no `open CatGT`).
 #
-# REINSTATED 2026-07-11: earlier revisions of this file (see commits
-# 11e6cc7, bd61b75) printed each theorem's axiom dependencies via
-# `#print axioms` after a successful build -- this is how a "closed ·
-# 0 sorry" claim in README.md gets checked at the kernel level instead
-# of by eye (a theorem with no sorry in its own body can still inherit
-# `sorryAx` transitively from something it calls, which only
-# `#print axioms` surfaces). That step was dropped somewhere between
-# then and the 2026-07-11 "stray Lean source" incident (see note above)
-# and README.md kept claiming CI does this after it no longer did.
-# Restored one step per gating target, with the theorem names matching
-# the files' current (post-restatement) content -- the old CatGT list
-# referenced `reeb_orbit_is_integral`, which no longer exists in
-# CatGT_Main.lean, so that list has been corrected too. These
-# #print axioms steps are informational only (never fail the build): a
-# `sorryAx` in the output is expected and fine for e.g. ZeoliteProofs'
-# six documented sorries -- the point is to make that fact visible in
-# every CI log, not to gate on it. As of the 2026-07-12 isolation pass,
-# `#print axioms` on all 7 Theorem53 theorems and all 9 CatGT theorems
-# shows only Mathlib's standard axioms [propext, Classical.choice,
-# Quot.sound] -- zero sorryAx, genuinely closed, verified by the kernel.
+# `#print axioms` is how a "closed · 0 sorry" claim gets checked at the
+# kernel level rather than by eye: a theorem with no sorry in its own
+# body can still inherit `sorryAx` transitively from something it calls,
+# which only #print axioms surfaces.
 
 on:
   push:
@@ -72,10 +55,7 @@ jobs:
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
           ~/.elan/bin/lake update
 
-      # ---- Theorem53: fully isolated. Own build, own axiom check, own
-      # gate -- does not reference or depend on CatGT, ZeoliteProofs, or
-      # anything else. This is the target that matters for VA-005's
-      # citation; its badge must be truthful on its own.
+      # ---- Theorem53: fully isolated. Own build, own axiom check, own gate.
       - name: Build Theorem53
         id: build_theorem53
         continue-on-error: true
@@ -105,8 +85,7 @@ jobs:
           echo "Theorem53 build: ${{ steps.build_theorem53.outcome }}"
           exit 1
 
-      # ---- CatGT: separate target, own build/axiom-check/gate. A break
-      # here no longer prevents Theorem53's steps above from running.
+      # ---- CatGT: separate target, own build/axiom-check/gate.
       - name: Build CatGT
         id: build_catgt
         continue-on-error: true
@@ -119,15 +98,14 @@ jobs:
         run: |
           cat > /tmp/CheckCatGT.lean <<'LEAN'
           import CatGT.CatGT_Main
-          open CatGT
+          #print axioms ipr_between_zero_and_one
           #print axioms criticalRadius_pos
           #print axioms criticalRadius_antitone
           #print axioms helical_selectivity
           #print axioms selectivityFactor_eq
-          #print axioms ipr_le_one
-          #print axioms ipr_pos
-          #print axioms ipr_between_zero_and_one
-          #print axioms catgt_dm3_transport
+          #print axioms reeb_orbit_advances
+          #print axioms dnlsNorm_nonneg
+          #print axioms catgt_dm3_disk
           #print axioms ensemble_scaling_forms_diverge
           LEAN
           lake env lean /tmp/CheckCatGT.lean
@@ -137,42 +115,3 @@ jobs:
         run: |
           echo "CatGT build: ${{ steps.build_catgt.outcome }}"
           exit 1
-
-      - name: Build ZeoliteProofs (gated on real errors; sorries are documented, not failures)
-        id: build_zeolite
-        run: |
-          set -o pipefail
-          lake build ZeoliteProofs 2>&1 | tee zeolite_build.log
-          build_status=${PIPESTATUS[0]}
-          if [ "$build_status" -eq 0 ]; then
-            echo "Build succeeded outright."
-            exit 0
-          fi
-          if grep -qE 'error: .*\.lean:[0-9]+:[0-9]+:' zeolite_build.log; then
-            echo "Real, located Lean error(s) found -- failing."
-            exit 1
-          fi
-          echo "Build reported failure only due to sorry warnings (Lean's standard nonzero exit for incomplete proofs) -- treating as pass."
-          exit 0
-
-      - name: Print axioms - ZeoliteProofs
-        if: steps.build_zeolite.outcome == 'success'
-        run: |
-          cat > /tmp/CheckZeoliteProofs.lean <<'LEAN'
-          import zeolite_operator_order.CatGT_PROOFS_COMPLETE
-          open CatGT
-          #print axioms NonCommutativity
-          #print axioms ZSM5_SupportsAromatics
-          #print axioms MCM22_PermitsAromatics
-          #print axioms MainTheorem_OperatorOrderDeterminesSelectivity
-          #print axioms ContactMorphismScaling
-          #print axioms Prediction1_DRIFTS_Sequence
-          #print axioms Prediction2_CokeSpatialSegregation
-          #print axioms Prediction3_AcidSiteRelocation
-          #print axioms Selectivity_Bijection_With_OperatorOrder
-          LEAN
-          lake env lean /tmp/CheckZeoliteProofs.lean
-
-      - name: Build ZeoliteV2Stub (non-gating, expected to fail)
-        continue-on-error: true
-        run: lake build ZeoliteV2Stub
