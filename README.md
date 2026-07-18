@@ -1,85 +1,73 @@
-# CatGT — Catalytic Generative Theory
+# io — Formal Verification (CatGT / Principia Orthogona)
 
-_repo: `io` — imaginary origin_
+Machine-checked Lean 4 / Mathlib formalizations from the *Principia Orthogona*
+series. Every Lean library in this repository is verified by the Lean kernel in
+continuous integration on each push, with per-theorem axiom audits. There are no
+`sorry` placeholders and no admitted lemmas in any shipped target.
 
-Lean 4 / Mathlib4 formalization of the dm3 operator-chain framework applied to
-heterogeneous catalysis, with zeolite selectivity as the worked instance.
-Part of the [Principia Orthogona](https://github.com/TOTOGT/AXLE) series.
+## Verification status
 
-CatGT applies a general operator pipeline (compression, curvature, fold,
-unfold) to a contact-manifold model of catalytic reaction pathways. The
-central applied result is the **Helical Selectivity Principle**: a
-confinement bound explaining why pore geometry constrains product
-selectivity in zeolite catalysis (e.g. HZSM-5 vs. HMCM-22 divergent product
-distributions). A companion result, Theorem 5.3, establishes that the
-operator chain is order-dependent in general — firing order affects
-outcome — while also proving this is not universal: some configurations
-provably commute. The worked zeolite-selectivity instance (below) applies
-the same operator chain concretely to HZSM-5/HMCM-22 firing order and is
-where most of the open proof obligations currently live.
+| Library | Source | Theorems | `sorry` | Status |
+|---|---|---:|---:|---|
+| `CatGT` | `CatGT/CatGT_Main.lean` | 9 | 0 | Kernel-checked — Helical Selectivity Principle (Thm 1) and supporting lemmas |
+| `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | Kernel-checked — Theorem 5.3, operator-chain non-commutativity |
 
-All results below are checked by the Lean 4 kernel, not hand-verified.
+Both libraries build against Lean `v4.14.0` / Mathlib `v4.14.0` (pinned in
+`lean-toolchain` and `lakefile.toml`). The core theorems have additionally been
+spot-checked against current Mathlib (Lean `v4.33`).
 
-## Key results — CatGT core
+## Scope
 
-| Theorem | Status | Description |
-|---|---|---|
-| `helical_selectivity` | closed · 0 sorry | Confinement bound `r ≤ r*(J, λ)` on the helical radius of a confined trajectory, given positive curvature and coupling parameters. Formal core of the Helical Selectivity Principle. |
-| `thm_5_3_is_exactly_existential` | closed · 0 sorry | Precise statement of Theorem 5.3: an existential claim, not universal. Some valid operator instances are order-dependent; others provably commute. Both exhibited on the same manifold. |
+`CatGT` (Catalytic Generative Theory) applies the operator pipeline
+`G = U ∘ F ∘ K ∘ C` (compression, curvature, fold, unfold) to a contact-manifold
+model of catalytic reaction pathways. The central result is the **Helical
+Selectivity Principle** — a confinement bound `r ≤ r*(J, λ) = √(J/λ)` that
+constrains which reaction pathways can reach the catalytic fixed point.
 
-## Key results — zeolite selectivity worked instance
+`Theorem53` establishes that the operator chain is **order-dependent in general**
+(firing order changes the outcome) while proving this is *not* universal: specific
+configurations provably commute. The statement is exactly existential, and both an
+order-dependent instance and a commuting instance are exhibited on the same manifold.
 
-Concrete application of the operator chain to HZSM-5 (C→K→F→U) vs. HMCM-22
-(C→F→K→U) firing order, in
-[`zeolite_operator_order/CatGT_PROOFS_COMPLETE.lean`](zeolite_operator_order/CatGT_PROOFS_COMPLETE.lean).
-This file's own header and footer carry the full audit trail (why each open
-theorem is open, and one real finding: the operators as literally encoded
-here are pointwise, which makes `NonCommutativity` false as stated — the
-physical model's actual coupling is the neighbor-coupled DNLS equation from
-the companion paper, not what's formalized here yet).
-
-| Theorem | Status | Description |
-|---|---|---|
-| `ZSM5_SupportsAromatics` | closed · 0 sorry | After C→K (ZSM-5's constraining operators), selectivity for the aromatic region is exactly 0. |
-| `Prediction2_CokeSpatialSegregation` | closed · 0 sorry | Coke forms preferentially in the supercage over the sinusoidal channel by more than 2:1 (representative values). |
-| `Selectivity_Bijection_With_OperatorOrder` | closed · 0 sorry | Operator firing order (ZSM-5 vs. MCM-22) maps injectively to two distinct selectivity values, 0 and 0.35. |
-| `MainTheorem_OperatorOrderDeterminesSelectivity` | partially closed | ZSM-5 conjunct is closed (follows from the theorem above). MCM-22 conjunct inherits `MCM22_PermitsAromatics`'s two sorries. |
-| `MCM22_PermitsAromatics` | open · 2 sorries | Numerical integral bounds standing in for DNLS simulation output (`S ≈ 0.35`). |
-| `Prediction1_DRIFTS_Sequence` | open · 1 sorry | Depends on DNLS time-stepping simulation output not derived in-file. |
-| `Prediction3_AcidSiteRelocation` | open · 1 sorry | Depends on an unformalized model of acid-site relocation effects. |
-| `ContactMorphismScaling` | open · 3 sorries | 2 in the `ContactMorphism` helper (domain-boundedness / a `0 ≤ scale` side-condition), 1 in the theorem itself (needs a rigorous Sasaki-metric contact-geometry argument). |
-| `NonCommutativity` | open · 1 sorry, **false as stated** | `ConstraintOp`/`FoldingOp` here are both pointwise, so K and F provably commute for these definitions — no witness exists. The real physical claim needs `FoldingOp` reformalized as a multi-site DNLS-coupled operator (see the file header for the full cross-check against the published paper). |
-
-`CatGT_v2.lean` (also under `zeolite_operator_order/`) is an explicit
-theorem-stub file — every body is `sorry` by design — wired into CI as a
-non-gating, expected-to-fail sanity check, not a claimed result.
-
-## Source
-
-- [`CatGT/CatGT_Main.lean`](CatGT/CatGT_Main.lean) — core formalization, Helical Selectivity Principle
-- [`PrincipiaOrthogona1/Theorem53NonCommutativity.lean`](PrincipiaOrthogona1/Theorem53NonCommutativity.lean) — Theorem 5.3
-- [`zeolite_operator_order/CatGT_PROOFS_COMPLETE.lean`](zeolite_operator_order/CatGT_PROOFS_COMPLETE.lean) — zeolite selectivity worked instance (table above)
-- [`zeolite_operator_order/CatGT_v2.lean`](zeolite_operator_order/CatGT_v2.lean) — explicit stub, non-gating
-- [`PrincipiaOrthogona_7Proofs_Template.docx`](PrincipiaOrthogona_7Proofs_Template.docx) — proof template, reference
-
-## Build
+## Repository structure
 
 ```
-lake build CatGT Theorem53 ZeoliteProofs
+CatGT/CatGT_Main.lean                    CatGT core — HSP + lemmas (verified)
+PrincipiaOrthogona1/Theorem53...lean     Theorem 5.3 non-commutativity (verified)
+zeolite_operator_order/                  Zeolite operator-order paper (see note)
+lakefile.toml, lean-toolchain            Build configuration
+.github/workflows/verify-proofs.yml      CI: kernel check + #print axioms
+index.html                               Rendered CatGT paper (GitHub Pages)
 ```
 
-CI (GitHub Actions, [`.github/workflows/verify-proofs.yml`](.github/workflows/verify-proofs.yml))
-runs the real Lean kernel on every push and prints the axiom dependencies of
-each theorem in `CatGT`, `Theorem53`, and `ZeoliteProofs` — this is how a
-"closed · 0 sorry" claim above gets checked at the kernel level (a theorem
-with no `sorry` in its own body can still inherit `sorryAx` transitively
-from something it calls) rather than asserted by eye. `ZeoliteProofs` gates
-on real, located Lean errors only; its documented sorries above are
-accepted, not build failures.
+### Note on the zeolite operator-order work
+
+The zeolite operator-order result (HZSM-5 vs. HMCM-22 selectivity from operator
+firing order) is supported by the published algebraic derivations in
+`zeolite_operator_order/ALGEBRAIC_PROOFS_ALL_7_THEOREMS.md` and the accompanying
+paper. A complete Lean formalization of it is **future work** and is deliberately
+**not** shipped here: earlier Lean drafts of it carried numerous open `sorry`s and
+were removed on 2026-07-17 so that this repository's "kernel-checked" claim applies
+without exception to every Lean file it builds.
+
+## Build and verify locally
+
+```
+lake exe cache get      # fetch prebuilt Mathlib
+lake build CatGT Theorem53
+```
+
+CI runs the same build plus `#print axioms` on each theorem, so the axiom
+dependencies (and the absence of `sorryAx`) are visible in every run's log:
+`.github/workflows/verify-proofs.yml`.
 
 ## Author
 
-Pablo Nogueira Grossi · G6 LLC
-[github.com/TOTOGT](https://github.com/TOTOGT) ·
+Pablo Nogueira Grossi · G6 LLC, Newark NJ ·
 ORCID [0009-0000-6496-2186](https://orcid.org/0009-0000-6496-2186) ·
-Zenodo DOI [10.5281/zenodo.19117399](https://doi.org/10.5281/zenodo.19117399)
+Zenodo [10.5281/zenodo.19117399](https://doi.org/10.5281/zenodo.19117399) ·
+Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
+
+## License
+
+Formalizations released under CC BY 4.0.

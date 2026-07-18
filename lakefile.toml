@@ -1,10 +1,18 @@
 name = "io"
-defaultTargets = ["CatGT", "Theorem53", "ZeoliteProofs", "ZeoliteV2Stub"]
+defaultTargets = ["CatGT", "Theorem53"]
 
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4.git"
 rev = "v4.14.0"
+
+# Every Lean library in this repository is kernel-checked with zero `sorry`.
+# The incomplete zeolite operator-order formalizations (formerly the
+# ZeoliteProofs / ZeoliteV2Stub targets) were removed on 2026-07-17: they
+# carried 17 and 25 open `sorry`s respectively and only ever "passed" CI
+# because `sorry` compiles. The zeolite operator-order result stands on its
+# published algebraic proofs (zeolite_operator_order/ALGEBRAIC_PROOFS_ALL_7_THEOREMS.md
+# and the accompanying paper); a Lean formalization of it is future work.
 
 [[lean_lib]]
 name = "CatGT"
@@ -13,23 +21,3 @@ roots = ["CatGT.CatGT_Main"]
 [[lean_lib]]
 name = "Theorem53"
 roots = ["PrincipiaOrthogona1.Theorem53NonCommutativity"]
-
-# Added 2026-07-10: the zeolite operator-order paper's Lean files were sitting
-# in Downloads, never wired into any lakefile, so the "6 closed / 3 admits"
-# and "no sorry" claims made about them were never actually kernel-checked.
-# Split into two independent targets (same reasoning as CatGT/Theorem53 above)
-# so a failure in one doesn't hide the other's real result.
-[[lean_lib]]
-name = "ZeoliteProofs"
-roots = ["zeolite_operator_order.CatGT_PROOFS_COMPLETE"]
-
-# CatGT_v2.lean is an explicit theorem-stub file (every theorem body is
-# `sorry`, plus several forward references to helper predicates defined
-# later in the same file). It is expected to fail to compile outright --
-# that's a correct, informative result, not a sign the wiring is wrong.
-# It's wired in and built in CI, but does not gate the workflow's pass/fail
-# status (see "Fail workflow if" step below) since it was never claimed to
-# be complete.
-[[lean_lib]]
-name = "ZeoliteV2Stub"
-roots = ["zeolite_operator_order.CatGT_v2"]

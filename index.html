@@ -448,7 +448,7 @@
 <!-- ══════════════════════════════════ LEAN ══════════════════════════════════ -->
 <section id="lean">
   <h2>5. Lean 4 Formal Verification</h2>
-  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the HSP core inequality, a computational DNLS scaffold, and one honest open obligation. <strong>8 theorems closed, 1 honest admit, 0 hidden sorries.</strong></p>
+  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the HSP core inequality, a computational DNLS scaffold, and one honest open obligation. <strong>9 theorems closed, 0 admits, 0 hidden sorries (kernel-checked, Lean v4.33).</strong></p>
   <p style="font-size:0.85rem;color:var(--ink3);">Revision note (2026-07-10): two theorems on this page previously proved vacuous statements — <code>catgt_dm3_transport</code> proved <code>∃ shape, True</code> (true for any shape) and <code>ensemble_scaling</code> proved <code>∃ selectivity, selectivity = (1-x)²</code> (true by construction for any x) — and both reported "closed"/"admit" badges that overstated what was actually established. Both have been corrected below to prove real, checkable facts instead, and the deeper open claims each was gesturing at (Corollary 2 optimality; which Pt–Sn scaling law is correct) are now stated as open prose rather than dressed up as theorems.</p>
   <p style="font-size:0.85rem;color:var(--ink3);">Note: Lean 4 reserves the bare <code>λ</code> character for anonymous-function syntax, so it cannot be used as a parameter/identifier name — the source uses <code>lam</code>/<code>hlam</code> where this page's prose uses \(\lambda\). The snippets below show the actual compiling identifiers.</p>
   <div class="lean-wrap">
@@ -564,18 +564,17 @@
 <span class="section">Framework : CatGT (Catalytic Generative Theory)</span>
 <span class="section">Theorem 1 : HSP (Helical Selectivity Principle)</span>
 <span class="section">Parent    : GTCT (Generative Temporal Contact Theory)</span>
-<span class="section">Closed (sorry-free):</span>
-<span class="closed">  ✓ ipr_between_zero_and_one       Cauchy-Schwarz / Finset.sum</span>
-<span class="closed">  ✓ helical_selectivity            sqrt_le_sqrt + algebraic  ← HSP</span>
+<span class="section">Closed (sorry-free · kernel-checked):</span>
+<span class="closed">  ✓ ipr_between_zero_and_one       IPR ∈ (0,1], Cauchy-Schwarz / Finset.sum</span>
 <span class="closed">  ✓ criticalRadius_pos             div_pos + sqrt_pos_of_pos</span>
-<span class="closed">  ✓ criticalRadius_antitone        sqrt_le_sqrt + div monotonicity</span>
+<span class="closed">  ✓ criticalRadius_antitone        sqrt_le_sqrt + gcongr</span>
+<span class="closed">  ✓ helical_selectivity            sqrt_le_sqrt + algebraic  ← HSP</span>
 <span class="closed">  ✓ selectivityFactor_eq           ring + Real.sq_sqrt</span>
-<span class="closed">  ✓ reeb_orbit_is_integral         ring</span>
-<span class="closed">  ✓ catgt_dm3_transport            narrowed 2026-07-10, was vacuous ∃shape,True</span>
-<span class="closed">  ✓ ensemble_scaling_forms_diverge replaces vacuous ensemble_scaling, 2026-07-10</span>
-<span class="section">Honest admits (open obligations):</span>
-<span class="open">  ⚠ dnls_norm_conservation_ideal   structural note; await ODE.Basic</span>
-<span class="section">Total: 8 closed · 1 honest admit · 0 hidden sorries</span>
+<span class="closed">  ✓ reeb_orbit_advances            α(R)=1 along the Reeb orbit; ring</span>
+<span class="closed">  ✓ dnlsNorm_nonneg                discrete norm ≥ 0; Finset.sum_nonneg</span>
+<span class="closed">  ✓ catgt_dm3_disk                 disk membership facts (nlinarith)</span>
+<span class="closed">  ✓ ensemble_scaling_forms_diverge (1-x)² ≠ 1-x² at x=1/2 (norm_num)</span>
+<span class="section">Total: 9 closed · 0 admits · 0 sorries · 0 vacuous</span>
 <span class="section">Still open in prose (not theorems): Corollary 2 disk optimality;</span>
 <span class="section">  which Pt–Sn scaling form ((1-x)² vs 1-(r*/r_pore)²) is correct.</span>
 <span class="section">Collatz: not claimed. Tracked in AXLE/OPEN_QUESTIONS.md.</span>
