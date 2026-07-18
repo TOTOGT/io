@@ -331,7 +331,9 @@
     <li><a href="#prelim">Mathematical Preliminaries</a></li>
     <li><a href="#hsp">Helical Selectivity Principle (Theorem 1)</a></li>
     <li><a href="#predictions">Falsifiable Predictions</a></li>
-    <li><a href="#lean">Lean 4 Formal Verification</a></li>
+    <li><a href="#lean">Lean 4 Formal Verification</a>
+      <ul><li><a href="#lean">5.1 Operator order &amp; the 2026-07 correction</a></li></ul>
+    </li>
     <li><a href="#bridge">Coherence Bridge: Seven Domains</a></li>
     <li><a href="#discussion">Discussion</a></li>
     <li><a href="#audit">Sorry Audit</a></li>
@@ -521,6 +523,31 @@
   refine ⟨<span class="kw">by</span> ring, <span class="kw">by</span> ring, <span class="kw">1</span>/<span class="kw">2</span>, <span class="kw">by</span> norm_num, <span class="kw">by</span> norm_num, ?_⟩
   norm_num</pre>
   </div>
+
+  <h3>5.1 Operator order: where non-commutativity actually lives</h3>
+  <p style="font-size:0.85rem;color:var(--ink3);">Correction (2026-07-18): earlier versions of the zeolite operator-order paper (v1–v2, Zenodo 10.5281/zenodo.21296707) asserted that the aperture gate <em>K</em> fails to commute with a <em>pointwise</em> fold <em>F</em>ψ = ψ + λ|ψ|²ψ, via a boundary term ∝ δ(r − r<sub>ap</sub>). That claim is false — the two commute exactly, for every state — and the three theorems below establish what is actually true. Order-dependence is carried by whichever operator transports amplitude <em>between</em> sites, never by a gate acting pointwise.</p>
+  <div class="lean-wrap">
+    <div class="lean-header">
+      <span>ZeoliteCommutation.lean — gate vs. pointwise fold vs. coupling</span>
+      <span class="status-closed">✓ CLOSED — sorry-free</span>
+    </div>
+    <pre class="lean"><span class="comment">-- 3-site ring, real amplitudes (so |v|²v = v³).</span>
+<span class="kw">def</span> coupling (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := ![v <span class="kw">1</span> + v <span class="kw">2</span>, v <span class="kw">0</span> + v <span class="kw">2</span>, v <span class="kw">0</span> + v <span class="kw">1</span>]
+<span class="kw">def</span> onsite   (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := <span class="kw">fun</span> i => (v i) ^ <span class="kw">3</span>
+<span class="kw">def</span> gate     (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := ![v <span class="kw">0</span>, <span class="kw">0</span>, v <span class="kw">2</span>]
+<span class="kw">def</span> psi      : Fin <span class="kw">3</span> → ℝ := ![<span class="kw">1</span>, <span class="kw">1</span>, <span class="kw">0</span>]
+
+<span class="comment">/-- The 0/1 aperture gate commutes with the pointwise fold — for EVERY state. -/</span>
+<span class="kw">theorem</span> <span class="thm-name">gate_commutes</span> (v : Fin <span class="kw">3</span> → ℝ) : gate (onsite v) = onsite (gate v)
+
+<span class="comment">/-- Inter-site coupling does NOT commute with the on-site fold (commutator −6). -/</span>
+<span class="kw">theorem</span> <span class="thm-name">coupling_not_commute</span> : coupling (onsite psi) ≠ onsite (coupling psi)
+
+<span class="comment">/-- The gate does NOT commute with the corrected fold F = coupling ∘ onsite. -/</span>
+<span class="kw">theorem</span> <span class="thm-name">gate_fold_not_commute</span> :
+    gate (coupling (onsite psi)) ≠ coupling (onsite (gate psi))</pre>
+  </div>
+  <p style="font-size:0.85rem;color:var(--ink3);">These three are kernel-checked on Lean v4.33.0-rc1 + Mathlib with <code>#print axioms</code> reporting only <code>[propext, Classical.choice, Quot.sound]</code> — no <code>sorryAx</code>. Unlike <code>CatGT_Main.lean</code> and <code>Theorem53NonCommutativity.lean</code>, this file is <strong>not</strong> wired into <code>lakefile.toml</code> and so is not re-run by CI; it is standalone and self-contained, and can be re-verified by pasting it into any Lean 4 + Mathlib environment such as <a href="https://live.lean-lang.org">live.lean-lang.org</a>.</p>
 </section>
 <!-- ══════════════════════════════════ BRIDGE ══════════════════════════════════ -->
 <section id="bridge">
@@ -579,6 +606,20 @@
 <span class="section">  which Pt–Sn scaling form ((1-x)² vs 1-(r*/r_pore)²) is correct.</span>
 <span class="section">Collatz: not claimed. Tracked in AXLE/OPEN_QUESTIONS.md.</span>
 <span class="section">Verified in CI: github.com/TOTOGT/io/actions (real Lean kernel, every push)</span>
+
+<span class="section">── ZeoliteCommutation.lean · July 2026 ─────────────────────</span>
+<span class="section">Scope     : operator-order commutation facts (3-site ring)</span>
+<span class="section">Closed (sorry-free · kernel-checked):</span>
+<span class="closed">  ✓ gate_commutes                  0/1 gate ∘ pointwise fold commutes, ∀ states</span>
+<span class="closed">  ✓ coupling_not_commute           coupling vs on-site fold; commutator = −6</span>
+<span class="closed">  ✓ gate_fold_not_commute          gate vs F = coupling ∘ onsite</span>
+<span class="section">Total: 3 closed · 0 admits · 0 sorries · 0 vacuous</span>
+<span class="section">NOT in lakefile.toml — standalone, NOT re-run by CI. Verified by paste</span>
+<span class="section">  into live.lean-lang.org (Lean v4.33.0-rc1 + Mathlib), 2026-07-18.</span>
+<span class="section">Supersedes: zeolite paper v1-v2 Theorem 1, which was FALSE (asserted</span>
+<span class="section">  [K,F] ≠ 0 for gate + pointwise fold via a δ term that does not exist).</span>
+<span class="section">  Corrected in v3. See OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md.</span>
+<span class="section">Withdrawn: CatGT_PROOFS_COMPLETE.lean (17 sorries), CatGT_v2.lean (25).</span>
   </div>
 </section>
 <!-- ══════════════════════════════════ REFS ══════════════════════════════════ -->
