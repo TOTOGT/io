@@ -113,3 +113,56 @@ pattern (own build step + own `continue-on-error` + explicit fail-check
 command or relying on a bare `continue-on-error: true` with no explicit
 gate — either of those is what let entanglement and a full day of a
 hidden real error happen previously.
+
+---
+
+## Hard rules (added 2026-07-18, after a session that broke things)
+
+### Before touching anything
+1. **Read this file first.** It exists because these mistakes already happened.
+2. **Work only in a real clone.** `git rev-parse --show-toplevel` must print this
+   repo's root. `~/Documents/Claude/Projects/io` is **NOT a clone** — it is a stale
+   copy sitting inside the home-directory repo (`~` is a git repo with remote
+   `TOTOGT/3M`). Editing there does not reach this repository, and it is usually
+   behind. Commits made there land in 3M by accident.
+3. **`git pull` before editing.** Assume the remote is ahead of any local copy.
+
+### Editing
+4. **Never wholesale-replace a working file.** Read it, then make the minimal edit.
+   If you believe a full rewrite is warranted, `git diff` it against HEAD first and
+   justify every deletion. A file that is already correct must not be "fixed".
+5. **Renaming a theorem is a four-file change**: the `.lean`, the CI `#print axioms`
+   list, `README.md`, and `index.html`. All four, or none.
+
+### Proof claims
+6. **No "closed" / "0 sorry" / "proved" / "verified" without a kernel check.** Either
+   CI is green, or the code was pasted into a real Lean kernel and shown clean.
+   Fluent prose and confidence are not evidence.
+7. **Vacuous statements are banned as theorems**: `True`, `∃ x, True`, `∃ x, x = e`,
+   `1 = 1`. They compile and establish nothing. If it cannot be proved, write an
+   explicit `sorry` with a comment, or state it as prose — never as a green check.
+8. **`#print axioms` must show only** `[propext, Classical.choice, Quot.sound]`.
+   Any `sorryAx` means not closed, including inherited transitively.
+9. **Documents do not score their own rigor.** No "10/10", no `∎` on a sketch. Tag
+   every claim `[VERIFIED]` / `[MODEL]` / `[SIMULATION]` / `[OPEN]` and never let a
+   claim drift between tags.
+
+### CI and build
+10. **Toolchain is pinned** in `lean-toolchain` (v4.14.0) and `lakefile.toml`. Do not
+    bump it in the middle of another task.
+11. **There is no committed `lake-manifest.json`.** The workflow MUST run
+    `lake update` before any `lean-action` step or mathlib resolution fails with
+    `configuration file not found: .lake/packages/mathlib/lakefile.toml`.
+12. **Do not rewrite `verify-proofs.yml` wholesale.** Its per-target isolation
+    (separate build + axiom-print + gate for each library) is deliberate: Theorem53's
+    status must never depend on CatGT.
+13. **Pushing workflow changes needs a PAT with `workflow` scope.** Without it, edit
+    the file in the GitHub web UI instead.
+14. **`CatGT_Main.lean` declares at root level — no namespace.** Do not `open CatGT`
+    in the axiom-check file.
+
+### Mathlib gotchas
+15. **`Complex.abs` no longer exists** in current Mathlib. Use the norm `‖·‖` — it
+    works on both v4.14 and v4.33.
+16. **`λ` is reserved syntax** in Lean 4 and can never be an identifier. Use `lam` /
+    `hlam`.
