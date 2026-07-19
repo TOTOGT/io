@@ -70,10 +70,10 @@ additionally secured the informal technical mentorship of two senior
 subject-matter experts, who advise the Principal Investigator on experimental
 realism and commercial context in an unpaid advisory capacity:
 
-* **Prof. Zila S. B. Sousa** — zeolite catalysis; operando DRIFTS
+* **Prof.Dr. Sousa, Z. S. B. UERJ — zeolite catalysis; operando DRIFTS
   characterization of ethanol-to-hydrocarbon conversion over HZSM-5 and HMCM-22,
   the specific catalytic systems modeled in this proposal.
-* **Prof. Felipe de Aquino** — [affiliation]; [specialization], with direct
+* **Mr. Felipe de Aquino** — [ASTRO34.com.br]; [CEO], with direct
   commercial experience in the specification and supply of the analytical
   instrumentation used to characterize these reaction systems.
 
