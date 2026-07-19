@@ -92,6 +92,7 @@ dependencies (and the absence of `sorryAx`) are visible in every run's log:
 Pablo Nogueira Grossi · G6 LLC, Newark NJ ·
 ORCID [0009-0000-6496-2186](https://orcid.org/0009-0000-6496-2186) ·
 Zenodo [10.5281/zenodo.19117399](https://doi.org/10.5281/zenodo.19117399) ·
+Google [Scholar] (https://scholar.google.com/citations?hl=en&user=LRR8YIAAAAAJ) . 
 Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
 
 ## License
