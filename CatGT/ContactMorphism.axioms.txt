@@ -1,0 +1,1 @@
+'dilate_preserves_alpha' depends on axioms: [propext, Classical.choice, Quot.sound]

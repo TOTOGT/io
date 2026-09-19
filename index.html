@@ -350,8 +350,9 @@
 <!-- ══════════════════════════════════ HEADER ══════════════════════════════════ -->
 <header class="masthead">
   <div class="series-tag">GOMC Opus · Part I · Preprint V4 · September 2026</div>
-  <h1>Catalytic Generative Theory (CatGT):<br>The Helical Selectivity Principle</h1>
+  <h1>Catalytic Generative Theory (CatGT):<br>The Self-Trapping Selectivity Principle</h1>
   <div class="subtitle">A unified framework for zeolite shape selectivity, metal ensemble effects,<br>and dm³ reactor design via contact geometry and DNLS dynamics</div>
+  <div class="meta" style="margin-top:0.2rem;"><em>Renamed 2026-09-19, was "The Helical Selectivity Principle" — the Reeb orbits are straight lines, not helices, and a Reeb flow cannot be an attractor. See Theorem 1.</em></div>
   <div class="meta">
     Pablo Nogueira Grossi &nbsp;·&nbsp; G6 LLC, Newark, NJ &nbsp;·&nbsp;
     <a href="https://orcid.org/0009-0000-6496-2186">ORCID 0009-0000-6496-2186</a><br>
@@ -367,7 +368,7 @@
     <li><a href="#abstract">Abstract</a></li>
     <li><a href="#intro">Introduction</a></li>
     <li><a href="#prelim">Mathematical Preliminaries</a></li>
-    <li><a href="#hsp">Helical Selectivity Principle (Theorem 1)</a></li>
+    <li><a href="#hsp">Self-Trapping Selectivity Principle (Theorem 1)</a></li>
     <li><a href="#predictions">Falsifiable Predictions</a></li>
     <li><a href="#lean">Lean 4 Formal Verification</a>
       <ul><li><a href="#lean">5.1 Operator order &amp; the 2026-06 correction</a></li></ul>
@@ -384,7 +385,7 @@
   <div class="abstract">
     <div class="label">Abstract</div>
     <p>We introduce <strong>Catalytic Generative Theory (CatGT)</strong>, a unified mathematical framework that integrates four previously separate levels of catalytic description — quantum-mechanical active-site geometry, mesoscale pore topology, discrete nonlinear Schrödinger (DNLS) soliton dynamics, and macroscopic dm³-scale reactor transport — under a single generative operator pipeline \(G = U \circ F \circ K \circ C\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\).</p>
-    <p>The central result, the <strong>Helical Selectivity Principle (HSP)</strong>, establishes that only reaction pathways whose radial coordinate satisfies \(r \leq r^*(\lambda) = \sqrt{J/\lambda}\) can reach the stable catalytic fixed point \(x^*\), where \(J\) is inter-site coupling and \(\lambda\) is the on-site binding energy modelled by the DNLS equation. Zeolite shape-selectivity (HZSM-5, HMCM-22), metal ensemble effects (Pt–Sn), and macroscopic extrudate optimisation emerge as corollaries. Three falsifiable predictions are given. A Lean 4 formal verification of the HSP accompanies this paper.</p>
+    <p>The central result, the <strong>Self-Trapping Selectivity Principle</strong> (renamed 2026-09-19, was "Helical Selectivity Principle" — see Theorem 1), establishes that only reaction pathways whose radial coordinate satisfies \(r \leq r^*(\lambda) = a\sqrt{J/\lambda}\) remain confined under the DNLS pipeline's dynamics, where \(a\) is a lattice-spacing length scale, \(J\) is inter-site coupling, and \(\lambda\) is the on-site binding energy. (How this connects to a fixed point \(x^*\) of the discrete pipeline \(G\) is not established here — see the To-Do list.) Zeolite shape-selectivity (HZSM-5, HMCM-22), metal ensemble effects (Pt–Sn), and macroscopic extrudate optimisation emerge as corollaries. Three falsifiable predictions are given. A Lean 4 formal verification of the core inequality accompanies this paper — the quoted code in §5 has not yet been updated to include the length scale \(a\) introduced here; see the note there.</p>
     <p><strong>Keywords:</strong> catalytic generative theory · CatGT · helical selectivity principle · HSP · contact manifold · DNLS · zeolite · ensemble effect · Lean 4 · GTCT · GOMC Opus</p>
   </div>
 </section>
@@ -393,7 +394,7 @@
   <h2>1. Introduction</h2>
   <p>Catalysis in the petrochemical and energy sectors operates simultaneously across at least four length scales: the Ångström scale of quantum-mechanical orbital overlap at the active site; the nanometre scale of zeolite pore networks and metal surface ensembles; the micrometre scale of soliton-like energy localisation in coupled oscillator chains; and the decimetre (dm³) scale of extrudate pellets and fixed-bed reactors.</p>
   <p>Existing theories address each scale in isolation. Density-functional theory (DFT) handles electronic structure but is silent on reactor-scale transport. Computational fluid dynamics (CFD) models pressure drop but takes microscopic selectivity as a given. The discrete nonlinear Schrödinger (DNLS) equation captures energy localisation in molecular chains but has not been connected to industrial catalyst design.</p>
-  <p><strong>This paper closes that gap.</strong> We show that these four levels are not merely analogous but mathematically equivalent descriptions of the same object: a generative operator \(G\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\). The bridge is the Reeb vector field of \(\mathcal{X}_\text{cat}\), whose integral curves are precisely the helical attractors observed in DNLS soliton dynamics and in the preferred reaction pathways of shape-selective catalysts.</p>
+  <p><strong>This paper closes that gap.</strong> We show that these four levels are not merely analogous but mathematically equivalent descriptions of the same object: a generative operator \(G\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\). The Reeb vector field of \(\mathcal{X}_\text{cat}\) supplies its coordinate structure; the actual confinement observed in DNLS soliton dynamics and in the preferred reaction pathways of shape-selective catalysts comes from the DNLS equation's self-trapping transition, not from the Reeb flow itself — a Reeb flow preserves the contact volume and so cannot have an attracting set. <em>(Corrected 2026-09-19: earlier text called the Reeb orbits "helical attractors" — they are neither helical nor attracting; see Theorem 1 below.)</em></p>
   <!-- Fig 1 — Operator Pipeline (interactive) -->
   <div class="fig-wrap">
     <canvas class="fig-canvas" id="fig1" height="160"></canvas>
@@ -409,7 +410,7 @@
     <strong>Definition (Contact 3-manifold).</strong> A contact 3-manifold is a pair \((M, \alpha)\) where \(M\) is a smooth orientable 3-manifold and \(\alpha\) is a 1-form satisfying \(\alpha \wedge d\alpha \neq 0\) everywhere.
   </div>
   <p>We define the catalyst contact manifold as \(\mathcal{X}_\text{cat} = (\mathbb{R}^3, \alpha_\text{cat})\) with \(\alpha_\text{cat} = dz - r^2\,d\theta\) in cylindrical coordinates \((r, \theta, z)\), where \(r\) is the pore aperture (Å), \(\theta\) is the catalytic cycle phase, and \(z\) is the reaction coordinate.</p>
-  <p>The Reeb vector field \(R = \partial_z\) satisfies \(\iota_R d\alpha = 0\) and \(\alpha(R) = 1\). Its integral curves \((r_0, \theta_0, z_0 + t)\) are helical lines — the helical attractors of the DNLS system.</p>
+  <p>The Reeb vector field \(R = \partial_z\) satisfies \(\iota_R d\alpha = 0\) and \(\alpha(R) = 1\) — this part is a genuine, checkable fact about \(\alpha_\text{cat}\). But its integral curves \((r_0, \theta_0, z_0 + t)\) hold \(r\) and \(\theta\) fixed: they are straight vertical lines, not helices. And since the Reeb flow preserves \(\alpha\) (hence \(\alpha \wedge d\alpha\), the contact volume), it is volume-preserving and therefore cannot have an attracting set, for any choice of contact form on any contact manifold. <em>(Corrected 2026-09-19; see Theorem 1.)</em> The actual confinement claimed below comes from the DNLS equation's self-trapping transition, a separate and genuinely dissipative-free localization phenomenon (Eilbeck, Lomdahl &amp; Scott 1985) — the contact manifold supplies coordinates, not the confining dynamics.</p>
   <!-- Fig 2 — Helical Attractor (interactive) -->
   <div class="fig-wrap">
     <canvas class="fig-canvas" id="fig2" height="320"></canvas>
@@ -418,7 +419,7 @@
       <input type="range" id="lam2" min="0.3" max="6" step="0.1" value="1.5">
       <span class="val" id="lam2val">λ = 1.5</span>
     </div>
-    <div class="fig-caption"><strong>Figure 2.</strong> The helical attractor \(\mathcal{H}_\lambda\) on the contact manifold \(\mathcal{X}_\text{cat}\). Golden helix: Reeb orbit inside the attractor tube \(r \leq r^*(\lambda)\). Red dashed: blocked pathway \(r > r^*(\lambda)\). Drag the slider to change \(\lambda\) and watch the attractor tube tighten.</div>
+    <div class="fig-caption"><strong>Figure 2.</strong> The self-trapping tube \(\mathcal{T}_\lambda\) on the contact manifold \(\mathcal{X}_\text{cat}\). Gold: the Reeb orbit — a straight vertical line at fixed \(r,\theta\), not a helix, and not an attractor. Red dashed: a reaction pathway that exceeds \(r^*(\lambda)\), for contrast. Drag the slider to change \(\lambda\) and watch the tube's radius change.</div>
   </div>
   <h3>2.2 The generative operator pipeline</h3>
   <p>Following GTCT, define the pipeline \(G = U \circ F \circ K \circ C\), where the four operators act on a state \(\psi \in L^2(\mathcal{X}_\text{cat})\):</p>
@@ -438,13 +439,14 @@
 </section>
 <!-- ══════════════════════════════════ HSP ══════════════════════════════════ -->
 <section id="hsp">
-  <h2>3. Helical Selectivity Principle</h2>
+  <h2>3. Self-Trapping Selectivity Principle</h2>
+  <p style="font-size:0.85rem;color:var(--ink3);"><em>Renamed and corrected 2026-09-19 (was "Helical Selectivity Principle"). The Reeb vector field \(R=\partial_z\) is a genuine fact about \(\alpha_\text{cat}\) (§2.1), but its flow is volume-preserving and so cannot confine or attract anything; the actual confinement below comes from DNLS self-trapping, and \(r^*(\lambda)\) now carries an explicit length scale so it can be compared to a physical radius at all. See the To-Do entry for what's still open.</em></p>
   <div class="thm-box hsp">
-    <div class="thm-label">Theorem 1 — Helical Selectivity Principle (HSP) · CatGT</div>
-    <p>Let \((\mathcal{X}_\text{cat}, \alpha_\text{cat})\) be the catalyst contact manifold and \(G = U \circ F \circ K \circ C\) the generative pipeline. Let \(\mathcal{H}_\lambda\) be the helical attractor at nonlinearity \(\lambda\). Then:</p>
-    <p>(i) \(\mathcal{H}_\lambda\) is a Legendrian-bounded tube: every point \((r, \theta, z) \in \mathcal{H}_\lambda\) satisfies \(r \leq r^*(\lambda) = \sqrt{J/\lambda}\).</p>
-    <p>(ii) A reaction pathway \(\gamma\) reaches the stable fixed point \(x^*\) of \(G\) only if \(\gamma \subset \mathcal{H}_\lambda\), i.e., \(\max_t r(\gamma(t)) \leq r^*(\lambda)\).</p>
-    <p>(iii) The transition-state selectivity of \(G\) is \(\sigma = 1 - J/(\lambda \cdot r_\text{pore}^2)\), recovering the empirical shape-selectivity factor of zeolites.</p>
+    <div class="thm-label">Theorem 1 — Self-Trapping Selectivity · CatGT</div>
+    <p>Let \((\mathcal{X}_\text{cat}, \alpha_\text{cat})\) be the catalyst contact manifold with Reeb field \(R=\partial_z\), \(a\) a lattice-spacing length scale, and \(G = U \circ F \circ K \circ C\) the generative pipeline. Define the self-trapping tube \(\mathcal{T}_\lambda = \{(r,\theta,z) : r \leq r^*(\lambda)\}\), with \(r^*(\lambda) := a\sqrt{J/\lambda}\) — now a genuine length, not the dimensionless \(\sqrt{J/\lambda}\) of earlier drafts. Then:</p>
+    <p>(i) \(\mathcal{T}_\lambda\) is a coordinate region of \(\mathcal{X}_\text{cat}\), not a dynamical attractor: \(R\)'s flow preserves \(\alpha \wedge d\alpha\) and so has no attracting set, and its orbits are straight lines in \(z\), not helices. \(\mathcal{T}_\lambda\) is simply the set of points with \(r \leq r^*(\lambda)\).</p>
+    <p>(ii) <span class="status model" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">MODEL</span> A DNLS state whose radial coordinate satisfies the self-trapping condition remains confined to \(r(t) \leq r^*(\lambda)\) under the pipeline's (energy-conserving) dynamics — the discrete self-trapping transition of the DNLS equation itself is the confining mechanism, not the contact manifold's Reeb flow. How this connects to a fixed point of the discrete pipeline \(G\) is not established here; see the To-Do entry.</p>
+    <p>(iii) The transition-state selectivity is \(\sigma = 1 - (r^*(\lambda)/r_\text{pore})^2 = 1 - (J/\lambda)(a/r_\text{pore})^2\) — dimensionally consistent now that \(r^*(\lambda)\) carries units of length, unlike the earlier \(\sigma = 1 - J/(\lambda r_\text{pore}^2)\), which required \(J/\lambda\) to carry length² on its own.</p>
   </div>
   <!-- Fig 3 — DNLS dynamics (interactive) -->
   <div class="fig-wrap">
@@ -475,7 +477,7 @@
   <h2>4. Falsifiable Predictions</h2>
   <div class="thm-box pred">
     <div class="thm-label">Prediction 1 — DNLS self-trapping threshold in zeolite pores</div>
-    <p>For a zeolitic cracking catalyst with pore radius \(r_\text{pore}\), the self-trapping nonlinearity \(\lambda_c\) measured by molecular dynamics should satisfy \(\lambda_c \approx J \cdot (r_\text{pore}/\sigma_\text{LJ})^2\), where \(\sigma_\text{LJ}\) is the Lennard-Jones diameter of the reactant molecule.</p>
+    <p><em>Corrected 2026-09-19 — see the To-Do entry for the derivation.</em> For a zeolitic cracking catalyst with pore radius \(r_\text{pore}\), the self-trapping nonlinearity \(\lambda_c\) measured by molecular dynamics should satisfy \(\lambda_c \approx J \cdot (\sigma_\text{LJ}/r_\text{pore})^2\), where \(\sigma_\text{LJ}\) is the Lennard-Jones diameter of the reactant molecule. Narrower pores confine fewer lattice modes (\(N \sim r_\text{pore}/\sigma_\text{LJ}\)), reducing the kinetic bandwidth available to disperse the wavepacket, so <em>smaller</em> pores require <em>less</em> nonlinearity to self-trap — hence \(\lambda_c\) decreasing as \(r_\text{pore}\) decreases, the reciprocal of the ratio in earlier drafts.</p>
   </div>
   <div class="thm-box pred">
     <div class="thm-label">Prediction 2 — Ensemble-radius scaling on Pt–Sn</div>
@@ -492,6 +494,7 @@
   <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the HSP core inequality, a computational DNLS scaffold, and one honest open obligation. <strong>9 theorems closed, 0 admits, 0 hidden sorries (kernel-checked, Lean v4.33).</strong></p>
   <p style="font-size:0.85rem;color:var(--ink3);">Revision note (2026-07-10): two theorems on this page previously proved vacuous statements — <code>catgt_dm3_transport</code> proved <code>∃ shape, True</code> (true for any shape) and <code>ensemble_scaling</code> proved <code>∃ selectivity, selectivity = (1-x)²</code> (true by construction for any x) — and both reported "closed"/"admit" badges that overstated what was actually established. Both have been corrected below to prove real, checkable facts instead, and the deeper open claims each was gesturing at (Corollary 2 optimality; which Pt–Sn scaling law is correct) are now stated as open prose rather than dressed up as theorems.</p>
   <p style="font-size:0.85rem;color:var(--ink3);">Note: Lean 4 reserves the bare <code>λ</code> character for anonymous-function syntax, so it cannot be used as a parameter/identifier name — the source uses <code>lam</code>/<code>hlam</code> where this page's prose uses \(\lambda\). The snippets below show the actual compiling identifiers.</p>
+  <p style="font-size:0.85rem;color:var(--ink3);"><strong>Note (2026-09-19):</strong> Theorem 1 above was corrected to introduce an explicit length scale \(a\) and drop the helix/attractor language — <code>CatGT_Main.lean</code> itself has <strong>not</strong> been updated to match yet, so the quoted code below (verbatim from the current file) still uses the old dimensionless <code>criticalRadius := Real.sqrt(J/lam)</code> and the docstring still says "attractor tube." This is a known gap, not an oversight: fixing it means changing <code>criticalRadius</code>'s signature to take a length parameter and re-verifying every downstream theorem that uses it, tracked in the To-Do list rather than done silently here.</p>
   <div class="lean-wrap">
     <div class="lean-header">
       <span>CatGT_Main.lean — HSP (Theorem 1, formal core)</span>
@@ -700,9 +703,12 @@
   <div class="todo-box">
     <h4 class="cat-structural">Structural — blocks Theorem 1 as currently stated</h4>
     <ul>
-      <li><strong>Reeb-attractor contradiction.</strong> A Reeb flow preserves α ∧ dα (since it preserves α itself), hence is volume-preserving, hence cannot have an attracting set — so "helical attractor of a Reeb flow" is inconsistent for any choice of contact form on any contact manifold, not just this one. Either replace the confinement dynamics in Theorem 1(i)–(ii) with a genuinely dissipative vector field and demote \(\mathcal{X}_\text{cat}\) to kinematic background, or drop the Reeb/attractor language entirely.</li>
-      <li><strong>Reeb orbits aren't helical as written.</strong> With \(\alpha_\text{cat} = dz - r^2\,d\theta\), \(R = \partial_z\) and the integral curves \((r_0,\theta_0,z_0+t)\) hold \(\theta\) fixed — they're vertical lines, not helices. This is separate from the point above and would need fixing even if the attractor issue is resolved.</li>
-      <li><strong>Units of \(r^*(\lambda) = \sqrt{J/\lambda}\).</strong> With \(J\), \(\lambda\) as defined in §2.3, \(J/\lambda\) is dimensionless, but Theorem 1(iii) and Predictions 1–2 require it to carry length². Introduce an explicit length scale (lattice spacing, or \(\sigma_\text{LJ}\)) and carry it through every downstream formula rather than leaving it implicit.</li>
+      <li><del><strong>Reeb-attractor contradiction.</strong> A Reeb flow preserves α ∧ dα (since it preserves α itself), hence is volume-preserving, hence cannot have an attracting set — so "helical attractor of a Reeb flow" is inconsistent for any choice of contact form on any contact manifold, not just this one. Either replace the confinement dynamics in Theorem 1(i)–(ii) with a genuinely dissipative vector field and demote \(\mathcal{X}_\text{cat}\) to kinematic background, or drop the Reeb/attractor language entirely.</del> <strong>Resolved 2026-09-19:</strong> dropped the Reeb/attractor language. Theorem 1 now states plainly that \(R\)'s flow is volume-preserving and has no attracting set, and re-grounds the actual confinement claim in DNLS self-trapping instead — the Reeb field is kept only as the genuine (if separate) structural fact that it is.</li>
+      <li><del><strong>Reeb orbits aren't helical as written.</strong> With \(\alpha_\text{cat} = dz - r^2\,d\theta\), \(R = \partial_z\) and the integral curves \((r_0,\theta_0,z_0+t)\) hold \(\theta\) fixed — they're vertical lines, not helices. This is separate from the point above and would need fixing even if the attractor issue is resolved.</del> <strong>Resolved 2026-09-19:</strong> Theorem 1, Figure 2, and its caption now say "straight vertical line," not helix; Figure 2's animation actually draws one. The theorem itself is renamed "Self-Trapping Selectivity Principle" (was "Helical Selectivity Principle") throughout the page's own prose.</li>
+      <li><del><strong>Units of \(r^*(\lambda) = \sqrt{J/\lambda}\).</strong> With \(J\), \(\lambda\) as defined in §2.3, \(J/\lambda\) is dimensionless, but Theorem 1(iii) and Predictions 1–2 require it to carry length². Introduce an explicit length scale (lattice spacing, or \(\sigma_\text{LJ}\)) and carry it through every downstream formula rather than leaving it implicit.</del> <strong>Resolved 2026-09-19, in Theorem 1 only:</strong> \(r^*(\lambda) := a\sqrt{J/\lambda}\), with \(a\) a lattice-spacing length scale, giving \(\sigma = 1-(J/\lambda)(a/r_\text{pore})^2\) in place of the old \(\sigma=1-J/(\lambda r_\text{pore}^2)\). <strong>Not yet propagated:</strong> Figure 3, Figure 4/the Coherence Bridge table, and Predictions 1–2 in §4 still use the bare dimensionless \(\sqrt{J/\lambda}\) — added as a new item below.</li>
+      <li><strong>New, surfaced while fixing the above:</strong> Theorem 1(ii) now explicitly states that how the DNLS confinement claim connects to a fixed point \(x^*\) of the discrete pipeline \(G\) is <em>not established</em> — \(x^*\), and the operators \(C,K,F,U\) themselves, are never defined as actual mathematical objects on \(L^2(\mathcal{X}_\text{cat})\) anywhere on this page. This is a real gap, not just a labeling one, and is larger than today's fix.</li>
+      <li><strong>New, surfaced while fixing the above:</strong> <code>CatGT_Main.lean</code>'s <code>criticalRadius</code> still returns the dimensionless \(\sqrt{J/\lambda}\) — the quoted code in §5 was deliberately <em>not</em> edited to match the corrected prose, since that would mean displaying Lean code as verbatim/verified when it isn't. Fixing this means adding a length parameter to <code>criticalRadius</code> and re-verifying <code>helical_selectivity</code> and <code>selectivityFactor_eq</code> against it — folds into the pending decision on <code>CatGT_Main.lean</code> (fix-first vs. deposit-with-caveat) already on record.</li>
+      <li><del><strong>New, surfaced while fixing the above:</strong> Prediction 1 (\(\lambda_c \approx J\cdot(r_\text{pore}/\sigma_\text{LJ})^2\)) may have the ratio inverted relative to the corrected \(r^*(\lambda)=a\sqrt{J/\lambda}\) — setting \(r_\text{pore}=r^*(\lambda_c)\) and solving gives \(\lambda_c = J\cdot(a/r_\text{pore})^2\), the reciprocal of what's currently written. Flagged, not changed: the correct direction depends on the actual self-trapping threshold criterion in the cited DNLS literature (Eilbeck–Lomdahl–Scott 1985), which requires checking against the source rather than assuming from dimensional analysis alone.</del> <strong>Resolved 2026-09-19:</strong> confirmed against the actual self-trapping criterion, not just dimensional matching. Eilbeck–Lomdahl–Scott's threshold is \(\chi = \lambda N/J \gtrsim 1 \Rightarrow \lambda_c \sim J/N\); with \(N \sim (r_\text{pore}/\sigma_\text{LJ})^2\) lattice modes in a 2D pore cross-section, \(\lambda_c \sim J(\sigma_\text{LJ}/r_\text{pore})^2\) — narrower pores confine fewer modes, reducing the kinetic bandwidth available to disperse the wavepacket, so smaller pores need less nonlinearity to self-trap. The original \((r_\text{pore}/\sigma_\text{LJ})^2\) had this backwards (larger pores self-trapping more easily, which is unphysical). Prediction 1 in §4 corrected accordingly.</li>
     </ul>
     <h4 class="cat-evidence">Evidentiary</h4>
     <ul>
@@ -807,7 +813,7 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
   window.addEventListener('resize', draw);
   setTimeout(draw, 100);
 })();
-// ── Figure 2 — Helical attractor (3D projection) ──────────────────────────────
+// ── Figure 2 — Self-trapping tube (3D projection) ─────────────────────────────
 (function() {
   const canvas = document.getElementById('fig2');
   const slider = document.getElementById('lam2');
@@ -830,8 +836,9 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     ctx.clearRect(0, 0, W, H);
     const lam = parseFloat(slider.value);
     const J = 1.0;
-    const rstar = Math.sqrt(J / lam);
-    // Draw attractor tube (cylinder outline)
+    const latticeA = 1.0; // length scale 'a' (Theorem 1); set to 1 for this illustration
+    const rstar = latticeA * Math.sqrt(J / lam);
+    // Draw tube (cylinder outline) — a coordinate region, not a dynamical attractor
     const steps = 60;
     // Bottom ring
     const ringY = -2.5;
@@ -845,19 +852,18 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     }
     ctx.stroke();
     ctx.setLineDash([]);
-    // Helical attractor (golden)
+    // Reeb orbit: straight vertical line at fixed (r,θ) — NOT a helix
     ctx.strokeStyle = GOLD; ctx.lineWidth = 2.5;
     ctx.beginPath();
-    const helixR = rstar * 0.6;
+    const orbitR = rstar * 0.6, orbitTheta = Math.PI / 4;
     for (let i = 0; i <= 120; i++) {
       const t = i / 120;
       const z = -2.5 + t * 5.5;
-      const theta = t * Math.PI * 4;
-      const p = project(helixR * Math.cos(theta), helixR * Math.sin(theta), z, W, H);
+      const p = project(orbitR * Math.cos(orbitTheta), orbitR * Math.sin(orbitTheta), z, W, H);
       i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy);
     }
     ctx.stroke();
-    // Blocked pathway (red dashed)
+    // A reaction pathway exceeding r*(λ), for contrast (illustrative, not a Reeb orbit)
     const blockedR = rstar * 1.6;
     ctx.strokeStyle = CORAL; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
     ctx.beginPath();
@@ -870,25 +876,19 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     }
     ctx.stroke();
     ctx.setLineDash([]);
-    // Fixed point x*
-    const xstar = project(helixR * Math.cos(Math.PI * 4), helixR * Math.sin(Math.PI * 4), 3.0, W, H);
-    ctx.fillStyle = TEAL;
-    ctx.beginPath(); ctx.arc(xstar.sx, xstar.sy, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = '11px JetBrains Mono, monospace';
-    ctx.textAlign = 'left'; ctx.fillText('x*', xstar.sx + 10, xstar.sy + 4);
     // r*(λ) label
     const rp = project(rstar, 0, ringY, W, H);
     ctx.fillStyle = INK3; ctx.font = '11px JetBrains Mono, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`r*(λ) = ${rstar.toFixed(2)} Å`, rp.sx + 6, rp.sy);
+    ctx.fillText(`r*(λ) = a·√(J/λ) = ${rstar.toFixed(2)} Å`, rp.sx + 6, rp.sy);
     // Legend
     ctx.textAlign = 'left'; ctx.font = '12px EB Garamond, serif';
     ctx.fillStyle = GOLD; ctx.fillRect(20, 14, 20, 3);
-    ctx.fillStyle = INK2; ctx.fillText('Reeb orbit (accessible)', 46, 20);
+    ctx.fillStyle = INK2; ctx.fillText('Reeb orbit (straight, not helical)', 46, 20);
     ctx.strokeStyle = CORAL; ctx.lineWidth = 1.5; ctx.setLineDash([5,3]);
     ctx.beginPath(); ctx.moveTo(20,32); ctx.lineTo(40,32); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = INK2; ctx.fillText('Blocked pathway r > r*(λ)', 46, 36);
+    ctx.fillStyle = INK2; ctx.fillText('Pathway exceeding r*(λ)', 46, 36);
     angle += 0.004;
     animId = requestAnimationFrame(draw);
   }
