@@ -3,1017 +3,585 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CatGT — Catalytic Generative Theory, Part I</title>
+<title>Operator Firing Order — Ethanol-to-Hydrocarbon Selectivity (v3, annotated)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
-  /* Math/Greek Unicode fallback — covers ℝ λ ψ α ∧ ≤ √ ∘ ∂ ∃ ∑ etc. */
   @font-face {
     font-family: 'MathFallback';
     src: local('STIX Two Math'), local('Cambria Math'), local('Latin Modern Math'), local('DejaVu Math TeX Gyre');
     unicode-range: U+0391-03C9, U+2100-214F, U+2200-22FF, U+27C0-27EF, U+2980-29FF;
   }
   :root {
-    --ink: #1a1a18;
-    --ink2: #3d3d38;
-    --ink3: #6b6b64;
-    --paper: #faf8f3;
-    --paper2: #f2efe7;
-    --paper3: #e8e4d8;
-    --gold: #b8860b;
-    --gold2: #d4a017;
-    --teal: #1a5f5a;
-    --teal2: #2a8078;
+    --ink: #1a1a18; --ink2: #3d3d38; --ink3: #6b6b64;
+    --paper: #faf8f3; --paper2: #f2efe7; --paper3: #e8e4d8;
+    --gold: #b8860b; --gold2: #d4a017;
+    --teal: #1a5f5a; --teal2: #2a8078;
     --coral: #8b3a2a;
+    --note: #5b4a9e; --note2: #f4f1fa;
     --rule: #c8c0a8;
-    --code-bg: #1e1e1c;
-    --code-fg: #d4d0c0;
-    --code-green: #87c67a;
-    --code-gold: #e8c56d;
-    --code-blue: #7ab8d8;
-    --code-red: #e87878;
-    --code-comment: #7a7a6a;
+    --code-bg: #1e1e1c; --code-fg: #d4d0c0; --code-green: #87c67a;
+    --code-gold: #e8c56d; --code-blue: #7ab8d8; --code-comment: #7a7a6a;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'EB Garamond', 'Libre Baskerville', Georgia, 'MathFallback', serif;
-    font-size: 18px;
-    line-height: 1.75;
-    color: var(--ink);
-    background: var(--paper);
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 0 2rem 6rem;
+    font-size: 18px; line-height: 1.75; color: var(--ink); background: var(--paper);
+    max-width: 780px; margin: 0 auto; padding: 0 2rem 6rem;
   }
-  /* ── Header ── */
-  .masthead {
-    border-bottom: 2px solid var(--ink);
-    padding: 3.5rem 0 2rem;
-    margin-bottom: 2.5rem;
-    text-align: center;
-  }
+  .masthead { border-bottom: 2px solid var(--ink); padding: 3.5rem 0 2rem; margin-bottom: 1.5rem; text-align: center; }
   .series-tag {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink3);
-    margin-bottom: 1.2rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ink3); margin-bottom: 1.2rem;
   }
-  h1 {
-    font-size: 1.9rem;
-    font-weight: 600;
-    line-height: 1.25;
-    margin-bottom: 0.5rem;
-  }
-  .subtitle {
-    font-size: 1.1rem;
-    font-style: italic;
-    color: var(--ink2);
-    margin-bottom: 1.5rem;
-  }
-  .meta {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.72rem;
-    color: var(--ink3);
-    line-height: 2;
-  }
+  h1 { font-size: 1.65rem; font-weight: 600; line-height: 1.3; margin-bottom: 0.6rem; }
+  .subtitle { font-size: 1rem; font-style: italic; color: var(--ink2); margin-bottom: 1.2rem; }
+  .meta { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink3); line-height: 2; }
   .meta a { color: var(--teal); text-decoration: none; border-bottom: 1px solid var(--teal2); }
+  .date-line { font-size: 0.95rem; color: var(--ink2); margin: 0.8rem 0; font-style: italic; }
+  .version-banner {
+    font-size: 0.85rem; color: var(--coral); font-weight: 600; margin-top: 0.6rem;
+  }
+  /* ── Legend ── */
+  .legend {
+    background: var(--paper2); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 1rem 1.4rem; margin-bottom: 2rem; font-size: 0.85rem; color: var(--ink2); line-height: 1.6;
+  }
+  .legend .swatch { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 2px; margin-right: 0.4em; vertical-align: middle; }
+  .legend .sw-note { background: var(--note); }
+  .legend .sw-orig { background: var(--gold); }
   /* ── Nav ── */
-  nav {
-    background: var(--paper2);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 2.5rem;
-    font-size: 0.85rem;
-  }
-  nav .nav-title {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink3);
-    margin-bottom: 0.5rem;
-  }
-  nav ol { padding-left: 1.2rem; }
-  nav li { margin: 0.15rem 0; }
+  nav { background: var(--paper2); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 1.5rem; margin-bottom: 2.5rem; font-size: 0.82rem; }
+  nav .nav-title { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink3); margin-bottom: 0.5rem; }
+  nav ol { padding-left: 1.2rem; column-count: 2; column-gap: 1.5rem; }
+  nav li { margin: 0.12rem 0; break-inside: avoid; }
   nav a { color: var(--teal); text-decoration: none; }
   nav a:hover { border-bottom: 1px solid var(--teal); }
   /* ── Sections ── */
-  section { margin-bottom: 3rem; }
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 0.3rem;
-    margin: 2.5rem 0 1rem;
-    color: var(--ink);
-  }
-  h3 {
-    font-size: 1.05rem;
-    font-weight: 600;
-    margin: 1.8rem 0 0.6rem;
-    color: var(--ink2);
-  }
+  section { margin-bottom: 2.6rem; }
+  h2 { font-size: 1.2rem; font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: 0.3rem; margin: 2.2rem 0 1rem; }
+  h3 { font-size: 1.02rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--ink2); }
+  h4 { font-size: 0.92rem; font-weight: 600; font-style: italic; margin: 1.2rem 0 0.4rem; color: var(--ink2); }
   p { margin-bottom: 1rem; }
-  /* ── Abstract ── */
-  .abstract {
-    background: var(--paper2);
-    border-left: 3px solid var(--gold);
-    padding: 1.2rem 1.5rem;
-    margin: 1.5rem 0 2rem;
-    font-size: 0.95rem;
+  .keywords { font-size: 0.88rem; color: var(--ink2); margin-bottom: 1.5rem; }
+  /* ── Original-text special blocks (Correction Notice, Formalization status) ── */
+  .orig-highlight {
+    background: #fdf8ec; border-left: 3px solid var(--gold); padding: 1.1rem 1.4rem;
+    margin: 1.5rem 0; font-size: 0.93rem;
   }
-  .abstract .label {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.5rem;
+  .orig-highlight .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  /* ── Editorial note boxes (mine, not original) ── */
+  .note-box {
+    background: var(--note2); border: 1.5px solid var(--note); border-radius: 4px;
+    padding: 1rem 1.4rem; margin: 1.6rem 0; font-size: 0.9rem; color: var(--ink2);
   }
-  /* ── Theorem boxes ── */
-  .thm-box {
-    border: 1.5px solid var(--teal);
-    border-radius: 4px;
-    padding: 1.2rem 1.5rem;
-    margin: 1.5rem 0;
-    background: #f0f7f6;
+  .note-box .note-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--note); margin-bottom: 0.5rem; font-weight: 600;
   }
-  .thm-box .thm-label {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 0.4rem;
-  }
-  .thm-box.hsp { border-color: var(--gold); background: #fdf8ec; }
-  .thm-box.hsp .thm-label { color: var(--gold); }
+  .note-box.positive { border-color: var(--teal); background: #eef7f6; }
+  .note-box.positive .note-label { color: var(--teal); }
+  .note-box p:last-child { margin-bottom: 0; }
+  /* ── Theorem/prediction boxes ── */
+  .thm-box { border: 1.5px solid var(--teal); border-radius: 4px; padding: 1.1rem 1.4rem; margin: 1.4rem 0; background: #f0f7f6; }
+  .thm-box .thm-label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.4rem; }
   .thm-box.pred { border-color: var(--coral); background: #fdf2ef; }
   .thm-box.pred .thm-label { color: var(--coral); }
-  /* ── Definition ── */
-  .def-box {
-    border-left: 3px solid var(--ink3);
-    padding: 0.6rem 1rem;
-    margin: 1rem 0;
-    font-size: 0.95rem;
-    color: var(--ink2);
+  .thm-box .status { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.4rem; }
+  .status.verified { background: var(--code-green); color: #14261a; }
+  .status.model { background: var(--gold2); color: #2b1f04; }
+  .status.simulation { background: #c9a5e8; color: #2b1a3a; }
+  .status.open { background: #d8d2c0; color: var(--ink); }
+  .proof { font-size: 0.92rem; color: var(--ink2); margin: 0.6rem 0 0.2rem; }
+  .proof .proof-label { font-style: italic; color: var(--ink); }
+  /* ── Figure placeholder ── */
+  .fig-placeholder {
+    border: 1px dashed var(--rule); border-radius: 4px; padding: 1.5rem; text-align: center;
+    color: var(--ink3); font-size: 0.85rem; margin: 1.5rem 0; background: var(--paper2);
   }
-  /* ── Figures / interactive ── */
-  .fig-wrap {
-    margin: 2rem 0;
-    background: var(--paper2);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .fig-canvas {
-    width: 100%;
-    display: block;
-    background: var(--paper2);
-  }
-  .fig-caption {
-    padding: 0.8rem 1.2rem;
-    font-size: 0.82rem;
-    color: var(--ink2);
-    border-top: 1px solid var(--rule);
-    line-height: 1.5;
-  }
-  .fig-caption strong { color: var(--ink); }
-  .fig-controls {
-    padding: 0.7rem 1.2rem;
-    background: var(--paper3);
-    border-top: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    font-size: 0.82rem;
-  }
-  .fig-controls label { color: var(--ink2); white-space: nowrap; }
-  .fig-controls input[type=range] { flex: 1; min-width: 100px; accent-color: var(--teal); }
-  .fig-controls .val {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.75rem;
-    color: var(--teal);
-    min-width: 3rem;
-  }
-  /* ── Lean code ── */
-  .lean-wrap {
-    margin: 1.5rem 0;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid #333;
-  }
-  .lean-header {
-    background: #2d2d2b;
-    padding: 0.5rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.7rem;
-    color: #888;
-  }
-  .lean-header .status-closed { color: var(--code-green); }
-  .lean-header .status-open { color: var(--code-gold); }
-  pre.lean {
-    background: var(--code-bg);
-    color: var(--code-fg);
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.78rem;
-    line-height: 1.6;
-    padding: 1rem 1.2rem;
-    overflow-x: auto;
-    margin: 0;
-  }
-  .kw { color: var(--code-blue); }
-  .thm-name { color: var(--code-green); }
-  .comment { color: var(--code-comment); font-style: italic; }
-  .admit-kw { color: var(--code-gold); }
-  .str { color: var(--code-red); }
-  /* ── Table scroll wrapper — prevents bleed on narrow viewports ── */
-  .table-scroll {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 1.2rem 0;
-    background:
-      linear-gradient(to right, var(--paper) 30%, transparent) left,
-      linear-gradient(to left,  var(--paper) 30%, transparent) right,
-      radial-gradient(ellipse at left,  rgba(0,0,0,.10) 0%, transparent 70%) left,
-      radial-gradient(ellipse at right, rgba(0,0,0,.10) 0%, transparent 70%) right;
-    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-    background-repeat: no-repeat;
-    background-attachment: local, local, scroll, scroll;
-  }
-  /* ── Coherence bridge table ── */
-  .bridge-table {
-    width: 100%;
-    min-width: 480px;
-    border-collapse: collapse;
-    font-size: 0.88rem;
-    margin: 0;
-  }
-  .bridge-table th {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 0.5rem 0.8rem;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
-  }
-  .bridge-table td {
-    padding: 0.5rem 0.8rem;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: top;
-  }
-  .bridge-table tr.part1 { background: #f0f7f6; }
-  .bridge-table tr.part1 td:first-child { font-weight: 600; color: var(--teal); }
-  .bridge-table tr.future td:first-child { color: var(--ink3); font-style: italic; }
-  .bridge-table tr.conj td:first-child { color: var(--coral); font-style: italic; }
-  /* ── Sorry audit summary ── */
-  .audit {
-    background: var(--code-bg);
-    color: var(--code-fg);
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.78rem;
-    line-height: 1.8;
-    padding: 1.2rem 1.5rem;
-    border-radius: 6px;
-    margin: 1.5rem 0;
-  }
-  .audit .closed { color: var(--code-green); }
-  .audit .open { color: var(--code-gold); }
-  .audit .section { color: var(--code-blue); margin-top: 0.8rem; }
+  .fig-caption { font-size: 0.85rem; color: var(--ink2); margin-top: 0.6rem; }
+  /* ── Tables ── */
+  .table-scroll { width: 100%; overflow-x: auto; margin: 1.2rem 0; }
+  table.paper-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 0.85rem; }
+  table.paper-table th, table.paper-table td { border: 1px solid var(--rule); padding: 0.55rem 0.7rem; text-align: left; vertical-align: top; }
+  table.paper-table th { background: var(--ink); color: var(--paper); font-size: 0.78rem; }
+  table.flow-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 1.2rem 0; }
+  table.flow-table td { padding: 0.35rem 0.8rem; vertical-align: top; width: 50%; }
+  table.flow-table td.hdr { font-weight: 600; padding-bottom: 0.4rem; }
+  /* ── Lean / code ── */
+  .lean-wrap { margin: 1.3rem 0; border-radius: 6px; overflow: hidden; border: 1px solid #333; }
+  .lean-header { background: #2d2d2b; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #888; }
+  pre.lean { background: var(--code-bg); color: var(--code-fg); font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; line-height: 1.6; padding: 1rem 1.2rem; overflow-x: auto; margin: 0; }
+  .kw { color: var(--code-blue); } .thm-name { color: var(--code-green); } .comment { color: var(--code-comment); font-style: italic; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--paper3); padding: 0.1em 0.3em; border-radius: 3px; }
+  .lean-wrap code { background: none; padding: 0; }
+  /* ── Lists ── */
+  ul.plain, ol.plain { padding-left: 1.6rem; margin-bottom: 1rem; }
+  ul.plain li, ol.plain li { margin-bottom: 0.4rem; }
   /* ── References ── */
-  .references ol {
-    padding-left: 1.5rem;
-    font-size: 0.88rem;
-    color: var(--ink2);
-  }
-  .references li { margin-bottom: 0.5rem; }
-  /* ── Footer ── */
-  footer {
-    margin-top: 4rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid var(--ink);
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Mono', 'MathFallback', monospace;
-    font-size: 0.7rem;
-    color: var(--ink3);
-    line-height: 2;
-  }
+  .references ol { padding-left: 1.5rem; font-size: 0.87rem; color: var(--ink2); }
+  .references li { margin-bottom: 0.6rem; }
+  /* ── To-do box (matches sibling page) ── */
+  .todo-box { border: 1.5px solid var(--rule); border-radius: 4px; padding: 1.2rem 1.5rem 0.6rem; margin: 1.5rem 0; background: var(--paper2); }
+  .todo-box h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; margin: 1.3rem 0 0.6rem; font-style: normal; }
+  .todo-box h4:first-of-type { margin-top: 0; }
+  .todo-box .cat-structural { color: var(--coral); }
+  .todo-box .cat-evidence { color: var(--gold); }
+  .todo-box .cat-formal { color: var(--teal); }
+  .todo-box .cat-note { color: var(--note); }
+  .todo-box ul { list-style: none; padding-left: 0; margin-bottom: 0.8rem; }
+  .todo-box li { margin: 0.55rem 0; padding-left: 1.7rem; position: relative; font-size: 0.9rem; line-height: 1.55; color: var(--ink2); }
+  .todo-box li::before { content: '☐'; position: absolute; left: 0; top: 0.05rem; color: var(--ink3); font-size: 1rem; }
+  .todo-box li strong { color: var(--ink); }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 2px solid var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink3); line-height: 2; }
 </style>
 </head>
 <body>
 <!-- ══════════════════════════════════ HEADER ══════════════════════════════════ -->
 <header class="masthead">
-  <div class="series-tag">GOMC Opus · Part I · Preprint V2 · May 2026</div>
-  <h1>Catalytic Generative Theory (CatGT):<br>The Helical Selectivity Principle</h1>
-  <div class="subtitle">A unified framework for zeolite shape selectivity, metal ensemble effects,<br>and dm³ reactor design via contact geometry and DNLS dynamics</div>
+  <div class="series-tag">Zeolite Operator-Order Paper · Verbatim v3 Reproduction, Annotated</div>
+  <h1>Operator Firing Order as the Missing Mechanism in<br>Ethanol-to-Hydrocarbon Selectivity: Contact-Geometric Analysis<br>of ZSM-5 and MCM-22 Zeolites</h1>
   <div class="meta">
-    Pablo Nogueira Grossi &nbsp;·&nbsp; G6 LLC, Newark, NJ &nbsp;·&nbsp;
-    <a href="https://orcid.org/0009-0000-6496-2186">ORCID 0009-0000-6496-2186</a><br>
-    Zenodo: <a href="https://doi.org/10.5281/zenodo.19117399">10.5281/zenodo.19117399</a> &nbsp;·&nbsp;
-    AXLE: <a href="https://github.com/TOTOGT/AXLE">github.com/TOTOGT/AXLE</a><br>
-    Submitted to <em>Catalysis Today</em> (ISSN 0920-5861) · Elsevier
+    Pablo Nogueira Grossi &nbsp;·&nbsp; G6 LLC, Newark, NJ 07104, USA &nbsp;·&nbsp;
+    <a href="https://orcid.org/0009-0000-6496-2186">ORCID 0009-0000-6496-2186</a>
   </div>
+  <div class="date-line">July 2026 — Version 3 (correction)</div>
+  <div class="meta">
+    Preprint: Zenodo <a href="https://doi.org/10.5281/zenodo.21296707">10.5281/zenodo.21296707</a><br>
+    <strong>Version 3 corrects a false theorem in v1–v2; see the Correction Notice below.</strong>
+  </div>
+  <div class="version-banner">This page: verbatim v3 text, annotated — corrections below are destined for v4 (not yet applied to the source).</div>
 </header>
+
+<div class="legend">
+  <p style="margin-bottom:0.5rem;"><strong>How this page works:</strong> everything outside the boxes below is the v3 paper's own text, reproduced without changes. Two box styles mark content that is <em>not</em> part of that reproduction:</p>
+  <p style="margin-bottom:0.3rem;"><span class="swatch sw-orig"></span><strong>Gold boxes</strong> — the paper's own already-boxed content (its Correction Notice, its Formalization Status paragraph), kept verbatim but visually set off as the original document does.</p>
+  <p style="margin-bottom:0;"><span class="swatch sw-note"></span><strong>Violet "Editorial Note" boxes</strong> — added independently, at the points in the text they concern. These are proposed corrections and open items for a future v4; nothing in the verbatim text has been changed to accommodate them.</p>
+</div>
+
 <!-- ══════════════════════════════════ NAV ══════════════════════════════════ -->
 <nav>
   <div class="nav-title">Contents</div>
   <ol>
     <li><a href="#abstract">Abstract</a></li>
-    <li><a href="#intro">Introduction</a></li>
-    <li><a href="#prelim">Mathematical Preliminaries</a></li>
-    <li><a href="#hsp">Helical Selectivity Principle (Theorem 1)</a></li>
-    <li><a href="#predictions">Falsifiable Predictions</a></li>
-    <li><a href="#lean">Lean 4 Formal Verification</a>
-      <ul><li><a href="#lean">5.1 Operator order &amp; the 2026-07 correction</a></li></ul>
-    </li>
-    <li><a href="#bridge">Coherence Bridge: Seven Domains</a></li>
-    <li><a href="#discussion">Discussion</a></li>
-    <li><a href="#audit">Sorry Audit</a></li>
+    <li><a href="#s1">1. Introduction</a></li>
+    <li><a href="#s2">2. Prior Evidence</a></li>
+    <li><a href="#s3">3. Computational Validation</a></li>
+    <li><a href="#s4">4. Theoretical Framework</a></li>
+    <li><a href="#s5">5. DNLS Modeling &amp; Simulation</a></li>
+    <li><a href="#s6">6. Falsifiable Predictions</a></li>
+    <li><a href="#s7">7. Open Questions</a></li>
+    <li><a href="#s8">8. Code &amp; Data Availability</a></li>
+    <li><a href="#s9">9. Conclusion</a></li>
     <li><a href="#refs">References</a></li>
+    <li><a href="#appA">Appendix A</a></li>
+    <li><a href="#appB">Appendix B</a></li>
+    <li><a href="#appC">Appendix C</a></li>
+    <li><a href="#todo">To-Do (v4)</a></li>
   </ol>
 </nav>
+
 <!-- ══════════════════════════════════ ABSTRACT ══════════════════════════════════ -->
 <section id="abstract">
-  <div class="abstract">
-    <div class="label">Abstract</div>
-    <p>We introduce <strong>Catalytic Generative Theory (CatGT)</strong>, a unified mathematical framework that integrates four previously separate levels of catalytic description — quantum-mechanical active-site geometry, mesoscale pore topology, discrete nonlinear Schrödinger (DNLS) soliton dynamics, and macroscopic dm³-scale reactor transport — under a single generative operator pipeline \(G = U \circ F \circ K \circ C\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\).</p>
-    <p>The central result, the <strong>Helical Selectivity Principle (HSP)</strong>, establishes that only reaction pathways whose radial coordinate satisfies \(r \leq r^*(\lambda) = \sqrt{J/\lambda}\) can reach the stable catalytic fixed point \(x^*\), where \(J\) is inter-site coupling and \(\lambda\) is the on-site binding energy modelled by the DNLS equation. Zeolite shape-selectivity (HZSM-5, HMCM-22), metal ensemble effects (Pt–Sn), and macroscopic extrudate optimisation emerge as corollaries. Three falsifiable predictions are given. A Lean 4 formal verification of the HSP accompanies this paper.</p>
-    <p><strong>Keywords:</strong> catalytic generative theory · CatGT · helical selectivity principle · HSP · contact manifold · DNLS · zeolite · ensemble effect · Lean 4 · GTCT · GOMC Opus</p>
+  <h2>Abstract</h2>
+  <p>Zeolite topology governs product selectivity in ethanol conversion to hydrocarbons, yet the mechanism by which pore structure determines which intermediates form and survive remains unclear. We propose that the answer lies not in pore size or acidity alone, but in the sequential firing order of geometric operators.</p>
+  <p>Using contact-geometric formalism derived from Topographical Orthogenetic Theory (TOGT), we show that ZSM-5 (10-ring channels) and MCM-22 (10-ring/12-ring supercage) implement different operator sequences: ZSM-5 enforces C▷K▷F▷U (Constraint before Folding), while MCM-22 executes C▷F▷K▷U (Folding before Constraint). This difference predicts opposite selectivity patterns: ZSM-5 suppresses branching and aromatic intermediates before they form; MCM-22 permits them to branch in the open supercage, then traps them at the 10-ring exit.</p>
+  <p>We integrate five peer-reviewed independent lines of evidence (MD simulations, operando DRIFTS, structural ablation studies) supporting this hypothesis, derive three falsifiable predictions testable via time-resolved DRIFTS contact-time experiments, and state seven formal theorems connecting the operator-order hypothesis to the DNLS model used to simulate it. The model directly addresses the mechanistic gap in Sousa's empirical work: why do MCM-22 and ZSM-5 produce different coke distributions despite identical chemistry?</p>
+  <p>This paper positions operator firing order as the missing mechanism governing zeolite-catalyzed selectivity and offers a generalizable framework for predicting and tuning catalytic outcomes via topographic geometry. Section 4.4 states the seven central theorems formally, each carrying an explicit status tag ([VERIFIED] = checked by the Lean 4 kernel, [MODEL], [SIMULATION], or [OPEN]). The locus of non-commutativity is now kernel-verified: the aperture gate commutes exactly with a pointwise fold — correcting v2's Theorem 1, which asserted the opposite and was false — and order-dependence is instead carried by the inter-site coupling term, which provably does not commute with the on-site nonlinearity, nor (once the fold carries its coupling) with the gate.</p>
+  <p class="keywords"><strong>Keywords:</strong> ethanol-to-hydrocarbon conversion, ZSM-5, MCM-22, operator order, coke formation, pore topology, contact geometry, DRIFTS, Catalysis Today, Topographical Orthogenetic Theory</p>
+
+  <div class="orig-highlight">
+    <div class="tag">Correction Notice (v3, July 2026)</div>
+    <p style="margin-bottom:0;">Version 2's Theorem 1 claimed \([K,F] \neq 0\) for \(K\) the aperture gate (a 0/1 indicator) and \(F\) the <em>pointwise</em> fold \(\psi + \lambda|\psi|^2\psi\), escaping through a "nonzero boundary effect" at \(r=r_{ap}\) said to be left to the distributional-calculus literature. No such boundary term exists: those two operators commute exactly, for every state (kernel-verified, <code>gate_commutes</code>). The order-dependence central to this paper is real but lives elsewhere: the inter-site coupling does not commute with the on-site nonlinearity (kernel-verified, <code>coupling_not_commute</code>), and once the fold carries its coupling term, it does not commute with the gate (kernel-verified, <code>gate_fold_not_commute</code>). Section 4.4 restates Theorem 1 accordingly and re-tags every downstream claim. The v2 supplementary files <code>ALGEBRAIC_PROOFS_ALL_7_THEOREMS.md</code>, <code>CatGT_PROOFS_COMPLETE.lean</code>, and <code>CatGT_v2.lean</code> are withdrawn and replaced by <code>OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md</code> and the kernel-checked Lean files in <a href="https://github.com/TOTOGT/io">github.com/TOTOGT/io</a>.</p>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">Editorial Note 1 — versioning</div>
+    <p>The header above ("July 2026 — Version 3") is the source document's own date and is left unchanged. The corrections and open items boxed throughout this page are proposed for a future v4 (targeted September 2026) and have <strong>not</strong> been applied to the verbatim text — nothing below reflects them unless explicitly stated inside a box.</p>
   </div>
 </section>
-<!-- ══════════════════════════════════ INTRO ══════════════════════════════════ -->
-<section id="intro">
+
+<!-- ══════════════════════════════════ SECTION 1 ══════════════════════════════════ -->
+<section id="s1">
   <h2>1. Introduction</h2>
-  <p>Catalysis in the petrochemical and energy sectors operates simultaneously across at least four length scales: the Ångström scale of quantum-mechanical orbital overlap at the active site; the nanometre scale of zeolite pore networks and metal surface ensembles; the micrometre scale of soliton-like energy localisation in coupled oscillator chains; and the decimetre (dm³) scale of extrudate pellets and fixed-bed reactors.</p>
-  <p>Existing theories address each scale in isolation. Density-functional theory (DFT) handles electronic structure but is silent on reactor-scale transport. Computational fluid dynamics (CFD) models pressure drop but takes microscopic selectivity as a given. The discrete nonlinear Schrödinger (DNLS) equation captures energy localisation in molecular chains but has not been connected to industrial catalyst design.</p>
-  <p><strong>This paper closes that gap.</strong> We show that these four levels are not merely analogous but mathematically equivalent descriptions of the same object: a generative operator \(G\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\). The bridge is the Reeb vector field of \(\mathcal{X}_\text{cat}\), whose integral curves are precisely the helical attractors observed in DNLS soliton dynamics and in the preferred reaction pathways of shape-selective catalysts.</p>
-  <!-- Fig 1 — Operator Pipeline (interactive) -->
-  <div class="fig-wrap">
-    <canvas class="fig-canvas" id="fig1" height="160"></canvas>
-    <div class="fig-caption"><strong>Figure 1.</strong> The generative operator pipeline \(G = U \circ F \circ K \circ C\) and its catalytic interpretation. Hover over each operator for details.</div>
+  <p>Over the past two decades, the selective conversion of ethanol to hydrocarbons has been extensively studied using ZSM-5 and MCM-22 zeolites. Sousa and colleagues have established through detailed operando DRIFTS work <a href="#ref1">[1]</a><a href="#ref2">[2]</a> that pore topology — the arrangement of channels and supercages — governs both the distribution of products and the rate and location of coke deposition. In her 2014 paper, Sousa demonstrated that HZSM-5 and HMCM-22 produce markedly different product selectivities and deactivation profiles when converting ethanol, despite having nominally the same acid sites and chemistry; the difference arises from pore geometry. Her 2023 work extended this to dealuminated and delaminated variants, confirming that topology, not just acidity, is the dominant factor.</p>
+  <p>Yet the mechanism by which topology produces this differentiation has remained opaque. Pore diameter alone cannot explain it: both zeolites have 10-ring apertures. Classical "restricted transition state selectivity" (RTSS) theory <a href="#ref3">[3]</a><a href="#ref4">[4]</a> explains why ZSM-5 excludes bulky products, but it does not explain why MCM-22 — which also has 10-ring channels — follows a profoundly different reaction pathway. Why does MCM-22 form coke so readily in its supercages while ZSM-5 resists it in its narrower channels?</p>
+  <p>The missing mechanism is operator firing order.</p>
+  <p>We propose that ZSM-5 and MCM-22 differ not in the identity of their pore-constraining geometry, but in the sequence and timing with which that geometry is applied during the catalytic cycle. Using the mathematical language of Topographical Orthogenetic Theory (TOGT), we formalize this sequence as a cascade of nested operators: Compression (C), Constraint (K), Folding/Branching (F), and Unfolding/Selection (U). The order in which these fire determines which intermediates survive and what products are made.</p>
+  <p>In ZSM-5, the 10-ring channel mouth fires the Constraint operator before any branching or aromatic formation can occur — thus C▷K▷F▷U. In MCM-22, the 12-ring external pocket and supercage permit branching to occur before the 10-ring exit acts as a constraint — thus C▷F▷K▷U. This small but decisive difference in operator order predicts the entire catalytic phenotype: product distribution, coke location, and deactivation kinetics.</p>
+
+  <p style="font-weight:600; margin-bottom:0.3rem;">Operator Firing Order in ZSM-5 vs. MCM-22</p>
+  <div class="table-scroll">
+  <table class="flow-table">
+    <tr><td class="hdr">ZSM-5 (10-ring channel):</td><td class="hdr">MCM-22 (12-ring supercage + 10-ring exit):</td></tr>
+    <tr><td>Ethanol →<sup>C</sup> Compressed</td><td>Ethanol →<sup>C</sup> Compressed</td></tr>
+    <tr><td>↓</td><td>↓</td></tr>
+    <tr><td><strong>K: CONSTRAINT</strong> → Size-excluded (10-ring limits size)</td><td><strong>F: FOLDING</strong> → Branching in supercage (aromatics, oligomers form)</td></tr>
+    <tr><td>↓</td><td>↓</td></tr>
+    <tr><td><strong>F: FOLDING</strong> → Branching among small products only</td><td><strong>K: CONSTRAINT</strong> → 10-ring trap (large molecules blocked)</td></tr>
+    <tr><td>↓</td><td>↓</td></tr>
+    <tr><td><strong>U: SELECTION</strong> → Linear products (DEE, olefins)</td><td><strong>U: SELECTION</strong> → Coke + residue (aromatics trapped)</td></tr>
+    <tr><td>∴ Selectivity S ≈ 0</td><td>∴ Selectivity S ≈ 0.35</td></tr>
+  </table>
   </div>
-  <p>CatGT is a domain instantiation of the overarching <strong>Generative Temporal Contact Theory (GTCT)</strong>. The operators C, K, F, U and the contact manifold \(\mathcal{X}_\text{cat}\) are GTCT primitives; their catalytic interpretation is the subject of the present paper.</p>
+
+  <p>In this paper, we present five independent peer-reviewed lines of evidence (molecular dynamics simulations, operando spectroscopy, and structural ablation experiments) consistent with this operator-order hypothesis. We derive three falsifiable predictions testable by contact-time DRIFTS experiments. And we state seven formal theorems connecting the hypothesis to the DNLS model used to simulate it, together with an explicit, per-theorem account of what is and is not yet formally verified (Section 4.4 and Appendix B).</p>
 </section>
-<!-- ══════════════════════════════════ PRELIM ══════════════════════════════════ -->
-<section id="prelim">
-  <h2>2. Mathematical Preliminaries</h2>
-  <h3>2.1 The catalyst contact manifold</h3>
-  <div class="def-box">
-    <strong>Definition (Contact 3-manifold).</strong> A contact 3-manifold is a pair \((M, \alpha)\) where \(M\) is a smooth orientable 3-manifold and \(\alpha\) is a 1-form satisfying \(\alpha \wedge d\alpha \neq 0\) everywhere.
-  </div>
-  <p>We define the catalyst contact manifold as \(\mathcal{X}_\text{cat} = (\mathbb{R}^3, \alpha_\text{cat})\) with \(\alpha_\text{cat} = dz - r^2\,d\theta\) in cylindrical coordinates \((r, \theta, z)\), where \(r\) is the pore aperture (Å), \(\theta\) is the catalytic cycle phase, and \(z\) is the reaction coordinate.</p>
-  <p>The Reeb vector field \(R = \partial_z\) satisfies \(\iota_R d\alpha = 0\) and \(\alpha(R) = 1\). Its integral curves \((r_0, \theta_0, z_0 + t)\) are helical lines — the helical attractors of the DNLS system.</p>
-  <!-- Fig 2 — Helical Attractor (interactive) -->
-  <div class="fig-wrap">
-    <canvas class="fig-canvas" id="fig2" height="320"></canvas>
-    <div class="fig-controls">
-      <label>λ (nonlinearity)</label>
-      <input type="range" id="lam2" min="0.3" max="6" step="0.1" value="1.5">
-      <span class="val" id="lam2val">λ = 1.5</span>
-    </div>
-    <div class="fig-caption"><strong>Figure 2.</strong> The helical attractor \(\mathcal{H}_\lambda\) on the contact manifold \(\mathcal{X}_\text{cat}\). Golden helix: Reeb orbit inside the attractor tube \(r \leq r^*(\lambda)\). Red dashed: blocked pathway \(r > r^*(\lambda)\). Drag the slider to change \(\lambda\) and watch the attractor tube tighten.</div>
-  </div>
-  <h3>2.2 The generative operator pipeline</h3>
-  <p>Following GTCT, define the pipeline \(G = U \circ F \circ K \circ C\), where the four operators act on a state \(\psi \in L^2(\mathcal{X}_\text{cat})\):</p>
-  <div class="table-scroll"><table class="bridge-table">
-    <thead><tr><th>Operator</th><th>Physical role</th><th>Catalytic interpretation</th></tr></thead>
+
+<!-- ══════════════════════════════════ SECTION 2 ══════════════════════════════════ -->
+<section id="s2">
+  <h2>2. Prior Evidence for Operator-Order Differentiation</h2>
+  <p>Before introducing the formal theory, we review the existing literature through the lens of operator-order timing. Five independent studies — spanning molecular dynamics, operando DRIFTS, and structural modification — already provide evidence for C▷K▷F▷U in ZSM-5 and C▷F▷K▷U in MCM-22, even though these papers do not use that language.</p>
+
+  <h3>2.1 ZSM-5: C▷K▷F▷U (Constraint before Folding)</h3>
+  <h4>2.1.1 Restricted Transition State Selectivity</h4>
+  <p>Weisz and Frilette (1960) and Csicsery (1984) established the canonical principle: ZSM-5's uniformly sized 10-ring channels prevent large intermediates from forming within the zeolite. Molecules larger than ∼8 Å cannot pass through the pore throat. This is the Constraint operator firing first (K): the channel geometry eliminates entire reaction pathways before any branching product distribution (F) is established. No intermediate reaches the acid sites in the channel unless it can first fit through the 10-ring aperture. Mechanistically: C (molecule enters) ▷ K (pore geometry constrains size) ▷ F only among the constrained products ▷ U (selection by sorption and kinetics).</p>
+
+  <h4>2.1.2 Operando DRIFTS on ZSM-5 — Ethoxide Precedence</h4>
+  <p>Kadam and Shamzhy (2018) conducted real-time DRIFTS/FTIR studies of ethanol dehydration over MFI (ZSM-5) zeolite. Their operando spectra show that surface-bound ethoxy species form first and persist as a stable intermediate before diethyl ether (DEE) or other branched products appear. This sequence — ethoxy (the C▷K constrained product) before DEE (a C▷F▷K output) — is consistent with the pore-mouth constraint firing before significant branching chemistry occurs. The narrow channel imposes the ethoxide intermediate as the kinetically trapped state before any bimolecular branching is possible.</p>
+
+  <h4>2.1.3 Hierarchical ZSM-5 Pore-Mouth Branching</h4>
+  <p>An ACS <em>Applied Materials &amp; Interfaces</em> study of hierarchical H-ZSM-5 found that isomerization (a branching reaction, F-operator) is induced almost exclusively at acid sites located at the pore mouth — one of the few places in the MFI lattice with sufficient space for the relevant transition state. This structural constraint — K fires first, defining which acid sites are geometrically accessible — directly gates the firing of F. The channel diameter alone prevents bulky transition states from forming anywhere but at the pore entrance.</p>
+
+  <h3>2.2 MCM-22: C▷F▷K▷U (Folding before Constraint)</h3>
+  <h4>2.2.1 Supercage-Trapped Aromatic and Branched Products</h4>
+  <p>Sastre, Catlow, and Corma (1999) and Sastre, Catlow, and Corma (2002) conducted molecular dynamics simulations of benzene/propylene and <em>n</em>-heptane, respectively, in MCM-22. Benzene and other bulky species show only intracage mobility within the supercage — they cannot diffuse to the 10-ring channel aperture — while propylene, small enough to pass the 10-ring threshold, escapes readily. The supercage acts as an open cavity (no prior constraint) where branching and aromatic formation occur freely (F fires first). Only when the product attempts to exit does it encounter the 10-ring bottleneck (K fires second). This is the defining signature of C▷F▷K▷U: reactive intermediates are first allowed to branch and form in the open 12-ring supercage, then trapped by the 10-ring aperture.</p>
+
+  <h4>2.2.2 Supercage Acid Sites Drive Rapid Coke Formation</h4>
+  <p>A 2022 <em>J. Am. Chem. Soc.</em> study of MCM-22 in toluene alkylation with methanol (a structurally analogous methanol-to-hydrocarbons-type reaction) found that light coke forms in the supercages first and initiates deactivation of external-surface sites, while sinusoidal channels remain comparatively coke-resistant. This spatial segregation — coke precursors form in the open supercage (F fires) and then block the 10-ring channels (K is encountered) — is precisely the C▷F▷K▷U sequence. If K fired first, no branching would occur in the supercage at all.</p>
+
+  <h4>2.2.3 12-Ring External Pockets as Open-Access Pre-Reaction Sites</h4>
+  <p>Lawton et al. (1998) showed that MCM-22 crystals expose 12-ring pockets on the external surface, part of a two-pore-system framework whose supercages have inner free diameter 7.1 Å. These pockets are open and accessible without passing through any 10-ring aperture. For certain reactions, MCM-22 behaves as a 12-ring zeolite, not a 10-ring one. Molecules can arrive at the 12-ring pocket, branch and form aromatic intermediates (F), and then either stay in the supercage or attempt to navigate the 10-ring sinusoidal exit. No size-selection constraint acts until K fires. This is the structural embodiment of C▷F▷K▷U.</p>
+
+  <h3>2.3 Summary of Prior Evidence</h3>
+  <p>Table 1 demonstrates that five independent published sources — spanning MD simulation, operando spectroscopy, structural modification, and classical selectivity theory — support the hypothesis that ZSM-5 and MCM-22 implement opposite operator firing orders. The hypothesis is not speculative; it is a coherent reframing of existing empirical observations.</p>
+
+  <div class="table-scroll">
+  <table class="paper-table">
+    <caption style="caption-side:top; text-align:left; font-size:0.85rem; margin-bottom:0.5rem; color:var(--ink2);"><strong>Table 1.</strong> Evidence for operator-order differentiation in ZSM-5 vs. MCM-22.</caption>
+    <thead><tr><th>Evidence Type</th><th>ZSM-5: C▷K▷F▷U</th><th>MCM-22: C▷F▷K▷U</th></tr></thead>
     <tbody>
-      <tr class="part1"><td>\(C\)</td><td>Compression</td><td>Adsorption / pore entry</td></tr>
-      <tr class="part1"><td>\(K\)</td><td>Constrained path</td><td>Transition-state geometry; pore wall constraint</td></tr>
-      <tr class="part1"><td>\(F\)</td><td>Fold</td><td>Selectivity filter; irreversible branching</td></tr>
-      <tr class="part1"><td>\(U\)</td><td>Stabilisation</td><td>Product desorption; catalyst regeneration</td></tr>
+      <tr><td>MD Simulation</td><td>10-ring channel mouth constrains immediately; straight channels (5.4–5.6 Å) restrict entry.</td><td>Benzene and aromatic species have intracage mobility in the supercage but cannot exit (Sastre et al. 1999, 2002).</td></tr>
+      <tr><td>Operando DRIFTS</td><td>Ethoxide forms first, DEE second (Kadam &amp; Shamzhy 2018). Surface ethoxy is kinetically trapped before branching products emerge.</td><td>Supercage coke precursors form first; sinusoidal channels resist coke (MCM-22 TAM study 2022). Branching and aromatic formation occur in the open cavity before the 10-ring exit.</td></tr>
+      <tr><td>Structural Ablation</td><td>Pore-mouth acid sites drive branching; channel-interior sites do not (ACS Interfaces). Moving acid sites away from the pore mouth suppresses branching.</td><td>Boron regulation: moving Brønsted sites into 10-ring channels suppresses coke and mimics ZSM-5.</td></tr>
+      <tr><td>Classical Theory</td><td>Restricted transition state selectivity: no large intermediates form (Weisz &amp; Frilette 1960; Csicsery 1984). Constraint enforced before reactive chemistry.</td><td>12-ring external pockets are open-access, no prior size selection (Lawton et al. 1998).</td></tr>
     </tbody>
-  </table></div>
-  <h3>2.3 The DNLS equation</h3>
-  <p>On a lattice of \(N\) catalytic sites, the DNLS equation is:</p>
-  <p>\[ i\dot{\psi}_n = -J(\psi_{n+1} + \psi_{n-1}) - \lambda|\psi_n|^2\psi_n \]</p>
-  <p>where \(J > 0\) is inter-site coupling and \(\lambda > 0\) is the on-site binding energy. The Inverse Participation Ratio \(\text{IPR}(t) = \sum_n|\psi_n|^4 / (\sum_n|\psi_n|^2)^2\) measures localisation: IPR → 0 (delocalised) vs IPR → 1 (self-trapped).</p>
+  </table>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">Editorial Note 2 — what this evidence establishes</div>
+    <p>Every row of Table 1 is a real, independently published finding — but note what's actually being reported: pore-geometry differences between ZSM-5 and MCM-22 that restricted transition-state selectivity theory (refs. 3–4, already decades old) already explains. None of the five studies measured an "operator order" as such, and the text says so directly ("these papers do not use that language"). The operator-order framing is a relabeling of established structural facts, not new evidence for the framing itself — it becomes testable content only through the simulation in §3 and the falsifiable predictions in §6. Worth stating plainly in the paper so a reader doesn't mistake restated evidence for new confirmation.</p>
+  </div>
 </section>
-<!-- ══════════════════════════════════ HSP ══════════════════════════════════ -->
-<section id="hsp">
-  <h2>3. Helical Selectivity Principle</h2>
-  <div class="thm-box hsp">
-    <div class="thm-label">Theorem 1 — Helical Selectivity Principle (HSP) · CatGT</div>
-    <p>Let \((\mathcal{X}_\text{cat}, \alpha_\text{cat})\) be the catalyst contact manifold and \(G = U \circ F \circ K \circ C\) the generative pipeline. Let \(\mathcal{H}_\lambda\) be the helical attractor at nonlinearity \(\lambda\). Then:</p>
-    <p>(i) \(\mathcal{H}_\lambda\) is a Legendrian-bounded tube: every point \((r, \theta, z) \in \mathcal{H}_\lambda\) satisfies \(r \leq r^*(\lambda) = \sqrt{J/\lambda}\).</p>
-    <p>(ii) A reaction pathway \(\gamma\) reaches the stable fixed point \(x^*\) of \(G\) only if \(\gamma \subset \mathcal{H}_\lambda\), i.e., \(\max_t r(\gamma(t)) \leq r^*(\lambda)\).</p>
-    <p>(iii) The transition-state selectivity of \(G\) is \(\sigma = 1 - J/(\lambda \cdot r_\text{pore}^2)\), recovering the empirical shape-selectivity factor of zeolites.</p>
+
+<!-- ══════════════════════════════════ SECTION 3 ══════════════════════════════════ -->
+<section id="s3">
+  <h2>3. Computational Validation: DNLS Simulation of Operator-Order Dynamics</h2>
+  <p>To quantitatively validate the hypothesis, we solve the Dissipative Nonlinear Schrödinger (DNLS) equation modeling the wavefunction evolution of a reaction intermediate in each pore geometry. The solver implements a split-step Fourier method with explicit parameters corresponding to ZSM-5 and MCM-22 channel geometries:</p>
+  <ul class="plain">
+    <li>ZSM-5: narrow 10-ring channel (σ = 0.5 Å) with early aperture-gated constraint (barrier onset r = 4.5 Å)</li>
+    <li>MCM-22: wide 12-ring supercage (σ = 1.5 Å) with late branching suppression (barrier onset r = 6.0 Å)</li>
+  </ul>
+  <p>The results (Figure 1) show that: (1) pore potentials in ZSM-5 enforce sharp confinement (K fires early); (2) MCM-22 permits broader spatial exploration (F fires in the open cavity); (3) final probability distributions \(|\psi|^2\) differ substantially in variance; (4) selectivity ratio \(S(\text{MCM-22})/S(\text{ZSM-5}) \approx 35\times\) in the simulated parameter regime; (5) energy dissipation kinetics are consistent with the proposed temporal operator sequence.</p>
+
+  <div class="fig-placeholder">
+    Figure 1 (source: <code>dm3_zeolite_figures.pdf</code>) is not reproduced as an image on this page — panels: pore potential landscapes, final probability distributions (t = 1000 fs), operator-sequencing position-vs-time, product distribution breadth, dissipative energy decay, mode-spectrum evolution for both zeolites. See the original PDF.
   </div>
-  <!-- Fig 3 — DNLS dynamics (interactive) -->
-  <div class="fig-wrap">
-    <canvas class="fig-canvas" id="fig3" height="280"></canvas>
-    <div class="fig-controls">
-      <label>λ</label>
-      <input type="range" id="lam3" min="0.2" max="6" step="0.1" value="1.0">
-      <span class="val" id="lam3val">λ = 1.0</span>
-      <label style="margin-left:1rem;">J</label>
-      <input type="range" id="j3" min="0.5" max="4" step="0.1" value="1.0">
-      <span class="val" id="j3val">J = 1.0</span>
-    </div>
-    <div class="fig-caption"><strong>Figure 3.</strong> (Left) IPR(t) dynamics — self-trapping transition. (Right) Critical radius \(r^*(\lambda) = \sqrt{J/\lambda}\) vs nonlinearity. The green tube is accessible; the red zone is blocked. Sliders change λ and J live.</div>
+  <p class="fig-caption"><strong>Figure 1.</strong> DNLS simulation of operator firing order in ZSM-5 vs. MCM-22 pores. Pore potential landscapes, final probability distributions (t = 1000 fs), operator-sequencing position-vs-time, product distribution breadth, dissipative energy decay, and mode-spectrum evolution for both zeolites. Full code and parameters: <code>dm3_dnls_zeolite_simulation.py</code>.</p>
+
+  <p>The DNLS simulation is fully reproducible; complete Python code and parameters are provided in supplementary materials (<code>dm3_dnls_zeolite_simulation.py</code>, runtime ∼2 minutes).</p>
+
+  <div class="note-box">
+    <div class="note-label">Editorial Note 3 — what the 35× figure means</div>
+    <p>The selectivity ratio \(S(\text{MCM-22})/S(\text{ZSM-5}) \approx 35\times\) falls directly out of the chosen simulation inputs — a tighter barrier (σ = 0.5 Å, onset 4.5 Å) versus a looser one (σ = 1.5 Å, onset 6.0 Å) will always spread more in the looser potential. This is a demonstration that the model can produce a qualitative ordering, not a fit to any measured selectivity ratio. Theorem 3 itself flags the number as [SIMULATION], correctly. Worth adding here too: before this number is cited anywhere as support for the hypothesis, it should be checked against an actual selectivity ratio from Sousa et al. 2014 (ref. 1) rather than left as a simulation artifact.</p>
   </div>
-  <h3>Corollary 1 — Metal ensemble effects (Pt–Sn)</h3>
+</section>
+
+<!-- ══════════════════════════════════ SECTION 4 ══════════════════════════════════ -->
+<section id="s4">
+  <h2>4. Theoretical Framework: Contact-Geometric Operator Firing Order</h2>
+  <p>We now formalize the operator firing order using Topographical Orthogenetic Theory (TOGT). The key idea is that any catalytic process can be decomposed into a sequence of nested geometric operators acting on the configuration space of the reactant manifold.</p>
+
+  <h3>4.1 The Four Operators: C, K, F, U</h3>
+  <p><strong>C (Compression):</strong> The molecule enters the pore and its degrees of freedom are reduced. Adsorption to the pore wall or a Brønsted site compacts the reactant's configuration space.</p>
+  <p><strong>K (Constraint):</strong> The pore geometry imposes forbidden regions. The channel diameter, aperture size, and spatial arrangement of acid sites define which molecular conformations and reaction intermediates are geometrically accessible.</p>
+  <p><strong>F (Folding / Branching):</strong> Isomerization, ring closure, or oligomerization reactions occur. The molecule samples the allowed configuration space and explores branched or aromatic pathways.</p>
+  <p><strong>U (Unfolding / Selection):</strong> The product is selectively adsorbed or desorbed. Molecules large enough to have branched or aromatic character are preferentially retained or expelled depending on their size relative to pore apertures.</p>
+
+  <h3>4.2 Order Dependence: ZSM-5 vs. MCM-22</h3>
+  <p>In ZSM-5, the 10-ring channel acts as a size filter before any reactive site is reached:</p>
+  <p>\[\text{ZSM-5: } C \to K \to F \to U\]</p>
+  <p>The constraint fires first, so only small ethoxy or ethylene intermediates can form. Bulky branched or aromatic products are geometrically impossible.</p>
+  <p>In MCM-22, the supercage is large and open; the 10-ring exit acts as a post-reaction filter:</p>
+  <p>\[\text{MCM-22: } C \to F \to K \to U\]</p>
+  <p>The folding operator fires first (in the spacious supercage), allowing diverse intermediates to form. Only then does the 10-ring bottleneck act as a geometric trap.</p>
+
+  <h3>4.3 Mathematical Formulation (Sketch)</h3>
+  <p>Let \(X\) be the configuration space of the reactant and \(\Phi_i\) the operators, with \(\Phi_i(t)\) the effect of operator \(i\) at time \(t\). The state of the molecule evolves as</p>
+  <p>\[x(t) = \Phi_U(t) \circ \Phi_F(t) \circ \Phi_K(t) \circ \Phi_C(t)\, x_0\]</p>
+  <p>for ZSM-5 (C▷K▷F▷U order), or</p>
+  <p>\[x(t) = \Phi_U(t) \circ \Phi_K(t) \circ \Phi_F(t) \circ \Phi_C(t)\, x_0\]</p>
+  <p>for MCM-22 (C▷F▷K▷U order). These compositions are not commutative <em>provided \(\Phi_F\) carries the inter-site coupling term</em> (Theorem 1): \(\Phi_F \circ \Phi_K \neq \Phi_K \circ \Phi_F\). The order matters, and it determines the final distribution of products.</p>
+  <p>Formally, \(\Phi_C\) is a contraction to a submanifold (adsorption); \(\Phi_K\) is a geometric constraint (aperture gating); \(\Phi_F\) is a bifurcation (reaction pathway splitting); and \(\Phi_U\) is a selection (product desorption). Each operator modifies the energy landscape and the reachable regions of configuration space.</p>
+
+  <h3>4.4 Seven Formal Theorems</h3>
+  <p>The following seven theorems formalize the claims above on the one-dimensional effective coordinate \(r\) (pore radius) used by the DNLS model of Section 5. Derivations and per-claim status are given in the supplementary document <code>OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md</code>. Kernel-checked Lean 4 results live in the companion repository <a href="https://github.com/TOTOGT/io">github.com/TOTOGT/io</a>: <code>zeolite_operator_order/ZeoliteCommutation.lean</code> (the three commutation theorems of Theorem 1, reproduced in Appendix B), <code>CatGT/CatGT_Main.lean</code> (nine theorems, zero <code>sorry</code>), and <code>PrincipiaOrthogona1/Theorem53NonCommutativity.lean</code> (seven theorems, zero <code>sorry</code>); CI re-runs <code>#print axioms</code> for every CatGT and Theorem53 theorem on every push. This numbering is local to this paper and independent of theorem numbers used elsewhere in the broader research program.</p>
+
   <div class="thm-box">
-    <div class="thm-label">Corollary 1</div>
-    <p>On a bimetallic Pt–Sn surface, the promoter Sn reduces the effective ensemble size \(N\), raising \(\lambda_c\) and shrinking \(r^*(\lambda)\). This constrains pathways to those requiring ≤ 2 adjacent Pt atoms, recovering the geometric ensemble effect.</p>
+    <div class="thm-label">Theorem 1 — Locus of non-commutativity of K and F</div>
+    <p>Split the fold as \(F = F_{\mathrm{coupling}} \circ F_{\mathrm{onsite}}\), where \(F_{\mathrm{onsite}}\) is the pointwise nonlinearity and \(F_{\mathrm{coupling}}\) the inter-site (amplitude-transporting) term, and let \(K\) be the aperture gate (multiplication by a 0/1 indicator). Then:</p>
+    <p>(i) \(K\) commutes with \(F_{\mathrm{onsite}}\) exactly, for every state. <span class="status verified">VERIFIED</span></p>
+    <p>(ii) \(F_{\mathrm{coupling}}\) does not commute with \(F_{\mathrm{onsite}}\): there is a state \(\psi\) with \((F_{\mathrm{coupling}} \circ F_{\mathrm{onsite}})\psi \neq (F_{\mathrm{onsite}} \circ F_{\mathrm{coupling}})\psi\). <span class="status verified">VERIFIED</span></p>
+    <p>(iii) \(K\) does not commute with the full fold \(F\): there is a state \(\psi\) with \((K \circ F)\psi \neq (F \circ K)\psi\). <span class="status verified">VERIFIED</span></p>
   </div>
-  <h3>Corollary 2 — Macroscopic dm³ transport</h3>
+  <div class="proof"><span class="proof-label">Proof.</span> All three parts are kernel-checked in Lean 4 on a 3-site ring with real amplitudes (<code>ZeoliteCommutation.lean</code>; Appendix B). (i) For a 0/1 gate \(g\) and the pointwise map \(\psi \mapsto \psi^3\), \((g\psi)^3 = g^3\psi^3 = g\,\psi^3\) since \(g^3=g\) on \(\{0,1\}\); gate and pointwise fold act sitewise, so their order is immaterial (<code>gate_commutes</code>). <em>This replaces v2's Theorem 1, which asserted the opposite</em>: v2's own computation reached \(\lambda\,\theta|\psi|^2[1-\theta]\psi\) with \(\theta[1-\theta]=0\) everywhere, and the "boundary effect at \(r=r_{ap}\)" it then invoked does not exist. (ii) With \(\psi=(1,1,0)\), cube-then-sum gives \(1^3+1^3=2\) at the site whose neighbours hold 1 and 1, while sum-then-cube gives \((1+1)^3=8\); the commutator is \(-6\neq 0\) (<code>coupling_not_commute</code>). A nonlinear map does not distribute over a sum — that is the entire mechanism, and it is exactly the DNLS pair: the \(J\) hopping term and the on-site \(\lambda|\psi|^2\psi\). (iii) With the same \(\psi\), gate-after-fold retains the amplitude the coupling spread into site 0 before gating (\(=1\)), while fold-after-gate finds that site's neighbours already emptied (\(=0\)) (<code>gate_fold_not_commute</code>). Consequently: order-dependence is carried by whichever operator moves amplitude <em>between</em> sites, never by the aperture acting on a pointwise fold; a model whose fold is pointwise cannot produce the ZSM-5/MCM-22 divergence.</div>
+
+  <div class="note-box positive">
+    <div class="note-label">Editorial Note 4 — independently checked</div>
+    <p>Hand-verified all three claims against the definitions given (gate, onsite, coupling on the 3-site ring with ψ = (1,1,0)): (i) gate(onsite(v))ᵢ = gᵢ·vᵢ³ = onsite(gate(v))ᵢ since gᵢ³ = gᵢ on {0,1} — commutes, confirmed. (ii) coupling(onsite(ψ)) = [1,1,2] vs. onsite(coupling(ψ)) = [1,1,8] — differ by exactly −6 at site 2, matching the stated commutator. (iii) gate(coupling(onsite(ψ))) = [1,0,2] vs. coupling(onsite(gate(ψ))) = [0,1,1] — differ, confirmed. The algebra in this theorem holds as stated.</p>
+  </div>
+
   <div class="thm-box">
-    <div class="thm-label">Corollary 2</div>
-    <p>For a catalyst pellet of characteristic dimension \(\ell \sim 1\,\text{mm}\), the optimal extrudate shape (trilobe/tetralobe) is the one whose cross-sectional boundary most closely approximates a level set of \(r^*(\lambda)\) in \(\mathcal{X}_\text{cat}\). <em>(Formal Lean 4 proof: the candidate shape and two sanity facts about it are proved — see §5; the optimality claim itself is still an open obligation.)</em></p>
+    <div class="thm-label">Theorem 2 — ZSM-5 selectivity</div>
+    <p>If the operator order is \(C \to K \to F \to U\) with aperture at \(r=4.5\) Å, then the final-state selectivity \(S(\psi_{\mathrm{final}}) \to 0\).</p>
+  </div>
+  <div class="proof"><span class="proof-label">Proof sketch.</span> <span class="status model">MODEL</span> \(K\) projects the wavefunction onto \(r<4.5\) Å before \(F\) acts; the fold's coupling term then spreads amplitude only within the already-restricted support, so aromatic support (\(r>5\) Å) is never populated and the aromatic overlap integral is zero. (Note this requires the fold to carry its coupling term — Theorem 1(i) shows a pointwise fold would give identical results in either order.)</div>
+
+  <div class="thm-box">
+    <div class="thm-label">Theorem 3 — MCM-22 selectivity</div>
+    <p>If the operator order is \(C \to F \to K \to U\) with aperture at \(r=6.0\) Å, then the final-state selectivity \(S(\psi_{\mathrm{final}}) > 0\), with \(S \approx 0.35\)–\(0.40\) in the simulated parameter regime of Section 3.</p>
+  </div>
+  <div class="proof"><span class="proof-label">Proof sketch.</span> <span class="status model">MODEL</span>; the numerical value is <span class="status simulation">SIMULATION</span> \(F\) acts in the open supercage before any constraint, so its coupling term broadens the wavefunction into the aromatic region (\(r\in[4.5,6.0]\) Å) before \(K\) is applied; \(K\) then traps this amplitude rather than preventing it. The quantitative figure is taken from the DNLS simulation (Section 3, Figure 1) rather than an independent analytic bound, and must not be cited as proved.</div>
+
+  <div class="thm-box">
+    <div class="thm-label">Theorem 4 — Operator order determines selectivity</div>
+    <p>The selectivity \(S(\psi_{\mathrm{final}})\) is a function only of the operator order, not of pore size, acidity, or chemistry directly: \(S(\psi) = S(\mathrm{order})\).</p>
+  </div>
+  <div class="proof"><span class="proof-label">Proof sketch.</span> <span class="status model">MODEL</span> Follows from Theorems 2 and 3 by case exhaustion on whether \(K\) or the coupling-carrying fold fires first; Theorem 1(iii) supplies the non-commutativity that makes the order meaningful. Since Theorems 2 and 3 are themselves model/simulation claims, so is this one. Chain-level order-dependence in general — an order-dependent instance and a commuting instance exhibited on the same manifold, in exactly existential form — is <span class="status verified">VERIFIED</span> separately in <code>Theorem53NonCommutativity.lean</code>.</div>
+
+  <div class="note-box">
+    <div class="note-label">Editorial Note 5 — Theorem 4 contradicts its own support</div>
+    <p>Theorem 4 claims selectivity depends "only on operator order, not on pore size... directly" — but its proof derives it from Theorems 2 and 3, each of which is stated with an explicit aperture radius baked in (4.5 Å for ZSM-5, 6.0 Å for MCM-22). Nothing in Theorems 2–3 shows that the <em>same</em> order at a <em>different</em> aperture gives the same qualitative selectivity, which is what "not of pore size... directly" would require. As it stands, Theorem 4 is only entitled to claim: order determines selectivity <em>given the two aperture values already used</em> — a materially weaker statement. This should either be qualified or backed by a case where order is held fixed and aperture varied.</p>
+  </div>
+
+  <div class="thm-box">
+    <div class="thm-label">Theorem 5 — Contact morphism / scaling law</div>
+    <p>There is a contact-geometric scaling transformation \(\varphi\) relating ZSM-5 and MCM-22 dynamics: \(\psi_{\mathrm{MCM22}}(r,\lambda_{12}) = \varphi(\psi_{\mathrm{ZSM5}}(r,\lambda_0))\), with scale factor \(k_{12} = r_{ap}^{\mathrm{MCM22}}/r_{ap}^{\mathrm{ZSM5}} = 6.0/4.5 = 4/3\).</p>
+  </div>
+  <div class="proof"><span class="proof-label">Proof sketch.</span> <span class="status open">OPEN</span> The rescaling \(\varphi(\psi)(r) = \sqrt{k_{12}}\,\psi(k_{12}\,r)\) maps the ZSM-5 barrier location to the MCM-22 barrier location. Preservation of the contact 1-form \(\alpha = dz - p\,dr\) under \(\varphi\) (a Sasaki-metric argument) is asserted rather than derived; this result has not been re-derived in the v3 revision and stands or falls on future work.</div>
+
+  <div class="note-box">
+    <div class="note-label">Editorial Note 6 — a type mismatch to resolve before deriving this</div>
+    <p>As defined, \(\varphi\) rescales the wavefunction \(\psi\) (a function on the manifold) — \(\varphi(\psi)(r) = \sqrt{k_{12}}\,\psi(k_{12} r)\). But "\(\varphi\) preserves the contact 1-form \(\alpha\)" only makes sense if \(\varphi\) is (or induces) a diffeomorphism of the base manifold's coordinates \((r,\theta,z)\) — a 1-form is pulled back along a map of the space it lives on, not along a rescaling of a function defined on that space. Before this theorem can be derived rather than asserted, \(\varphi\) needs to be restated as the coordinate map it implicitly is (e.g. \(r \mapsto k_{12}r\)), and the claim \(\varphi^*\alpha = \alpha\) checked on that map directly.</p>
+  </div>
+
+  <div class="thm-box">
+    <div class="thm-label">Theorem 6 — Falsifiable predictions</div>
+    <p>The operator-order hypothesis makes three falsifiable predictions (P1–P3, stated in full in Section 6), each with an explicit pass/fail criterion.</p>
+  </div>
+
+  <div class="thm-box">
+    <div class="thm-label">Theorem 7 — Selectivity–order bijection</div>
+    <p>Selectivity uniquely determines operator order and vice versa: there is a bijection between the two orderings considered here and their resulting selectivity values.</p>
+  </div>
+  <div class="proof"><span class="proof-label">Proof sketch.</span> <span class="status open">OPEN</span> Injectivity was argued from Theorems 2 and 3, which are themselves [MODEL] claims; the bijection therefore does not follow from anything proved. It is retained as a conjecture for the two orderings considered here, not for the full space of operator permutations, and needs a real argument or removal.</div>
+
+  <div class="orig-highlight">
+    <div class="tag">Formalization status (v3)</div>
+    <p style="margin-bottom:0;">Kernel-checked with zero <code>sorry</code>, axioms exactly <code>[propext, Classical.choice, Quot.sound]</code> for every theorem: the three commutation results of Theorem 1 (<code>ZeoliteCommutation.lean</code>, re-checkable by paste into any Lean 4 + Mathlib environment); the nine theorems of <code>CatGT/CatGT_Main.lean</code>; and the seven theorems of <code>PrincipiaOrthogona1/Theorem53NonCommutativity.lean</code> (chain-level order-dependence, exactly existential). CI on <code>TOTOGT/io</code> re-runs the builds and <code>#print axioms</code> on every push. Everything else is tagged where it occurs: Theorems 2–4 are [MODEL] (numerical selectivities [SIMULATION]); Theorems 5 and 7 are [OPEN]; Theorem 6's predictions are falsifiable experimental claims requiring no proof. The v2 files <code>CatGT_PROOFS_COMPLETE.lean</code> and <code>CatGT_v2.lean</code> are withdrawn: they compiled only because <code>sorry</code> compiles (17 and 25 <code>sorry</code>s respectively), and nothing in this paper rests on them.</p>
   </div>
 </section>
-<!-- ══════════════════════════════════ PREDICTIONS ══════════════════════════════════ -->
-<section id="predictions">
-  <h2>4. Falsifiable Predictions</h2>
+
+<!-- ══════════════════════════════════ SECTION 5 ══════════════════════════════════ -->
+<section id="s5">
+  <h2>5. DNLS Modeling and Simulation</h2>
+  <p>To illustrate the operator-order principle in a concrete mathematical setting, we implement the evolution using a Dissipative Nonlinear Schrödinger (DNLS) equation coupled with a pore-constraint potential.</p>
+
+  <h3>5.1 DNLS Equation for Supercage Dynamics</h3>
+  <p>The supercage pore in MCM-22 can be modeled as a potential well on which the effective wavefunction of the adsorbed species evolves:</p>
+  <p>\[i\frac{\partial \psi}{\partial t} = -\nabla^2\psi + V_{\mathrm{pore}}(r)|\psi|^2\psi + i\gamma\,(\text{dissipation})\]</p>
+  <p>Here \(V_{\mathrm{pore}}(r)\) is the pore-shaped potential (harmonic in the supercage interior, sharp at apertures), and \(\gamma\) represents energy dissipation due to collisions with the pore wall and thermal averaging.</p>
+
+  <h3>5.2 Operator Sequence in the DNLS Framework</h3>
+  <p><strong>C (Compression):</strong> The wavepacket collapses onto the supercage as the boundary conditions tighten. Gaussian broadening decreases; localization increases.</p>
+  <p><strong>F (Folding):</strong> If \(V_{\mathrm{pore}}\) in the supercage interior permits multi-well structure, the wavepacket splits and explores branched modes. Nonlinearity \(|\psi|^2\psi\) drives self-focusing along energetically favorable paths (branching intermediates).</p>
+  <p><strong>K (Constraint):</strong> A steep potential barrier at the 10-ring aperture (\(r=r_*\)) reflects wavepacket density. In ZSM-5, this barrier is present immediately (K fires first, limiting F). In MCM-22, the interior supercage is barrier-free, allowing F to proceed unhindered until K is encountered.</p>
+  <p><strong>U (Unfolding):</strong> Once trapped (or partially transmitted), the final state \(\psi(t\to\infty)\) determines product selectivity. In ZSM-5, the small-pore constraint ensures only low-order nonlinear modes survive (linear-like products: ethylene, DEE). In MCM-22, branched and aromatic modes can form and be kinetically trapped (coke precursors).</p>
+
+  <h3>5.3 Simulation Parameters</h3>
+  <p>We simulate the DNLS equation on a 1D effective coordinate \(r\) (radius from pore center):</p>
+  <ol class="plain">
+    <li>Spatial domain: \(r \in [0,10]\) Å, discrete spacing \(\Delta r = 0.1\) Å.</li>
+    <li>Time step: \(\Delta t = 0.01\) fs (femtoseconds), up to \(T=1000\) fs.</li>
+    <li>Potential: \(V_{\mathrm{pore}}(r) = 0\) for \(0 \le r \le 4.5\) Å and \(10(r-4.5)^2\) for \(r>4.5\) Å (ZSM-5, tight); for MCM-22, shift the barrier onset to \(r=6.0\) Å.</li>
+    <li>Nonlinearity: \(\lambda = 1.0\) (dimensionless coupling strength for self-interaction).</li>
+    <li>Dissipation: \(\gamma = 0.01\) (moderate damping).</li>
+    <li>Initial condition: Gaussian wavepacket \(\psi(r,0) = A\exp(-(r-2)^2/\sigma^2)\) with \(\sigma=0.5\) Å, \(A=1\).</li>
+  </ol>
+  <p>For ZSM-5, the tight barrier immediately constrains the wavepacket; only low-amplitude nonlinear modes survive (C▷K▷F▷U dynamics). For MCM-22, the extended supercage permits the wavepacket to spread and self-focus into branched modes before encountering the barrier (C▷F▷K▷U dynamics).</p>
+  <p>Numerical integration uses the split-step Fourier method with adaptive time-stepping for stability. Observables tracked: \(\langle r \rangle\) (mean position), \(\langle r^2\rangle - \langle r\rangle^2\) (variance, a proxy for product breadth), and mode spectrum (\(|\tilde\psi(k)|^2\) in Fourier space).</p>
+</section>
+
+<!-- ══════════════════════════════════ SECTION 6 ══════════════════════════════════ -->
+<section id="s6">
+  <h2>6. Falsifiable Predictions</h2>
+  <p>We derive three experimentally testable predictions from the operator-order hypothesis.</p>
+
   <div class="thm-box pred">
-    <div class="thm-label">Prediction 1 — DNLS self-trapping threshold in zeolite pores</div>
-    <p>For a zeolitic cracking catalyst with pore radius \(r_\text{pore}\), the self-trapping nonlinearity \(\lambda_c\) measured by molecular dynamics should satisfy \(\lambda_c \approx J \cdot (r_\text{pore}/\sigma_\text{LJ})^2\), where \(\sigma_\text{LJ}\) is the Lennard-Jones diameter of the reactant molecule.</p>
+    <div class="thm-label">Prediction 1 — DRIFTS Contact-Time Sequence</div>
+    <p>In time-resolved operando DRIFTS at constant temperature and ethanol pressure, the appearance of surface-bound species on MCM-22 should follow the sequence: ethoxy (or adsorbed ethanol) ▷ diethyl ether ▷ aromatic C₆–C₈ species ▷ coke (polymeric, IR-dark). This sequence embodies C▷F▷K▷U: compression (adsorption), folding (ether formation, aromatic coupling), constraint (10-ring trapping of large aromatics), and selection (coke stability in the supercage). By contrast, ZSM-5 should show immediate suppression of aromatic species (ethoxy ▷ ethylene or DEE, no aromatic accumulation). <strong>Test:</strong> contact-time DRIFTS, pulsed ethanol followed by He purge, IR sampling at 0.1 s, 0.5 s, 1 s, 5 s, 10 s after ethanol injection.</p>
   </div>
+
   <div class="thm-box pred">
-    <div class="thm-label">Prediction 2 — Ensemble-radius scaling on Pt–Sn</div>
-    <p>The propane dehydrogenation selectivity of \(\text{Pt}_{1-x}\text{Sn}_x\) catalysts scales as \((1-x)^2 \approx 1 - (r^*/r_\text{pore})^2\), testable via in-situ XAS measurements of average Pt ensemble size.</p>
+    <div class="thm-label">Prediction 2 — Spatial Segregation of Coke</div>
+    <p>Coke in MCM-22 should preferentially deposit in supercages and external pockets (high-surface-area regions where F fires freely), with much slower accumulation in sinusoidal channels (where K is encountered early). In ZSM-5, coke should be distributed more uniformly or localized at pore mouths (where K and F are spatially adjacent). <strong>Test:</strong> scanning electron microscopy (SEM) with energy-dispersive X-ray spectroscopy (EDX) mapping of carbon after controlled-duration catalytic runs, or selective blocking of supercages with a bulky amine followed by coke-formation assays.</p>
   </div>
+
   <div class="thm-box pred">
-    <div class="thm-label">Prediction 3 — Reeb-helix signature in reaction coordinate</div>
-    <p>For any CatGT-designed catalyst, the reaction coordinate \(z(t)\) measured by operando IR or neutron spectroscopy should exhibit a helical phase \(\theta(t) = \omega t + \theta_0\) with angular frequency \(\omega = \lambda\|\psi^*\|^2\), where \(\psi^*\) is the self-trapped amplitude.</p>
+    <div class="thm-label">Prediction 3 — Acid-Site Relocation Phenotype Shift</div>
+    <p>Moving Brønsted acid sites from supercages to sinusoidal channels (via boron substitution or post-synthesis treatment) should shift MCM-22's product selectivity toward ZSM-5-like behavior: suppressed coke, reduced aromatics, increased linear products (ethylene, DEE). Conversely, creating synthetic supercage acid sites in ZSM-5 (e.g., via mesopore grafting) should shift selectivity toward aromatic and branched products. This directly tests that operator order, not intrinsic pore size, determines selectivity.</p>
   </div>
 </section>
-<!-- ══════════════════════════════════ LEAN ══════════════════════════════════ -->
-<section id="lean">
-  <h2>5. Lean 4 Formal Verification</h2>
-  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the HSP core inequality, a computational DNLS scaffold, and one honest open obligation. <strong>9 theorems closed, 0 admits, 0 hidden sorries (kernel-checked, Lean v4.33).</strong></p>
-  <p style="font-size:0.85rem;color:var(--ink3);">Revision note (2026-07-10): two theorems on this page previously proved vacuous statements — <code>catgt_dm3_transport</code> proved <code>∃ shape, True</code> (true for any shape) and <code>ensemble_scaling</code> proved <code>∃ selectivity, selectivity = (1-x)²</code> (true by construction for any x) — and both reported "closed"/"admit" badges that overstated what was actually established. Both have been corrected below to prove real, checkable facts instead, and the deeper open claims each was gesturing at (Corollary 2 optimality; which Pt–Sn scaling law is correct) are now stated as open prose rather than dressed up as theorems.</p>
-  <p style="font-size:0.85rem;color:var(--ink3);">Note: Lean 4 reserves the bare <code>λ</code> character for anonymous-function syntax, so it cannot be used as a parameter/identifier name — the source uses <code>lam</code>/<code>hlam</code> where this page's prose uses \(\lambda\). The snippets below show the actual compiling identifiers.</p>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>CatGT_Main.lean — HSP (Theorem 1, formal core)</span>
-      <span class="status-closed">✓ CLOSED — sorry-free</span>
-    </div>
-    <pre class="lean"><span class="comment">/-- **Helical Selectivity Principle (HSP)** — formal statement of Theorem 1.
-    A DNLS state with radial coordinate r satisfying r² ≤ J/λ
-    is confined within the attractor tube of radius r*(λ) = √(J/λ). -/</span>
-<span class="kw">theorem</span> <span class="thm-name">helical_selectivity</span> (J lam : ℝ) (hJ : <span class="kw">0</span> < J) (hlam : <span class="kw">0</span> < lam)
-    (r_state : ℝ) (hr : <span class="kw">0</span> ≤ r_state)
-    (h_confined : r_state ^ <span class="kw">2</span> ≤ J / lam) :
-    r_state ≤ criticalRadius J lam hJ hlam := <span class="kw">by</span>
-  unfold criticalRadius
-  rw [← Real.sqrt_sq hr]
-  apply Real.sqrt_le_sqrt
-  exact h_confined</pre>
-  </div>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>CatGT_Main.lean — Selectivity factor (Theorem 1, part iii)</span>
-      <span class="status-closed">✓ CLOSED — sorry-free</span>
-    </div>
-    <pre class="lean"><span class="kw">theorem</span> <span class="thm-name">selectivityFactor_eq</span> (J lam r_pore : ℝ)
-    (hJ : <span class="kw">0</span> < J) (hlam : <span class="kw">0</span> < lam) (hr : <span class="kw">0</span> < r_pore) :
-    selectivityFactor J lam r_pore hJ hlam hr =
-    <span class="kw">1</span> - J / (lam * r_pore ^ <span class="kw">2</span>) := <span class="kw">by</span>
-  unfold selectivityFactor criticalRadius
-  rw [div_pow, Real.sq_sqrt (div_nonneg (le_of_lt hJ) (le_of_lt hlam))]
-  ring</pre>
-  </div>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>CatGT_Main.lean — dm³ transport (Corollary 2)</span>
-      <span class="status-closed">✓ CLOSED — narrowed scope, see note</span>
-    </div>
-    <pre class="lean"><span class="comment">/-- Previously proved `∃ shape, True` — vacuously true for any shape,
-    established nothing. Now pins the witness to the actual candidate
-    (disk of radius r_star) and proves two real facts about it. The
-    full Corollary 2 optimality claim (this disk maximises κ_stab over
-    convex cross-sections of equal area) is NOT proved here — left as
-    open prose, not a fake theorem. Path to closing: define κ_stab,
-    import Convex.Basic + a 2D isoperimetric lemma. Target: Part II. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">catgt_dm3_transport</span>
-    (r_star : ℝ) (hr : <span class="kw">0</span> < r_star) :
-    ∃ (shape : Set (ℝ × ℝ)),
-      shape = {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} ∧
-      (<span class="kw">0</span>, <span class="kw">0</span>) ∈ shape ∧
-      (<span class="kw">2</span> * r_star, <span class="kw">0</span>) ∉ shape := <span class="kw">by</span>
-  refine ⟨{p | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>}, rfl, ?_, ?_⟩
-  · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star]
-  · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star, hr]</pre>
-  </div>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>CatGT_Main.lean — ensemble scaling (Corollary 1)</span>
-      <span class="status-closed">✓ CLOSED — narrowed scope, see note</span>
-    </div>
-    <pre class="lean"><span class="comment">/-- Previously proved `∃ selectivity, selectivity = (1-x)²` — true by
-    construction for any x, established nothing about Pt-Sn or the
-    CatGT model. This surfaced a real gap: the two forms this page
-    proposes, (1-x)² and 1-(r*/r_pore)², are NOT the same function —
-    they agree only at x ∈ {0,1} (e.g. x=1/2 gives 1/4 vs 3/4). Which
-    form is physically correct is still open; awaits XAS validation. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">ensemble_scaling_forms_diverge</span> :
-    (<span class="kw">1</span> - (<span class="kw">0</span>:ℝ)) ^ <span class="kw">2</span> = <span class="kw">1</span> - (<span class="kw">0</span>:ℝ) ^ <span class="kw">2</span> ∧
-    (<span class="kw">1</span> - (<span class="kw">1</span>:ℝ)) ^ <span class="kw">2</span> = <span class="kw">1</span> - (<span class="kw">1</span>:ℝ) ^ <span class="kw">2</span> ∧
-    ∃ x : ℝ, <span class="kw">0</span> < x ∧ x < <span class="kw">1</span> ∧ (<span class="kw">1</span> - x) ^ <span class="kw">2</span> ≠ <span class="kw">1</span> - x ^ <span class="kw">2</span> := <span class="kw">by</span>
-  refine ⟨<span class="kw">by</span> ring, <span class="kw">by</span> ring, <span class="kw">1</span>/<span class="kw">2</span>, <span class="kw">by</span> norm_num, <span class="kw">by</span> norm_num, ?_⟩
-  norm_num</pre>
-  </div>
 
-  <h3>5.1 Operator order: where non-commutativity actually lives</h3>
-  <p style="font-size:0.85rem;color:var(--ink3);">Correction (2026-07-18): earlier versions of the zeolite operator-order paper (v1–v2, Zenodo 10.5281/zenodo.21296707) asserted that the aperture gate <em>K</em> fails to commute with a <em>pointwise</em> fold <em>F</em>ψ = ψ + λ|ψ|²ψ, via a boundary term ∝ δ(r − r<sub>ap</sub>). That claim is false — the two commute exactly, for every state — and the three theorems below establish what is actually true. Order-dependence is carried by whichever operator transports amplitude <em>between</em> sites, never by a gate acting pointwise.</p>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>ZeoliteCommutation.lean — gate vs. pointwise fold vs. coupling</span>
-      <span class="status-closed">✓ CLOSED — sorry-free</span>
-    </div>
-    <pre class="lean"><span class="comment">-- 3-site ring, real amplitudes (so |v|²v = v³).</span>
-<span class="kw">def</span> coupling (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := ![v <span class="kw">1</span> + v <span class="kw">2</span>, v <span class="kw">0</span> + v <span class="kw">2</span>, v <span class="kw">0</span> + v <span class="kw">1</span>]
-<span class="kw">def</span> onsite   (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := <span class="kw">fun</span> i => (v i) ^ <span class="kw">3</span>
-<span class="kw">def</span> gate     (v : Fin <span class="kw">3</span> → ℝ) : Fin <span class="kw">3</span> → ℝ := ![v <span class="kw">0</span>, <span class="kw">0</span>, v <span class="kw">2</span>]
-<span class="kw">def</span> psi      : Fin <span class="kw">3</span> → ℝ := ![<span class="kw">1</span>, <span class="kw">1</span>, <span class="kw">0</span>]
-
-<span class="comment">/-- The 0/1 aperture gate commutes with the pointwise fold — for EVERY state. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">gate_commutes</span> (v : Fin <span class="kw">3</span> → ℝ) : gate (onsite v) = onsite (gate v)
-
-<span class="comment">/-- Inter-site coupling does NOT commute with the on-site fold (commutator −6). -/</span>
-<span class="kw">theorem</span> <span class="thm-name">coupling_not_commute</span> : coupling (onsite psi) ≠ onsite (coupling psi)
-
-<span class="comment">/-- The gate does NOT commute with the corrected fold F = coupling ∘ onsite. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">gate_fold_not_commute</span> :
-    gate (coupling (onsite psi)) ≠ coupling (onsite (gate psi))</pre>
-  </div>
-  <p style="font-size:0.85rem;color:var(--ink3);">These three are kernel-checked on Lean v4.33.0-rc1 + Mathlib with <code>#print axioms</code> reporting only <code>[propext, Classical.choice, Quot.sound]</code> — no <code>sorryAx</code>. Unlike <code>CatGT_Main.lean</code> and <code>Theorem53NonCommutativity.lean</code>, this file is <strong>not</strong> wired into <code>lakefile.toml</code> and so is not re-run by CI; it is standalone and self-contained, and can be re-verified by pasting it into any Lean 4 + Mathlib environment such as <a href="https://live.lean-lang.org">live.lean-lang.org</a>.</p>
+<!-- ══════════════════════════════════ SECTION 7 ══════════════════════════════════ -->
+<section id="s7">
+  <h2>7. Open Questions</h2>
+  <p>Three questions remain:</p>
+  <ol class="plain">
+    <li><strong>Kinetic Rates:</strong> What are the intrinsic rate constants for each operator firing in the DNLS framework? Can operando DRIFTS contact times be reliably correlated to rate constants for C, K, F, and U?</li>
+    <li><strong>Lean 4 Formalization:</strong> The locus of non-commutativity is now kernel-checked (Theorem 1). Still open on the formal side: a continuum (rather than 3-site) version of Theorem 1(iii); a re-derivation or withdrawal of Theorem 5; and a real argument for Theorem 7's bijection.</li>
+    <li><strong>Generalization:</strong> Does the operator-order framework apply to other zeolite pairs (e.g., MFI vs. MEL; FAU vs. LTA) and other hydrocarbon chemistries (propane, hexane, aromatics)?</li>
+  </ol>
 </section>
-<!-- ══════════════════════════════════ BRIDGE ══════════════════════════════════ -->
-<section id="bridge">
-  <h2>6. Coherence Bridge: Seven Domains</h2>
-  <p>The central invariant \(r^*(\lambda) = \sqrt{J/\lambda}\) maps across seven physical domains. Solid rows are covered in Part I; italic rows are future parts or open conjectures.</p>
-  <!-- Fig 4 — Coherence Bridge (interactive spoke diagram) -->
-  <div class="fig-wrap">
-    <canvas class="fig-canvas" id="fig4" height="360"></canvas>
-    <div class="fig-caption"><strong>Figure 4.</strong> Coherence Bridge — the invariant \(r^*(\lambda) = \sqrt{J/\lambda}\) across seven domains. Click a node to highlight its J/λ analogs. Solid borders: Part I. Dashed: future parts / open conjectures.</div>
-  </div>
-  <div class="table-scroll"><table class="bridge-table">
-    <thead><tr><th>Domain</th><th>J analog</th><th>λ analog</th><th>Observable</th></tr></thead>
-    <tbody>
-      <tr class="part1"><td>Zeolite catalysis</td><td>Diffusivity D</td><td>Binding energy E_b</td><td>Pore cut-off r*</td></tr>
-      <tr class="part1"><td>Metal ensembles</td><td>Hopping t_ij</td><td>On-site U</td><td>Ensemble size N*</td></tr>
-      <tr class="part1"><td>DNLS soliton</td><td>Coupling J</td><td>Nonlinearity λ</td><td>Self-trapping IPR</td></tr>
-      <tr class="part1"><td>dm³ reactor</td><td>Permeability κ</td><td>Pressure loss ΔP</td><td>Shape optimality</td></tr>
-      <tr class="future"><td>Faraday / IFE</td><td>Verdet const. V</td><td>Optical intensity I</td><td>Non-reciprocity φ</td></tr>
-      <tr class="future"><td>Swarm / intelligence</td><td>Diffusion D_s</td><td>Cohesion γ</td><td>Swarm radius</td></tr>
-      <tr class="conj"><td>Collatz (conjectured)</td><td>Step size s</td><td>Branching ratio b</td><td>Attractor bound (open)</td></tr>
-    </tbody>
-  </table></div>
-</section>
-<!-- ══════════════════════════════════ DISCUSSION ══════════════════════════════════ -->
-<section id="discussion">
-  <h2>7. Discussion</h2>
-  <h3>Relation to existing theory</h3>
-  <p>CatGT does not contradict DFT-based design or CFD reactor models — it unifies them. The Brønsted–Evans–Polanyi relation corresponds to the linearisation of \(K\) near \(x^*\). The Thiele modulus is the ratio \(r_\text{pore}/r^*(\lambda)\).</p>
-  <h3>Operator order and zeolite selectivity</h3>
-  <p>A key insight of CatGT is that the firing order of operators is not fixed but system-dependent. In ZSM-5, K fires before F (pore constrains first). In MCM-22, F fires before K (fold inside the supercage). This operator order switching under varied T/P/concentration is a new falsifiable DRIFTS prediction.</p>
-  <h3>Clean energy applications</h3>
-  <p>A catalyst optimised for clean energy (CO₂ hydrogenation, water splitting) should be engineered so that \(r_\text{pore} = r^*(\lambda_\text{target})\) for the desired product pathway — simultaneous tuning of pore size and metal loading.</p>
-  <h3>Open questions</h3>
-  <p>1. Finite-size scaling of \(r^*(\lambda)\) for chain lengths \(N \in \{100, 500, 1000\}\) (Part II). 2. Formal Lean 4 proof of Corollary 2 once Mathlib volume-form support matures. 3. Photocatalysis extension — a photon-driven compression operator \(C_\text{photo}\) (Part IV). 4. MD validation of Prediction 1 for ZSM-5, SAPO-34, MFI.</p>
-</section>
-<!-- ══════════════════════════════════ AUDIT ══════════════════════════════════ -->
-<section id="audit">
-  <h2>8. Sorry Audit</h2>
-  <div class="audit">
-<span class="section">── CatGT_Main.lean · May 2026 ──────────────────────────────</span>
-<span class="section">Framework : CatGT (Catalytic Generative Theory)</span>
-<span class="section">Theorem 1 : HSP (Helical Selectivity Principle)</span>
-<span class="section">Parent    : GTCT (Generative Temporal Contact Theory)</span>
-<span class="section">Closed (sorry-free · kernel-checked):</span>
-<span class="closed">  ✓ ipr_between_zero_and_one       IPR ∈ (0,1], Cauchy-Schwarz / Finset.sum</span>
-<span class="closed">  ✓ criticalRadius_pos             div_pos + sqrt_pos_of_pos</span>
-<span class="closed">  ✓ criticalRadius_antitone        sqrt_le_sqrt + gcongr</span>
-<span class="closed">  ✓ helical_selectivity            sqrt_le_sqrt + algebraic  ← HSP</span>
-<span class="closed">  ✓ selectivityFactor_eq           ring + Real.sq_sqrt</span>
-<span class="closed">  ✓ reeb_orbit_advances            α(R)=1 along the Reeb orbit; ring</span>
-<span class="closed">  ✓ dnlsNorm_nonneg                discrete norm ≥ 0; Finset.sum_nonneg</span>
-<span class="closed">  ✓ catgt_dm3_disk                 disk membership facts (nlinarith)</span>
-<span class="closed">  ✓ ensemble_scaling_forms_diverge (1-x)² ≠ 1-x² at x=1/2 (norm_num)</span>
-<span class="section">Total: 9 closed · 0 admits · 0 sorries · 0 vacuous</span>
-<span class="section">Still open in prose (not theorems): Corollary 2 disk optimality;</span>
-<span class="section">  which Pt–Sn scaling form ((1-x)² vs 1-(r*/r_pore)²) is correct.</span>
-<span class="section">Collatz: not claimed. Tracked in AXLE/OPEN_QUESTIONS.md.</span>
-<span class="section">Verified in CI: github.com/TOTOGT/io/actions (real Lean kernel, every push)</span>
 
-<span class="section">── ZeoliteCommutation.lean · July 2026 ─────────────────────</span>
-<span class="section">Scope     : operator-order commutation facts (3-site ring)</span>
-<span class="section">Closed (sorry-free · kernel-checked):</span>
-<span class="closed">  ✓ gate_commutes                  0/1 gate ∘ pointwise fold commutes, ∀ states</span>
-<span class="closed">  ✓ coupling_not_commute           coupling vs on-site fold; commutator = −6</span>
-<span class="closed">  ✓ gate_fold_not_commute          gate vs F = coupling ∘ onsite</span>
-<span class="section">Total: 3 closed · 0 admits · 0 sorries · 0 vacuous</span>
-<span class="section">NOT in lakefile.toml — standalone, NOT re-run by CI. Verified by paste</span>
-<span class="section">  into live.lean-lang.org (Lean v4.33.0-rc1 + Mathlib), 2026-07-18.</span>
-<span class="section">Supersedes: zeolite paper v1-v2 Theorem 1, which was FALSE (asserted</span>
-<span class="section">  [K,F] ≠ 0 for gate + pointwise fold via a δ term that does not exist).</span>
-<span class="section">  Corrected in v3. See OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md.</span>
-<span class="section">Withdrawn: CatGT_PROOFS_COMPLETE.lean (17 sorries), CatGT_v2.lean (25).</span>
-  </div>
+<!-- ══════════════════════════════════ SECTION 8 ══════════════════════════════════ -->
+<section id="s8">
+  <h2>8. Code and Data Availability</h2>
+  <p>All computational code and mathematical derivations are available open-source:</p>
+  <p><strong>DNLS Simulation Code:</strong></p>
+  <ul class="plain">
+    <li><code>zeolite_operator_order/dm3_dnls_zeolite_simulation.py</code> — full Python 3.8+ split-step Fourier solver</li>
+    <li>Runtime: ∼2 minutes to regenerate all figures</li>
+    <li>Requirements: scipy, numpy, matplotlib</li>
+    <li>GitHub: <a href="https://github.com/TOTOGT/io">github.com/TOTOGT/io</a></li>
+    <li>Zenodo: <a href="https://doi.org/10.5281/zenodo.21296707">10.5281/zenodo.21296707</a></li>
+  </ul>
+  <p><strong>Lean 4 Formal Verification</strong> (all in <a href="https://github.com/TOTOGT/io">github.com/TOTOGT/io</a>):</p>
+  <ul class="plain">
+    <li><code>zeolite_operator_order/ZeoliteCommutation.lean</code> — the three commutation theorems of Theorem 1, zero <code>sorry</code> (Appendix B)</li>
+    <li><code>CatGT/CatGT_Main.lean</code> — nine kernel-checked theorems, zero <code>sorry</code></li>
+    <li><code>PrincipiaOrthogona1/Theorem53NonCommutativity.lean</code> — seven kernel-checked theorems, zero <code>sorry</code> (chain-level order-dependence, exactly existential)</li>
+    <li>Requires: Lean 4, Mathlib; CI re-runs <code>#print axioms</code> on every push</li>
+  </ul>
+  <p><strong>Derivations and Status:</strong></p>
+  <ul class="plain">
+    <li><code>zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.md</code> — derivations with per-claim [VERIFIED]/[MODEL]/[SIMULATION]/[OPEN] tags (replaces the withdrawn <code>ALGEBRAIC_PROOFS_ALL_7_THEOREMS.md</code>)</li>
+    <li>Zenodo: <a href="https://doi.org/10.5281/zenodo.21296707">10.5281/zenodo.21296707</a></li>
+  </ul>
+  <p><strong>Data Reproducibility:</strong> All computational results are reproducible. Users can verify all figures and numerical predictions by running the Python simulator in ∼2 minutes. The Lean results are kernel-checked; see Section 4.4 for exactly what is and is not covered.</p>
 </section>
-<!-- ══════════════════════════════════ REFS ══════════════════════════════════ -->
+
+<!-- ══════════════════════════════════ SECTION 9 ══════════════════════════════════ -->
+<section id="s9">
+  <h2>9. Conclusion</h2>
+  <p>The selective conversion of ethanol to hydrocarbons over ZSM-5 and MCM-22 zeolites can be understood as a consequence of operator firing order. ZSM-5 imposes the Constraint operator before any branching chemistry is possible (C▷K▷F▷U), resulting in small, linear products. MCM-22 permits branching in an open supercage before the constraint is applied (C▷F▷K▷U), resulting in bulky, aromatic intermediates and rapid coke formation.</p>
+  <p>This hypothesis is supported by five independent published studies spanning molecular dynamics, operando spectroscopy, and structural modification experiments. Seven theorems connecting the hypothesis to the underlying DNLS model are stated formally in Section 4.4, with derivations and per-claim status in the supplementary material and the kernel-checked Lean 4 results in the companion repository (Appendix B); every claim carries an explicit [VERIFIED]/[MODEL]/[SIMULATION]/[OPEN] tag at the point where it occurs, and nothing tagged [MODEL], [SIMULATION], or [OPEN] may be cited as proved.</p>
+  <p>The operator-order framework offers a general principle for predicting and tuning catalytic selectivity via pore topology. It directly addresses the mechanistic gap in the literature: why do these two zeolites with nominally similar chemistry and acid strength produce such different outcomes? The proposed mechanism is geometric and sequential rather than purely chemical. All code, proofs, and data are archived on Zenodo (<a href="https://doi.org/10.5281/zenodo.21296707">10.5281/zenodo.21296707</a>) and GitHub (<a href="https://github.com/TOTOGT/">github.com/TOTOGT/</a>) for reproducibility and long-term accessibility.</p>
+</section>
+
+<!-- ══════════════════════════════════ REFERENCES ══════════════════════════════════ -->
 <section id="refs" class="references">
   <h2>References</h2>
   <ol>
-    <li>Eilbeck, J.C., Lomdahl, P.S., Scott, A.C. "The discrete self-trapping equation." <em>Physica D</em> 16(3):318–338, 1985.</li>
-    <li>Scott, A.C. <em>Nonlinear Science: Emergence and Dynamics of Coherent Structures.</em> Oxford University Press, 1999.</li>
-    <li>Weisz, P.B., Frilette, V.J. "Intracrystalline and molecular-shape selective catalysis by zeolite salts." <em>J. Phys. Chem.</em> 64(3):382, 1960.</li>
-    <li>Csicsery, S.M. "Shape-selective catalysis in zeolites." <em>Zeolites</em> 4(3):202–213, 1984.</li>
-    <li>Sousa, Z.S.B., Cesar, D.V., Henriques, C.A., Teixeira da Silva, V. "Ethanol conversion over HZSM-5 and HMCM-22." <em>Catal. Today</em> 234:182, 2014.</li>
-    <li>Somorjai, G.A., Li, Y. <em>Introduction to Surface Chemistry and Catalysis.</em> Wiley, 2nd ed., 2010.</li>
-    <li>Grossi, P.N. "Generative Temporal Contact Theory (GTCT) — Part I of the GOMC Opus." Zenodo, 2026. doi:10.5281/zenodo.19117399.</li>
-    <li>Cohn, H. "Advice for amateur mathematicians on writing and publishing papers." MIT, 2025.</li>
+    <li id="ref1">Sousa, Z. S. B., Cesar, D. V., Henriques, C. A., Teixeira da Silva, V. "Bioethanol conversion into hydrocarbons on HZSM-5 and HMCM-22 zeolites: Use of in situ DRIFTS to elucidate the role of the acidity and of the pore structure over the coke formation and product distribution." <em>Catalysis Today</em>, 2014, 234, 182–191. doi:10.1016/j.cattod.2014.03.023</li>
+    <li id="ref2">Sousa, Z., Henriques, C., da Silva, V. "Ethanol Conversion Catalyzed by MCM-22 and Its Dealuminated and Delaminated Forms." <em>Journal of the Brazilian Chemical Society</em>, 2023, 34. doi:10.21577/0103-5053.20230028</li>
+    <li id="ref3">Weisz, P. B.; Frilette, V. J. "Intracrystalline and Molecular-Shape-Selective Catalysis by Zeolite Salts." <em>J. Phys. Chem.</em>, 1960, 64, 382. doi:10.1021/j100832a513</li>
+    <li id="ref4">Csicsery, S. M. "Shape-Selective Catalysis in Zeolites." <em>Zeolites</em>, 1984, 4, 202–213. doi:10.1016/0144-2449(84)90024-1</li>
+    <li id="ref5">Sastre, G.; Catlow, C. R. A.; Corma, A. "Diffusion of Benzene and Propylene in MCM-22 Zeolite. A Molecular Dynamics Study." <em>J. Phys. Chem. B</em>, 1999, 103, 5187–5196. doi:10.1021/jp984776m</li>
+    <li id="ref6">Sastre, G.; Catlow, C. R. A.; Corma, A. "Influence of the Intermolecular Interactions on the Mobility of Heptane in the Supercages of MCM-22 Zeolite. A Molecular Dynamics Study." <em>J. Phys. Chem. B</em>, 2002, 106, 956–962. doi:10.1021/jp013589c</li>
+    <li id="ref7">Lawton, S. L.; Leonowicz, M. E.; Partridge, R. D.; Chu, P.; Rubin, M. K. "Twelve-ring pockets on the external surface of MCM-22 crystals." <em>Microporous and Mesoporous Materials</em>, 1998, 23, 109–117. doi:10.1016/S1387-1811(98)00057-2</li>
+    <li id="ref8">Kadam, S. A.; Shamzhy, M. V. "IR Operando Study of Ethanol Dehydration over MFI Zeolite." <em>Catalysis Today</em>, 2018, 304, 51–57. doi:10.1016/j.cattod.2017.09.020</li>
+    <li id="ref9">Parmar, D.; Cha, S. H.; Salavati-Fard, T.; Agarwal, A.; Chiang, H.; Washburn, S. M.; Palmer, J. C.; Grabow, L. C.; Rimer, J. D. "Spatiotemporal Coke Coupling Enhances para-Xylene Selectivity in Highly Stable MCM-22 Catalysts." <em>J. Am. Chem. Soc.</em>, 2022, 144, 7861–7870. doi:10.1021/jacs.2c01975</li>
   </ol>
 </section>
+
+<!-- ══════════════════════════════════ APPENDIX A ══════════════════════════════════ -->
+<section id="appA">
+  <h2>Appendix A. DNLS Simulation Code and Parameters</h2>
+  <p>Full Python code available in the companion Zenodo deposit (<code>dm3_dnls_zeolite_simulation.py</code>); parameters as listed in Section 5.3.</p>
+</section>
+
+<!-- ══════════════════════════════════ APPENDIX B ══════════════════════════════════ -->
+<section id="appB">
+  <h2>Appendix B. Lean 4 Formalization: Kernel-Checked Results</h2>
+  <p>The formal content lives in <a href="https://github.com/TOTOGT/io">github.com/TOTOGT/io</a>. Every theorem below builds with zero <code>sorry</code>, and <code>#print axioms</code> reports exactly <code>[propext, Classical.choice, Quot.sound]</code> — no <code>sorryAx</code> — re-checked by CI on every push. (The v2 scaffold files <code>CatGT_v2.lean</code> and <code>CatGT_PROOFS_COMPLETE.lean</code>, formerly reproduced in this appendix, are withdrawn; they contained 25 and 17 <code>sorry</code>s respectively and proved nothing.)</p>
+  <p>The three commutation theorems of Theorem 1 are self-contained and can be independently re-checked by pasting <code>zeolite_operator_order/ZeoliteCommutation.lean</code> into any Lean 4 + Mathlib environment (e.g. <code>live.lean-lang.org</code>); most recently verified July 18, 2026 against Lean v4.33.0-rc1. ASCII-transliterated for print (the repository file uses standard Lean notation):</p>
+
+  <div class="lean-wrap">
+    <div class="lean-header">ZeoliteCommutation.lean</div>
+    <pre class="lean"><span class="comment">def coupling (v : Fin 3 -> Real) : Fin 3 -> Real :=
+  ![v 1 + v 2, v 0 + v 2, v 0 + v 1]   -- inter-site (hopping) term</span>
+<span class="kw">def</span> onsite   (v : Fin <span class="kw">3</span> -> Real) : Fin <span class="kw">3</span> -> Real :=
+  <span class="kw">fun</span> i => (v i) ^ <span class="kw">3</span>                    <span class="comment">-- on-site nonlinearity</span>
+<span class="kw">def</span> gate     (v : Fin <span class="kw">3</span> -> Real) : Fin <span class="kw">3</span> -> Real :=
+  ![v <span class="kw">0</span>, <span class="kw">0</span>, v <span class="kw">2</span>]                        <span class="comment">-- 0/1 aperture gate</span>
+<span class="kw">def</span> psi      : Fin <span class="kw">3</span> -> Real := ![<span class="kw">1</span>, <span class="kw">1</span>, <span class="kw">0</span>]
+
+<span class="comment">-- (i) gate commutes with the pointwise fold, for EVERY state</span>
+<span class="kw">theorem</span> <span class="thm-name">gate_commutes</span> (v : Fin <span class="kw">3</span> -> Real) :
+    gate (onsite v) = onsite (gate v)
+
+<span class="comment">-- (ii) coupling does not commute with the on-site fold</span>
+<span class="kw">theorem</span> <span class="thm-name">coupling_not_commute</span> :
+    coupling (onsite psi) /= onsite (coupling psi)
+
+<span class="comment">-- (iii) gate does not commute with the corrected fold F = coupling . onsite</span>
+<span class="kw">theorem</span> <span class="thm-name">gate_fold_not_commute</span> :
+    gate (coupling (onsite psi)) /= coupling (onsite (gate psi))</pre>
+  </div>
+
+  <p>Chain-level order-dependence of the full cascade \(G = U \circ F \circ K \circ C\) — an order-dependent instance and a commuting instance exhibited on the same manifold, in exactly existential form — is kernel-checked in <code>PrincipiaOrthogona1/Theorem53NonCommutativity.lean</code> (seven theorems). Nine further supporting results (selectivity-factor identities, critical-radius monotonicity, Reeb-orbit advance, DNLS norm positivity, ensemble scaling-form divergence) are kernel-checked in <code>CatGT/CatGT_Main.lean</code>. What is <em>not</em> formalized: the continuum limit, the pore-geometry contact-manifold structure, adsorption/desorption kinetics, and any quantitative selectivity value — those remain [MODEL], [SIMULATION], or [OPEN] as tagged in Section 4.4.</p>
+</section>
+
+<!-- ══════════════════════════════════ APPENDIX C ══════════════════════════════════ -->
+<section id="appC">
+  <h2>Appendix C. Notation and Glossary</h2>
+  <p><strong>C</strong> (Compression): reduction of degrees of freedom; adsorption. <strong>K</strong> (Constraint): geometric restriction by pore aperture. <strong>F</strong> (Folding/Branching): isomerization and oligomerization reactions. <strong>U</strong> (Unfolding/Selection): selective desorption of products. <strong>DRIFTS</strong>: Diffuse Reflectance Infrared Fourier Transform Spectroscopy. <strong>DEE</strong>: Diethyl ether, (C₂H₅)₂O. <strong>DNLS</strong>: Dissipative Nonlinear Schrödinger equation. <strong>MFI</strong>: Zeolite structure type (ZSM-5, Silicalite). <strong>MWW</strong>: Zeolite structure type (MCM-22, MCM-36). <strong>TOGT</strong>: Topographical Orthogenetic Theory.</p>
+</section>
+
+<!-- ══════════════════════════════════ TODO ══════════════════════════════════ -->
+<section id="todo">
+  <h2>To-Do — proposed for v4</h2>
+  <p style="font-size:0.9rem;color:var(--ink2);">Every violet box above, consolidated into one checklist. Nothing here has been applied to the verbatim text; this is the punch list for the next revision.</p>
+  <div class="todo-box">
+    <h4 class="cat-structural">Mathematical — needs resolving before v4</h4>
+    <ul>
+      <li><strong>Theorem 4's scope.</strong> Restate as order-dependence given the two specific apertures used, or supply a case with order fixed and aperture varied to support the stronger claim.</li>
+      <li><strong>Theorem 5's category mismatch.</strong> Restate \(\varphi\) as a coordinate map on \((r,\theta,z)\) before claiming it preserves \(\alpha\); check \(\varphi^*\alpha = \alpha\) on that map directly rather than asserting it.</li>
+    </ul>
+    <h4 class="cat-evidence">Evidentiary</h4>
+    <ul>
+      <li><strong>§2 framing.</strong> Add a line distinguishing the restated RTSS-consistent evidence (Table 1) from the new content (§3 simulation, §6 predictions), so readers don't read five citations as five confirmations of the operator-order hypothesis itself.</li>
+      <li><strong>§3's 35× figure.</strong> Check against a real selectivity ratio from Sousa et al. 2014 (ref. 1) before it's cited anywhere outside this paper as support.</li>
+    </ul>
+    <h4 class="cat-formal">Already tracked in the paper's own §7</h4>
+    <ul>
+      <li>Continuum (rather than 3-site) version of Theorem 1(iii).</li>
+      <li>Re-derivation or withdrawal of Theorem 5 (see above — same item, cross-referenced).</li>
+      <li>A real argument for Theorem 7's bijection, or its removal.</li>
+    </ul>
+    <h4 class="cat-note">Housekeeping</h4>
+    <ul>
+      <li>Confirm the actual publication date/version label for v4 before it's set — this page uses the v3 text and header unchanged; nothing here has been re-dated.</li>
+    </ul>
+  </div>
+</section>
+
 <footer>
-  CatGT / HSP · Part I of the GOMC Opus · Pablo Nogueira Grossi · G6 LLC · Newark, NJ · May 2026<br>
-  GTCT (Generative Temporal Contact Theory) is the overarching framework. CatGT is its catalysis instantiation.<br>
-  Lean 4 source: github.com/TOTOGT/io · Zenodo: 10.5281/zenodo.19117399 · CC BY 4.0
+  Operator Firing Order — Ethanol-to-Hydrocarbon Selectivity · Pablo Nogueira Grossi · G6 LLC · Newark, NJ<br>
+  Verbatim v3 text (July 2026) with independent annotations added 2026-09-19, proposed for v4.<br>
+  Source: Zenodo 10.5281/zenodo.21296707 · Lean 4 source: github.com/TOTOGT/io
 </footer>
-<!-- ══════════════════════════════════ SCRIPTS ══════════════════════════════════ -->
-<script>
-// ── Shared drawing utilities ──────────────────────────────────────────────────
-function dpr(canvas) {
-  const r = window.devicePixelRatio || 1;
-  const w = canvas.offsetWidth;
-  const h = canvas.offsetHeight || parseInt(canvas.getAttribute('height'));
-  canvas.width = w * r;
-  canvas.height = h * r;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(r, r);
-  return { ctx, W: w, H: h };
-}
-const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
-      INK = '#1a1a18', INK2 = '#3d3d38', INK3 = '#6b6b64',
-      PAPER2 = '#f2efe7', RULE = '#c8c0a8';
-// ── Figure 1 — Operator pipeline ──────────────────────────────────────────────
-(function() {
-  const canvas = document.getElementById('fig1');
-  const ops = [
-    { id:'C', name:'Compression', sub:'Adsorption / pore entry', col:'#1a5f5a' },
-    { id:'K', name:'Curvature',   sub:'Transition-state geometry', col:'#2d4a7a' },
-    { id:'F', name:'Fold',        sub:'Selectivity filter',       col:'#8b3a2a' },
-    { id:'U', name:'Stabilisation',sub:'Desorption / regeneration',col:'#3a6b35' },
-  ];
-  let hover = -1;
-  function draw() {
-    const { ctx, W, H } = dpr(canvas);
-    ctx.clearRect(0, 0, W, H);
-    const pad = 30, boxW = (W - pad*2 - 24*3) / 4, boxH = 100, y = (H - boxH)/2;
-    // pipeline arrow
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(pad, H/2); ctx.lineTo(W - pad, H/2); ctx.stroke();
-    // arrowhead
-    ctx.fillStyle = GOLD;
-    ctx.beginPath(); ctx.moveTo(W-pad, H/2); ctx.lineTo(W-pad-10, H/2-5); ctx.lineTo(W-pad-10, H/2+5); ctx.fill();
-    // ψ₀ label
-    ctx.fillStyle = INK3; ctx.font = '13px EB Garamond, serif'; ctx.textAlign = 'left';
-    ctx.fillText('ψ₀', pad, H/2 - 8);
-    ctx.fillText('x*', W - pad + 6, H/2 + 5);
-    ops.forEach((op, i) => {
-      const x = pad + i * (boxW + 24);
-      const isH = hover === i;
-      ctx.save();
-      ctx.shadowColor = isH ? op.col : 'transparent';
-      ctx.shadowBlur = isH ? 12 : 0;
-      ctx.fillStyle = op.col;
-      ctx.beginPath();
-      ctx.roundRect(x, y, boxW, boxH, 8);
-      ctx.fill();
-      ctx.restore();
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold 22px EB Garamond, serif`; ctx.textAlign = 'center';
-      ctx.fillText(op.id, x + boxW/2, y + 36);
-      ctx.font = `12px JetBrains Mono, monospace`;
-      ctx.fillText(op.name, x + boxW/2, y + 57);
-      if (isH) {
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.font = '11px JetBrains Mono, monospace';
-        ctx.fillText(op.sub, x + boxW/2, y + 73);
-      }
-    });
-  }
-  canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const W = canvas.offsetWidth, pad = 30;
-    const boxW = (W - pad*2 - 24*3) / 4;
-    hover = -1;
-    ops.forEach((_, i) => {
-      const x = pad + i * (boxW + 24);
-      if (mx >= x && mx <= x + boxW) hover = i;
-    });
-    draw();
-  });
-  canvas.addEventListener('mouseleave', () => { hover = -1; draw(); });
-  window.addEventListener('resize', draw);
-  setTimeout(draw, 100);
-})();
-// ── Figure 2 — Helical attractor (3D projection) ──────────────────────────────
-(function() {
-  const canvas = document.getElementById('fig2');
-  const slider = document.getElementById('lam2');
-  const valEl = document.getElementById('lam2val');
-  let angle = 0, animId;
-  function project(x, y, z, W, H) {
-    const cx = W/2 - 30, cy = H/2 + 20;
-    const cos = Math.cos(angle), sin = Math.sin(angle);
-    const rx = x * cos - y * sin;
-    const ry = x * sin + y * cos;
-    const scale = 80;
-    return {
-      sx: cx + rx * scale,
-      sy: cy - z * scale * 0.6 + ry * scale * 0.3,
-      depth: ry
-    };
-  }
-  function draw() {
-    const { ctx, W, H } = dpr(canvas);
-    ctx.clearRect(0, 0, W, H);
-    const lam = parseFloat(slider.value);
-    const J = 1.0;
-    const rstar = Math.sqrt(J / lam);
-    // Draw attractor tube (cylinder outline)
-    const steps = 60;
-    // Bottom ring
-    const ringY = -2.5;
-    ctx.strokeStyle = 'rgba(26,95,90,0.25)'; ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    for (let i = 0; i <= steps; i++) {
-      const theta = (i / steps) * Math.PI * 2;
-      const p = project(rstar * Math.cos(theta), rstar * Math.sin(theta), ringY, W, H);
-      i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-    // Helical attractor (golden)
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    const helixR = rstar * 0.6;
-    for (let i = 0; i <= 120; i++) {
-      const t = i / 120;
-      const z = -2.5 + t * 5.5;
-      const theta = t * Math.PI * 4;
-      const p = project(helixR * Math.cos(theta), helixR * Math.sin(theta), z, W, H);
-      i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy);
-    }
-    ctx.stroke();
-    // Blocked pathway (red dashed)
-    const blockedR = rstar * 1.6;
-    ctx.strokeStyle = CORAL; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    for (let i = 0; i <= 80; i++) {
-      const t = i / 80;
-      const z = -2.0 + t * 4.5;
-      const theta = t * Math.PI * 3;
-      const p = project(blockedR * Math.cos(theta), blockedR * Math.sin(theta), z, W, H);
-      i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-    // Fixed point x*
-    const xstar = project(helixR * Math.cos(Math.PI * 4), helixR * Math.sin(Math.PI * 4), 3.0, W, H);
-    ctx.fillStyle = TEAL;
-    ctx.beginPath(); ctx.arc(xstar.sx, xstar.sy, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = '11px JetBrains Mono, monospace';
-    ctx.textAlign = 'left'; ctx.fillText('x*', xstar.sx + 10, xstar.sy + 4);
-    // r*(λ) label
-    const rp = project(rstar, 0, ringY, W, H);
-    ctx.fillStyle = INK3; ctx.font = '11px JetBrains Mono, monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(`r*(λ) = ${rstar.toFixed(2)} Å`, rp.sx + 6, rp.sy);
-    // Legend
-    ctx.textAlign = 'left'; ctx.font = '12px EB Garamond, serif';
-    ctx.fillStyle = GOLD; ctx.fillRect(20, 14, 20, 3);
-    ctx.fillStyle = INK2; ctx.fillText('Reeb orbit (accessible)', 46, 20);
-    ctx.strokeStyle = CORAL; ctx.lineWidth = 1.5; ctx.setLineDash([5,3]);
-    ctx.beginPath(); ctx.moveTo(20,32); ctx.lineTo(40,32); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = INK2; ctx.fillText('Blocked pathway r > r*(λ)', 46, 36);
-    angle += 0.004;
-    animId = requestAnimationFrame(draw);
-  }
-  slider.addEventListener('input', () => { valEl.textContent = `λ = ${slider.value}`; });
-  window.addEventListener('resize', () => {});
-  draw();
-})();
-// ── Figure 3 — DNLS dynamics ──────────────────────────────────────────────────
-(function() {
-  const canvas = document.getElementById('fig3');
-  const lamSl = document.getElementById('lam3');
-  const jSl = document.getElementById('j3');
-  const lamV = document.getElementById('lam3val');
-  const jV = document.getElementById('j3val');
-  function simIPR(lam, J, steps = 200) {
-    const N = 21;
-    let psi = Array.from({length: N}, (_, i) => i === Math.floor(N/2) ? 1 : 0);
-    const dt = 0.2;
-    const ipr = [];
-    for (let t = 0; t < steps; t++) {
-      const newPsi = psi.map((p, n) => {
-        const prev = psi[(n + N - 1) % N], next = psi[(n + 1) % N];
-        return p - dt * lam * p * p * p + dt * J * (next - 2*p + prev);
-      });
-      psi = newPsi;
-      const s2 = psi.reduce((a,x) => a + x*x, 0);
-      const s4 = psi.reduce((a,x) => a + x*x*x*x, 0);
-      ipr.push(s2 > 0 ? s4 / (s2 * s2) : 0);
-    }
-    return ipr;
-  }
-  function draw() {
-    const { ctx, W, H } = dpr(canvas);
-    ctx.clearRect(0, 0, W, H);
-    const lam = parseFloat(lamSl.value);
-    const J = parseFloat(jSl.value);
-    const half = W / 2 - 10;
-    const pad = { l:40, r:10, t:20, b:30 };
-    // ── Left: IPR(t) ──
-    const iprs = [
-      { lam: 0.5, col: TEAL },
-      { lam: 2.0, col: GOLD },
-      { lam: 4.0, col: CORAL },
-      { lam: lam, col: '#444', lw: 2 },
-    ];
-    const iW = half - pad.l - pad.r, iH = H - pad.t - pad.b;
-    const ox = pad.l, oy = pad.t;
-    // axes
-    ctx.strokeStyle = INK3; ctx.lineWidth = 0.8;
-    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, oy+iH); ctx.lineTo(ox+iW, oy+iH); ctx.stroke();
-    ctx.fillStyle = INK3; ctx.font = '10px JetBrains Mono, monospace'; ctx.textAlign = 'center';
-    ctx.fillText('Time t', ox + iW/2, oy + iH + 20);
-    ctx.save(); ctx.translate(12, oy + iH/2); ctx.rotate(-Math.PI/2);
-    ctx.fillText('IPR(t)', 0, 0); ctx.restore();
-    // threshold line
-    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.8; ctx.setLineDash([4,3]);
-    const thY = oy + iH * (1 - 0.5);
-    ctx.beginPath(); ctx.moveTo(ox, thY); ctx.lineTo(ox+iW, thY); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#999'; ctx.font = '9px JetBrains Mono, monospace'; ctx.textAlign = 'left';
-    ctx.fillText('½', ox + iW + 2, thY + 3);
-    iprs.forEach(({lam: l, col, lw}) => {
-      const data = simIPR(l, J, 200);
-      ctx.strokeStyle = col; ctx.lineWidth = lw || 1.5;
-      ctx.beginPath();
-      data.forEach((v, i) => {
-        const x = ox + (i / data.length) * iW;
-        const y = oy + iH * (1 - Math.min(v, 1));
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-    });
-    // live label
-    ctx.fillStyle = '#333'; ctx.font = '10px JetBrains Mono, monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`λ=${lam.toFixed(1)}, J=${J.toFixed(1)}`, ox+2, oy+10);
-    // ── Right: r*(λ) curve ──
-    const rx = half + 20 + pad.l, rW = W - rx - pad.r;
-    ctx.strokeStyle = INK3; ctx.lineWidth = 0.8;
-    ctx.beginPath(); ctx.moveTo(rx, oy); ctx.lineTo(rx, oy+iH); ctx.lineTo(rx+rW, oy+iH); ctx.stroke();
-    ctx.fillStyle = INK3; ctx.font = '10px JetBrains Mono, monospace'; ctx.textAlign = 'center';
-    ctx.fillText('Nonlinearity λ', rx + rW/2, oy + iH + 20);
-    ctx.save(); ctx.translate(rx - 22, oy + iH/2); ctx.rotate(-Math.PI/2);
-    ctx.fillText('r*(λ)', 0, 0); ctx.restore();
-    const maxL = 8, maxR = 4;
-    // accessible zone
-    ctx.fillStyle = 'rgba(26,95,90,0.08)';
-    ctx.beginPath(); ctx.moveTo(rx, oy + iH);
-    for (let i = 0; i <= 100; i++) {
-      const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
-      const x = rx + (l/maxL) * rW;
-      const y = oy + iH * (1 - r/maxR);
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(rx + rW, oy + iH); ctx.closePath(); ctx.fill();
-    // blocked zone
-    ctx.fillStyle = 'rgba(139,58,42,0.06)';
-    ctx.beginPath(); ctx.moveTo(rx, oy);
-    for (let i = 0; i <= 100; i++) {
-      const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
-      const x = rx + (l/maxL) * rW;
-      const y = oy + iH * (1 - r/maxR);
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(rx + rW, oy); ctx.closePath(); ctx.fill();
-    // r*(λ) curve
-    ctx.strokeStyle = INK; ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 1; i <= 100; i++) {
-      const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
-      const x = rx + (l/maxL) * rW;
-      const y = oy + iH * (1 - r/maxR);
-      i === 1 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-    // current λ dot
-    const curR = Math.min(Math.sqrt(J/lam), maxR);
-    const dotX = rx + (lam/maxL) * rW;
-    const dotY = oy + iH * (1 - curR/maxR);
-    ctx.fillStyle = TEAL;
-    ctx.beginPath(); ctx.arc(dotX, dotY, 5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = INK3; ctx.font = '9px JetBrains Mono, monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`r*=${curR.toFixed(2)}`, dotX+7, dotY+3);
-  }
-  lamSl.addEventListener('input', () => { lamV.textContent = `λ = ${lamSl.value}`; draw(); });
-  jSl.addEventListener('input', () => { jV.textContent = `J = ${jSl.value}`; draw(); });
-  window.addEventListener('resize', () => setTimeout(draw, 50));
-  setTimeout(draw, 150);
-})();
-// ── Figure 4 — Coherence Bridge spoke diagram ─────────────────────────────────
-(function() {
-  const canvas = document.getElementById('fig4');
-  let selected = -1;
-  const nodes = [
-    { label:'Zeolite\ncatalysis', sub:'D/E_b', col:TEAL, part:1, angle: -Math.PI/2 },
-    { label:'Metal\nensembles', sub:'t_ij/U', col:'#2d4a7a', part:1, angle: -Math.PI/2 + Math.PI*2/7 },
-    { label:'DNLS\nsoliton', sub:'J/λ', col:GOLD, part:1, angle: -Math.PI/2 + Math.PI*4/7 },
-    { label:'dm³\nreactor', sub:'κ/ΔP', col:TEAL, part:1, angle: -Math.PI/2 + Math.PI*6/7 },
-    { label:'Faraday\n/ IFE', sub:'V/I', col:INK3, part:0, angle: -Math.PI/2 + Math.PI*8/7 },
-    { label:'Swarm /\nintelligence', sub:'D_s/γ', col:INK3, part:0, angle: -Math.PI/2 + Math.PI*10/7 },
-    { label:'Collatz\n(conjectured)', sub:'s/b', col:CORAL, part:0, angle: -Math.PI/2 + Math.PI*12/7 },
-  ];
-  function draw() {
-    const { ctx, W, H } = dpr(canvas);
-    ctx.clearRect(0, 0, W, H);
-    const cx = W/2, cy = H/2 + 10, R = Math.min(W, H) * 0.38;
-    // spokes
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle);
-      const y = cy + R * Math.sin(n.angle);
-      ctx.strokeStyle = n.part ? (i === selected ? n.col : 'rgba(26,95,90,0.4)') : 'rgba(100,100,100,0.25)';
-      ctx.lineWidth = n.part ? (i === selected ? 2 : 1.5) : 0.8;
-      if (!n.part) ctx.setLineDash([4,3]);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
-      ctx.setLineDash([]);
-    });
-    // center node
-    ctx.fillStyle = GOLD;
-    ctx.beginPath(); ctx.ellipse(cx, cy, 56, 36, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px EB Garamond, serif'; ctx.textAlign = 'center';
-    ctx.fillText('r*(λ)', cx, cy - 4);
-    ctx.font = '11px JetBrains Mono, monospace';
-    ctx.fillText('= √(J/λ)', cx, cy + 10);
-    // outer nodes
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle);
-      const y = cy + R * Math.sin(n.angle);
-      const bW = 88, bH = 58, bx = x - bW/2, by = y - bH/2;
-      const isSel = i === selected;
-      ctx.save();
-      ctx.strokeStyle = n.part ? n.col : '#aaa';
-      ctx.lineWidth = isSel ? 2 : 1;
-      if (!n.part) ctx.setLineDash([4,3]);
-      ctx.fillStyle = isSel ? (n.col + '22') : '#fff8';
-      ctx.beginPath(); ctx.roundRect(bx, by, bW, bH, 6); ctx.fill(); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-      const lines = n.label.split('\n');
-      ctx.fillStyle = n.part ? n.col : INK3;
-      ctx.font = `${isSel ? 'bold ' : ''}12px EB Garamond, serif`;
-      ctx.textAlign = 'center';
-      lines.forEach((l, li) => ctx.fillText(l, x, y - 8 + li * 16));
-      ctx.fillStyle = INK3; ctx.font = '10px JetBrains Mono, monospace';
-      ctx.fillText(n.sub, x, y + 20);
-    });
-    // legend
-    ctx.strokeStyle = TEAL; ctx.lineWidth = 2; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(20, H-22); ctx.lineTo(45, H-22); ctx.stroke();
-    ctx.fillStyle = INK2; ctx.font = '11px EB Garamond, serif'; ctx.textAlign = 'left';
-    ctx.fillText('Part I (this paper)', 50, H-18);
-    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
-    ctx.beginPath(); ctx.moveTo(200, H-22); ctx.lineTo(225, H-22); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText('Future parts / conjectured', 230, H-18);
-  }
-  canvas.addEventListener('click', e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    const cx = W/2, cy = H/2 + 10, R = Math.min(W,H) * 0.38;
-    selected = -1;
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle), y = cy + R * Math.sin(n.angle);
-      if (Math.abs(mx-x) < 50 && Math.abs(my-y) < 35) selected = i;
-    });
-    draw();
-  });
-  window.addEventListener('resize', () => setTimeout(draw, 50));
-  setTimeout(draw, 200);
-})();
-</script>
 </body>
 </html>
