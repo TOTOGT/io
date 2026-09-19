@@ -142,15 +142,21 @@ theorem selectivityFactor_eq (J lam r_pore : ℝ)
 
 /-! ## §5  Computational scaffold — DNLS iterator -/
 
-/-- One explicit Euler step of the DNLS equation (periodic BC). -/
+/-- One explicit Euler step of the DNLS equation (periodic BC).
+    September 2026 correction: solving iψ̇ = -J(ψ_{n+1}+ψ_{n-1}) - λ|ψ|²ψ
+    for ψ̇ gives ψ̇ = i·(J(ψ_{n+1}+ψ_{n-1}) + λ|ψ|²ψ) — no leading minus
+    signs inside the parenthesis (multiplying by 1/i = -i flips both).
+    The pre-2026-09-19 version kept the minus signs before multiplying
+    by dt·i, which evolved the equation with the opposite sign
+    convention from the one stated in this project's own papers. -/
 noncomputable def dnlsStep {N : ℕ} (hN : 0 < N) (c : DNLSChain N) (dt : ℝ) :
     DNLSChain N where
   ψ n :=
     let prev := c.ψ ⟨(n.val + N - 1) % N, Nat.mod_lt _ hN⟩
     let next := c.ψ ⟨(n.val + 1) % N, Nat.mod_lt _ hN⟩
     let curr := c.ψ n
-    let coupling : ℂ := -(c.J : ℂ) * (next + prev)
-    let onsite : ℂ := -(c.lam : ℂ) * ((‖curr‖ : ℂ) ^ 2) * curr
+    let coupling : ℂ := (c.J : ℂ) * (next + prev)
+    let onsite : ℂ := (c.lam : ℂ) * ((‖curr‖ : ℂ) ^ 2) * curr
     curr + (dt : ℂ) * Complex.I * (coupling + onsite)
   J := c.J
   lam := c.lam
@@ -173,16 +179,52 @@ noncomputable def dnlsNorm {N : ℕ} (c : DNLSChain N) : ℝ :=
 theorem dnlsNorm_nonneg {N : ℕ} (c : DNLSChain N) : 0 ≤ dnlsNorm c := by
   unfold dnlsNorm; exact Finset.sum_nonneg (fun n _ => by positivity)
 
-/-! ## §6  Reeb orbit of the CatGT contact structure -/
+/-! ## §6  Reeb vector field of the CatGT contact structure -/
 
-/-- Contact form α_cat = dz - r²dθ, evaluated in coordinates (r, θ, z). -/
-noncomputable def αCat (r θ z : ℝ) : ℝ := z - r ^ 2 * θ
+/-- The contact form α_cat = dz - r²dθ, evaluated at a point (r,θ,z) on a
+    tangent vector (dr,dθ,dz): α_(r,θ,z)(dr,dθ,dz) = dz - r²·dθ. This is
+    the actual 1-form pairing, not a scalar potential: a potential
+    F(r,θ,z) with dF = α_cat would need an extra -2rθ·dr term that
+    dz-r²dθ does not have, so the pre-2026-09-19 version of this section
+    (which used F(r,θ,z) = z - r²θ as a stand-in) was proving a fact
+    about a different, unrelated object. -/
+def alphaCat (p : ℝ × ℝ × ℝ) (v : ℝ × ℝ × ℝ) : ℝ :=
+  v.2.2 - p.1 ^ 2 * v.2.1
 
-/-- Along the Reeb orbit t ↦ (r₀, θ₀, z₀+t), α_cat advances linearly by t
-    (r, θ held fixed): the content of "R = ∂_z, α(R) = 1". -/
+/-- The Reeb vector field R = ∂_z, as the constant tangent vector (0,0,1)
+    (a coordinate vector field is constant in its own coordinate chart). -/
+def reebR : ℝ × ℝ × ℝ := (0, 0, 1)
+
+/-- **α(R) = 1, everywhere.** The actual defining pairing of the Reeb
+    vector field for α_cat = dz - r²dθ, computed directly from the 1-form
+    above rather than from an unrelated potential function's derivative. -/
+theorem reeb_alpha_eq_one (p : ℝ × ℝ × ℝ) : alphaCat p reebR = 1 := by
+  show (1 : ℝ) - p.1 ^ 2 * 0 = 1
+  ring
+
+/-- The Reeb orbit through (r₀,θ₀,z₀), flowing for time t: γ(t) =
+    (r₀,θ₀,z₀+t). Its integral curves hold r,θ fixed — straight lines in
+    z, not helices (see the CatGT page's own 2026-09-19 correction notes,
+    which also drop the "attractor" language: a Reeb flow preserves
+    α∧dα, hence contact volume, hence cannot have an attracting set). -/
+def reebOrbit (r₀ θ₀ z₀ t : ℝ) : ℝ × ℝ × ℝ := (r₀, θ₀, z₀ + t)
+
+/-- **September 2026 correction.** Kept under the original name for
+    citation stability (index.html's Sorry Audit and paper.tex's
+    Appendix B both cite `reeb_orbit_advances` by name) — the content is
+    now what the name always claimed, rather than an unrelated fact
+    about the potential F(r,θ,z)=z-r²θ (the pre-2026-09-19 version,
+    which proved F(r,θ,z+t)-F(r,θ,z)=t for ANY choice of the r²θ term,
+    since it never entered that computation at all). The z-advance of
+    the Reeb orbit over time t equals t · α(R) evaluated at the
+    basepoint, and α(R)=1 (reeb_alpha_eq_one above), so the advance is
+    exactly t — now derived from the actual pairing, not asserted via a
+    disconnected function that happened to give the same answer. -/
 theorem reeb_orbit_advances (r₀ θ₀ z₀ t : ℝ) :
-    αCat r₀ θ₀ (z₀ + t) - αCat r₀ θ₀ z₀ = t := by
-  unfold αCat; ring
+    (reebOrbit r₀ θ₀ z₀ t).2.2 - (reebOrbit r₀ θ₀ z₀ 0).2.2
+      = t * alphaCat (r₀, θ₀, z₀) reebR := by
+  show (z₀ + t) - (z₀ + 0) = t * (1 - r₀ ^ 2 * 0)
+  ring
 
 /-! ## §7  dm³ transport and ensemble scaling — real facts, honest open claims -/
 
@@ -214,3 +256,27 @@ theorem ensemble_scaling_forms_diverge :
 #check @dnlsNorm_nonneg
 #check @catgt_dm3_disk
 #check @ensemble_scaling_forms_diverge
+
+/-! ## §9  The axiom report
+
+    `#check` prints a type. It says nothing about what a proof rests on, and a
+    file that compiles has said nothing either: `sorry` compiles. The gate is
+    this block. Every theorem below must report exactly
+    `[propext, Classical.choice, Quot.sound]` and no `sorryAx`.
+
+    Run 2026-09-19: ten theorems, all three permitted axioms, no `sorryAx`.
+    Checked under Lean 4.33.0-rc1 with Mathlib v4.33.0-rc1, and under the
+    v4.32.0 pin the author runs; the two sections corrected on 2026-09-19 use
+    no Mathlib lemma at all (`show` and `ring` only), so nothing in this file's
+    new material depends on a library version. -/
+
+#print axioms ipr_between_zero_and_one
+#print axioms criticalRadius_pos
+#print axioms criticalRadius_antitone
+#print axioms helical_selectivity
+#print axioms selectivityFactor_eq
+#print axioms dnlsNorm_nonneg
+#print axioms reeb_alpha_eq_one
+#print axioms reeb_orbit_advances
+#print axioms catgt_dm3_disk
+#print axioms ensemble_scaling_forms_diverge
