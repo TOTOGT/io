@@ -10,7 +10,8 @@ is standalone and verified by paste — the table says which is which.
 
 | Library | Source | Theorems | `sorry` | CI-gated | Status |
 |---|---|---:|---:|:---:|---|
-| `CatGT` | `CatGT/CatGT_Main.lean` | 9 | 0 | yes | Kernel-checked — Helical Selectivity Principle (Thm 1) and supporting lemmas |
+| `CatGT` | `CatGT/CatGT_Main.lean` | 13 | 0 | yes | Kernel-checked — Self-Trapping Selectivity Principle (Thm 1), the Reeb pairing, and the relaxation block |
+| `ContactMorphism` | `CatGT/ContactMorphism.lean` | 1 | 0 | yes | Kernel-checked — dilation preserves the contact form. Added to `lakefile.toml` on 2026-09-20; before that it was in the repo but in no target, so CI never built it |
 | `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | yes | Kernel-checked — Theorem 5.3, operator-chain non-commutativity |
 | — | `zeolite_operator_order/ZeoliteCommutation.lean` | 3 | 0 | **no** | Kernel-checked by paste (Lean `v4.33.0-rc1`, 2026-07-18). Not in `lakefile.toml`; standalone and self-contained |
 
@@ -24,9 +25,13 @@ additionally been spot-checked against current Mathlib (Lean `v4.33`).
 
 `CatGT` (Catalytic Generative Theory) applies the operator pipeline
 `G = U ∘ F ∘ K ∘ C` (compression, curvature, fold, unfold) to a contact-manifold
-model of catalytic reaction pathways. The central result is the **Helical
-Selectivity Principle** — a confinement bound `r ≤ r*(J, λ) = √(J/λ)` that
-constrains which reaction pathways can reach the catalytic fixed point.
+model of catalytic reaction pathways. The central result is the **Self-Trapping
+Selectivity Principle** — renamed from "Helical Selectivity Principle" on
+2026-09-19, because the Reeb orbits are straight lines rather than helices and a
+Reeb flow, being volume-preserving, cannot attract anything. It is a confinement
+bound `r ≤ r*(J, λ) = a√(J/λ)` that constrains which reaction pathways can reach
+the catalytic fixed point; the confinement comes from DNLS self-trapping, not
+from the Reeb flow.
 
 `Theorem53` establishes that the operator chain is **order-dependent in general**
 (firing order changes the outcome) while proving this is *not* universal: specific
@@ -36,7 +41,8 @@ order-dependent instance and a commuting instance are exhibited on the same mani
 ## Repository structure
 
 ```
-CatGT/CatGT_Main.lean                    CatGT core — HSP + lemmas (CI-verified)
+CatGT/CatGT_Main.lean                    CatGT core — Thm 1 + lemmas (CI-verified)
+CatGT/ContactMorphism.lean               dilation preserves α_cat (CI-verified)
 PrincipiaOrthogona1/Theorem53...lean     Theorem 5.3 non-commutativity (CI-verified)
 zeolite_operator_order/
   ZeoliteCommutation.lean                3 commutation theorems (verified, not in CI)
