@@ -491,7 +491,7 @@
 <!-- ══════════════════════════════════ LEAN ══════════════════════════════════ -->
 <section id="lean">
   <h2>5. Lean 4 Formal Verification</h2>
-  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the HSP core inequality, a computational DNLS scaffold, and one honest open obligation. <strong>9 theorems closed, 0 admits, 0 hidden sorries (kernel-checked, Lean v4.33).</strong></p>
+  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the Theorem 1(i) core inequality, a computational DNLS scaffold, a Lyapunov relaxation block, and one honest open obligation. <strong>13 theorems closed, 0 admits, 0 hidden sorries — every one on exactly [propext, Classical.choice, Quot.sound], kernel-checked under Lean 4.33.0-rc1 against Mathlib v4.33.0-rc1 on 2026-09-20.</strong></p>
   <p style="font-size:0.85rem;color:var(--ink3);">Revision note (2026-07-10): two theorems on this page previously proved vacuous statements — <code>catgt_dm3_transport</code> proved <code>∃ shape, True</code> (true for any shape) and <code>ensemble_scaling</code> proved <code>∃ selectivity, selectivity = (1-x)²</code> (true by construction for any x) — and both reported "closed"/"admit" badges that overstated what was actually established. Both have been corrected below to prove real, checkable facts instead, and the deeper open claims each was gesturing at (Corollary 2 optimality; which Pt–Sn scaling law is correct) are now stated as open prose rather than dressed up as theorems.</p>
   <p style="font-size:0.85rem;color:var(--ink3);">Note: Lean 4 reserves the bare <code>λ</code> character for anonymous-function syntax, so it cannot be used as a parameter/identifier name — the source uses <code>lam</code>/<code>hlam</code> where this page's prose uses \(\lambda\). The snippets below show the actual compiling identifiers.</p>
   <p style="font-size:0.85rem;color:var(--ink3);"><strong>Note (2026-09-19):</strong> Theorem 1 above was corrected to introduce an explicit length scale \(a\) and drop the helix/attractor language — <code>CatGT_Main.lean</code> itself has <strong>not</strong> been updated to match yet, so the quoted code below (verbatim from the current file) still uses the old dimensionless <code>criticalRadius := Real.sqrt(J/lam)</code> and the docstring still says "attractor tube." This is a known gap, not an oversight: fixing it means changing <code>criticalRadius</code>'s signature to take a length parameter and re-verifying every downstream theorem that uses it, tracked in the To-Do list rather than done silently here.</p>
@@ -537,12 +537,10 @@
     convex cross-sections of equal area) is NOT proved here — left as
     open prose, not a fake theorem. Path to closing: define κ_stab,
     import Convex.Basic + a 2D isoperimetric lemma. Target: Part II. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">catgt_dm3_transport</span>
+<span class="kw">theorem</span> <span class="thm-name">catgt_dm3_disk</span>
     (r_star : ℝ) (hr : <span class="kw">0</span> < r_star) :
-    ∃ (shape : Set (ℝ × ℝ)),
-      shape = {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} ∧
-      (<span class="kw">0</span>, <span class="kw">0</span>) ∈ shape ∧
-      (<span class="kw">2</span> * r_star, <span class="kw">0</span>) ∉ shape := <span class="kw">by</span>
+      (<span class="kw">0</span>, <span class="kw">0</span>) ∈ {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} ∧
+      (<span class="kw">2</span> * r_star, <span class="kw">0</span>) ∉ {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} := <span class="kw">by</span>
   refine ⟨{p | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>}, rfl, ?_, ?_⟩
   · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star]
   · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star, hr]</pre>
@@ -634,7 +632,7 @@
   <div class="audit">
 <span class="section">── CatGT_Main.lean · May 2026 ──────────────────────────────</span>
 <span class="section">Framework : CatGT (Catalytic Generative Theory)</span>
-<span class="section">Theorem 1 : HSP (Helical Selectivity Principle)</span>
+<span class="section">Theorem 1 : Self-Trapping Selectivity Principle</span>
 <span class="section">Parent    : GTCT (Generative Temporal Contact Theory)</span>
 <span class="section">Closed (sorry-free · kernel-checked):</span>
 <span class="closed">  ✓ ipr_between_zero_and_one       IPR ∈ (0,1], Cauchy-Schwarz / Finset.sum</span>
@@ -642,11 +640,18 @@
 <span class="closed">  ✓ criticalRadius_antitone        sqrt_le_sqrt + gcongr</span>
 <span class="closed">  ✓ helical_selectivity            sqrt_le_sqrt + algebraic  ← HSP</span>
 <span class="closed">  ✓ selectivityFactor_eq           ring + Real.sq_sqrt</span>
-<span class="closed">  ✓ reeb_orbit_advances            α(R)=1 along the Reeb orbit; ring</span>
+<span class="closed">  ✓ reeb_alpha_eq_one              α_cat(R)=1 — the actual 1-form pairing</span>
+<span class="closed">  ✓ reeb_orbit_advances            z-advance derived FROM that pairing</span>
 <span class="closed">  ✓ dnlsNorm_nonneg                discrete norm ≥ 0; Finset.sum_nonneg</span>
-<span class="closed">  ✓ catgt_dm3_transport            disk membership facts (nlinarith)</span>
+<span class="closed">  ✓ catgt_dm3_disk                 disk membership facts (nlinarith)</span>
 <span class="closed">  ✓ ensemble_scaling_forms_diverge (1-x)² ≠ 1-x² at x=1/2 (norm_num)</span>
-<span class="section">Total: 9 closed · 0 admits · 0 sorries · 0 vacuous</span>
+<span class="closed">  ✓ relaxStep_fixed                r* is a fixed point of the relaxation</span>
+<span class="closed">  ✓ relaxStep_contracts            Lyapunov decay, one step (0&lt;k&lt;2)</span>
+<span class="closed">  ✓ relax_iterate_dist             Lyapunov decay, iterated: |1-k|ⁿ</span>
+<span class="section">Total: 13 closed · 0 admits · 0 sorries · 0 vacuous</span>
+<span class="section">Sept 2026: reeb_orbit_advances previously proved a fact about a scalar</span>
+<span class="section">  potential F=z-r²θ, not about α_cat=dz-r²dθ (dF has an extra -2rθ·dr),</span>
+<span class="section">  and any F=z+g(r,θ) would have proved it. Replaced by the real pairing.</span>
 <span class="section">Still open in prose (not theorems): Corollary 2 disk optimality;</span>
 <span class="section">  which Pt–Sn scaling form ((1-x)² vs 1-(r*/r_pore)²) is correct.</span>
 <span class="section">Collatz: not claimed. Tracked in AXLE/OPEN_QUESTIONS.md.</span>

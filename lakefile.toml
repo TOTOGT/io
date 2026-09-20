@@ -1,5 +1,5 @@
 name = "io"
-defaultTargets = ["CatGT", "Theorem53"]
+defaultTargets = ["CatGT", "ContactMorphism", "Theorem53"]
 
 [[require]]
 name = "mathlib"
@@ -21,3 +21,7 @@ roots = ["CatGT.CatGT_Main"]
 [[lean_lib]]
 name = "Theorem53"
 roots = ["PrincipiaOrthogona1.Theorem53NonCommutativity"]
+
+[[lean_lib]]
+name = "ContactMorphism"
+roots = ["CatGT.ContactMorphism"]
