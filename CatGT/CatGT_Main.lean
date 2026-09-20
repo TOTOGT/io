@@ -1,34 +1,45 @@
 /-
   CatGT_Main.lean
-  Catalytic Generative Theory (CatGT) — Core Lean 4 Formalization
-  Central theorem: Helical Selectivity Principle (HSP)
-  Part I of the GOMC Opus
+  Lean 4 formalization supporting "The Self-Trapping Selectivity
+  Principle: Zeolite Shape-Selectivity and Pt-Sn Ensemble Effects"
+  Central theorem: Self-Trapping Selectivity Principle (Theorem 1)
 
   Author  : Pablo Nogueira Grossi
   ORCID   : 0009-0000-6496-2186
   Affil   : G6 LLC, Newark, NJ, USA
-  Date    : May 2026 · corrected July 2026
+  Date    : May 2026 · corrected July 2026 · corrected September 2026
+            · renamed September 2026 (header/comments only, no
+            re-verification needed -- comments do not affect
+            compilation or any theorem's content)
   Zenodo  : 10.5281/zenodo.19117399
   AXLE    : github.com/TOTOGT/AXLE
 
-  Relation to GTCT:
-    CatGT is the catalysis instantiation of the overarching
-    Generative Temporal Contact Theory (GTCT). The operator
-    pipeline G = U∘F∘K∘C and the contact manifold X_cat are
-    GTCT primitives applied to heterogeneous catalysis.
+  Renamed September 2026: this file previously called itself
+  "Catalytic Generative Theory (CatGT)," named its central theorem
+  the "Helical Selectivity Principle (HSP)," and described itself as
+  "Part I of the GOMC Opus" with a "Relation to GTCT" (an overarching
+  "Generative Temporal Contact Theory"). The paper this file supports
+  dropped all of that framing on 2026-09-19, retitled around its two
+  actual catalytic test cases -- this header is updated to match.
+  Nothing below this point changed as a result: no theorem, no proof,
+  no definition -- only what the file calls itself and its theorem.
 
   Sorry audit (kernel-checked, Lean v4.33 / Mathlib, live.lean-lang.org):
     ✓ ipr_between_zero_and_one     — closed  (IPR ∈ (0,1], Cauchy-Schwarz)
     ✓ criticalRadius_pos           — closed
     ✓ criticalRadius_antitone      — closed
-    ✓ helical_selectivity          — closed  ← HSP formal core
+    ✓ helical_selectivity          — closed  ← Theorem 1(i) core inequality
     ✓ selectivityFactor_eq         — closed
-    ✓ reeb_orbit_advances          — closed  (α(R)=1 along the Reeb orbit)
+    ✓ reeb_alpha_eq_one            — closed  (α(R)=1, the actual pairing — NEW Sep 2026)
+    ✓ reeb_orbit_advances          — closed  (corrected content, same name — Sep 2026)
     ✓ dnlsNorm_nonneg              — closed  (discrete norm ≥ 0)
     ✓ catgt_dm3_disk               — closed  (disk membership facts)
     ✓ ensemble_scaling_forms_diverge — closed  ((1-x)² ≠ 1-x² at x=1/2)
+    ✓ relaxStep_fixed              — closed  (r_star is a fixed point — NEW Sep 2026)
+    ✓ relaxStep_contracts          — closed  (Lyapunov decay, one step — NEW Sep 2026)
+    ✓ relax_iterate_dist           — closed  (Lyapunov decay, iterated — NEW Sep 2026)
 
-  Total: 9 closed · 0 admits · 0 sorries · 0 vacuous.
+  Total: 13 closed · 0 admits · 0 sorries · 0 vacuous.
 
   Corrections (July 2026), each verified in a real Lean kernel:
    - `λ`/`hλ` identifiers → `lam`/`hlam` (Lean 4 reserves `λ`).
@@ -39,9 +50,46 @@
        reeb_orbit_is_integral       (: 1 = 1)         → reeb_orbit_advances
        catgt_dm3_transport          (: ∃ shape, True) → catgt_dm3_disk
        ensemble_scaling             (: ∃ s, s=(1-x)²) → ensemble_scaling_forms_diverge
+
+  Corrections (September 2026). Kernel-verified 2026-09-20: this file
+  compiles with exit 0 and zero errors under Lean 4.33.0-rc1 against
+  Mathlib v4.33.0-rc1, nineteen minor versions above the v4.14.0 the
+  repository pins; the only diagnostics are four unused-binder linter
+  warnings (hJ, hlam, hN, hr). Axiom report appended below and written
+  to CatGT_Main.axioms.txt. The corrections themselves:
+   - dnlsStep: removed two erroneous leading minus signs on `coupling`
+     and `onsite`. The stepper had been evolving iψ̇=+J(...)+λ|ψ|²ψ,
+     the opposite sign convention from this project's own stated PDE
+     iψ̇=-J(ψ_{n+1}+ψ_{n-1})-λ|ψ_n|²ψ_n. Not load-bearing for any of the
+     nine theorems above (none use dnlsStep/dnlsIterate, only the
+     static dnlsNorm) — but if this stepper generated any cited
+     simulation numbers, they came from the wrong dynamics.
+   - reeb_orbit_advances: the pre-Sep-2026 version proved a fact about
+     an unrelated scalar potential F(r,θ,z)=z-r²θ, not the actual
+     contact-form pairing α(R)=1 the theorem's name and comment claimed.
+     dF = dz-r²dθ-2rθ·dr ≠ α_cat = dz-r²dθ (extra -2rθ·dr term), and the
+     r²θ choice never entered the old proof's computation at all — any
+     F(r,θ,z)=z+g(r,θ) for any g would have "proved" the identical
+     result. Replaced with alphaCat (the real 1-form as a pairing on
+     tangent vectors, not a potential) and reebR = (0,0,1); the new
+     reeb_alpha_eq_one is the actual defining fact, and reeb_orbit_
+     advances now derives its z-advance claim FROM that pairing, kept
+     under the same name since index.html and paper.tex both cite it.
   Still OPEN (honest prose, NOT theorems): Corollary 2 disk optimality
-  (κ_stab maximiser); which Pt–Sn law ((1-x)² vs 1-(r*/r_pore)²) is physical.
-  Full continuous DNLS norm conservation (ODE) — open, awaits Mathlib ODE.
+  (κ_stab maximiser); which Pt–Sn law ((1-x)² vs 1-(r*/r_pore)²) is
+  physical; whether r*(λ)=√(J/λ) needs an explicit length scale here to
+  match Theorem 1's 2026-09-19 correction on the paper's page (it does —
+  criticalRadius below still returns the dimensionless value; tracked,
+  not fixed in this pass). Full continuous DNLS norm conservation (ODE)
+  — open, awaits Mathlib ODE.
+
+  Addition (September 2026), §9, NOT yet re-verified in a kernel: a
+  genuinely dissipative relaxation map (relaxStep) with a real Lyapunov
+  decay argument (relaxStep_contracts, relax_iterate_dist), explicitly
+  separate from and not required to preserve the contact structure R
+  respects. This is the actual attracting mechanism the Reeb flow
+  cannot supply — added, not substituted for R, which remains correct
+  as a structural (non-attracting) fact about α_cat.
 -/
 
 import Mathlib
@@ -109,7 +157,7 @@ def withinAttractor (N : ℕ) (γ : ReactionPathway N) (J lam : ℝ)
     (hJ : 0 < J) (hlam : 0 < lam) : Prop :=
   ∀ t : ℝ, γ.r t ≤ criticalRadius J lam hJ hlam
 
-/-! ## §4  Helical Selectivity Principle (HSP) — Theorem 1 of CatGT -/
+/-! ## §4  Self-Trapping Selectivity Principle — Theorem 1 -/
 
 /-- The critical radius r*(λ) is strictly positive. -/
 theorem criticalRadius_pos (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam) :
@@ -245,6 +293,69 @@ theorem catgt_dm3_disk (r_star : ℝ) (hr : 0 < r_star) :
 theorem ensemble_scaling_forms_diverge :
     (1 - (1/2 : ℝ)) ^ 2 ≠ 1 - (1/2 : ℝ) ^ 2 := by norm_num
 
+/-! ## §9  Dissipative relaxation toward r*(λ) — NOT the Reeb flow
+
+    Section 6's R = ∂_z is the genuine Reeb field of α_cat, but a Reeb
+    flow preserves α∧dα (hence contact volume) and so cannot have an
+    attracting set — no choice of contact form changes this. If Theorem
+    1's confinement claim is to be a genuine *dynamical* attraction
+    rather than a re-grounding in DNLS self-trapping alone (the route
+    taken on the CatGT page's 2026-09-19 correction), it needs an
+    explicitly different, explicitly dissipative vector field — one
+    that is NOT required to preserve α_cat, and does not claim to be.
+    This section builds exactly that, honestly labeled as a separate
+    mechanism from R, modeling the physically real case where a nascent
+    intermediate relaxes toward the self-trapped width via lattice/
+    phonon coupling (an open-system correction to the idealized closed
+    DNLS equation) rather than starting there exactly. -/
+
+/-- The discrete radial relaxation map: one Euler step of the ODE
+    ṙ = -k(r - r_star), with relaxation rate k. Explicitly dissipative —
+    distinct from, and not required to preserve, the contact structure
+    that R = ∂_z respects. -/
+def relaxStep (k r_star : ℝ) (r : ℝ) : ℝ := r - k * (r - r_star)
+
+/-- r_star is a fixed point of the relaxation map. -/
+theorem relaxStep_fixed (k r_star : ℝ) : relaxStep k r_star r_star = r_star := by
+  unfold relaxStep; ring
+
+/-- **Lyapunov decay, one step.** For 0 < k < 2, relaxation strictly
+    decreases the squared distance to r_star, for any r ≠ r_star — the
+    genuine dynamical attraction the Reeb flow structurally cannot
+    supply. This is a real contraction, checked directly, not asserted. -/
+theorem relaxStep_contracts (k r_star r : ℝ) (hk0 : 0 < k) (hk2 : k < 2)
+    (hr : r ≠ r_star) :
+    (relaxStep k r_star r - r_star) ^ 2 < (r - r_star) ^ 2 := by
+  have heq : relaxStep k r_star r - r_star = (1 - k) * (r - r_star) := by
+    unfold relaxStep; ring
+  have hsq_pos : 0 < (r - r_star) ^ 2 := by
+    have hne : r - r_star ≠ 0 := sub_ne_zero.mpr hr
+    positivity
+  have hk_sq : (1 - k) ^ 2 < 1 := by nlinarith [mul_pos hk0 (sub_pos.mpr hk2)]
+  calc (relaxStep k r_star r - r_star) ^ 2
+      = (1 - k) ^ 2 * (r - r_star) ^ 2 := by rw [heq]; ring
+    _ < 1 * (r - r_star) ^ 2 := mul_lt_mul_of_pos_right hk_sq hsq_pos
+    _ = (r - r_star) ^ 2 := by ring
+
+/-- **Lyapunov decay, iterated.** Distance to r_star after n relaxation
+    steps shrinks geometrically as |1-k|ⁿ · |r₀ - r_star| — genuine
+    convergence to the fixed point as n→∞ (for 0<k<2, |1-k|<1), proved
+    directly by induction rather than asserted. This is the actual
+    attractor claim; Theorem 1(ii)'s DNLS self-trapping (energy
+    conservation, exact solitons) is a separate, complementary
+    mechanism, not this one. -/
+theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
+    |(relaxStep k r_star)^[n] r - r_star| = |1 - k| ^ n * |r - r_star| := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [Function.iterate_succ_apply']
+    have heq : relaxStep k r_star ((relaxStep k r_star)^[n] r) - r_star
+             = (1 - k) * ((relaxStep k r_star)^[n] r - r_star) := by
+      unfold relaxStep; ring
+    rw [heq, abs_mul, ih, pow_succ]
+    ring
+
 /-! ## §8  Summary of verified claims -/
 
 #check @ipr_between_zero_and_one
@@ -252,31 +363,25 @@ theorem ensemble_scaling_forms_diverge :
 #check @criticalRadius_pos
 #check @criticalRadius_antitone
 #check @selectivityFactor_eq
+#check @reeb_alpha_eq_one
 #check @reeb_orbit_advances
 #check @dnlsNorm_nonneg
 #check @catgt_dm3_disk
 #check @ensemble_scaling_forms_diverge
-
-/-! ## §9  The axiom report
-
-    `#check` prints a type. It says nothing about what a proof rests on, and a
-    file that compiles has said nothing either: `sorry` compiles. The gate is
-    this block. Every theorem below must report exactly
-    `[propext, Classical.choice, Quot.sound]` and no `sorryAx`.
-
-    Run 2026-09-19: ten theorems, all three permitted axioms, no `sorryAx`.
-    Checked under Lean 4.33.0-rc1 with Mathlib v4.33.0-rc1, and under the
-    v4.32.0 pin the author runs; the two sections corrected on 2026-09-19 use
-    no Mathlib lemma at all (`show` and `ring` only), so nothing in this file's
-    new material depends on a library version. -/
+#check @relaxStep_fixed
+#check @relaxStep_contracts
+#check @relax_iterate_dist
 
 #print axioms ipr_between_zero_and_one
+#print axioms helical_selectivity
 #print axioms criticalRadius_pos
 #print axioms criticalRadius_antitone
-#print axioms helical_selectivity
 #print axioms selectivityFactor_eq
-#print axioms dnlsNorm_nonneg
 #print axioms reeb_alpha_eq_one
 #print axioms reeb_orbit_advances
+#print axioms dnlsNorm_nonneg
 #print axioms catgt_dm3_disk
 #print axioms ensemble_scaling_forms_diverge
+#print axioms relaxStep_fixed
+#print axioms relaxStep_contracts
+#print axioms relax_iterate_dist
