@@ -73,8 +73,16 @@ def split_step_dnls(psi, V, dt, lam, gamma, r):
     """
     One time step of dissipative DNLS evolution.
     
-    i ∂ψ/∂t = -∇²ψ + V(r)|ψ|²ψ - iγψ
-    
+    i ∂ψ/∂t = -∇²ψ + V(r)ψ - λ|ψ|²ψ - iγψ
+
+    Sign convention fixed 2026-09-20 to match CatGT_Main.lean and the paper:
+    the nonlinear term is -λ|ψ|²ψ (focusing / self-trapping). It was +λ|ψ|²ψ
+    here, the defocusing branch, which spreads a packet faster than free
+    dispersion and cannot self-trap at all.
+
+    The previous docstring read "V(r)|ψ|²ψ", multiplying the potential by the
+    density; that is neither what the code did nor a term in any DNLS.
+
     Split-step method: Fourier (kinetic) → real-space (potential+nonlinear) → Fourier
     """
     dr = r[1] - r[0]
@@ -86,8 +94,8 @@ def split_step_dnls(psi, V, dt, lam, gamma, r):
     psi = ifft(psi_hat)
     
     # Full-step potential + nonlinear + dissipation (real space)
-    nonlin = np.abs(psi)**2 * psi
-    psi *= np.exp(-1j * (V + lam * np.abs(psi)**2) * dt)
+    # (`nonlin = np.abs(psi)**2 * psi` stood here, computed and never used.)
+    psi *= np.exp(-1j * (V - lam * np.abs(psi)**2) * dt)
     psi *= np.exp(-gamma * dt)  # dissipation
     
     # Half-step kinetic energy (Fourier)
@@ -119,8 +127,16 @@ def evolve_dnls(V_func, label):
     # Evolution
     for i in range(n_steps):
         psi_t[i] = psi
-        mean_r[i] = np.sum(r * np.abs(psi)**2) * dr
-        var_r[i] = np.sum((r - mean_r[i])**2 * np.abs(psi)**2) * dr
+        # Normalise before taking moments. Dissipation removes norm at
+        # exp(-2γt) -- by t=1000 fs with γ=0.01 that is 2.06e-9 of the
+        # initial norm, so the unnormalised moments used here previously
+        # reported the decay of the norm, not the shape of the packet:
+        # ⟨r⟩ came out as 5.9e-9 Å instead of 2.87 Å.
+        dens = np.abs(psi)**2
+        nrm = np.sum(dens) * dr
+        dens = dens / nrm if nrm > 0 else dens
+        mean_r[i] = np.sum(r * dens) * dr
+        var_r[i] = np.sum((r - mean_r[i])**2 * dens) * dr
         
         # Mode spectrum (Fourier)
         psi_hat = fft(psi)
@@ -130,7 +146,7 @@ def evolve_dnls(V_func, label):
         dpsi_dr = np.gradient(psi, dr)
         kinetic = np.sum(np.abs(dpsi_dr)**2) * dr
         potential = np.sum(V * np.abs(psi)**2) * dr
-        interaction = 0.5 * lam * np.sum(np.abs(psi)**4) * dr
+        interaction = -0.5 * lam * np.sum(np.abs(psi)**4) * dr  # focusing: H has -λ/2 ∫|ψ|⁴
         energy[i] = kinetic + potential + interaction
         
         # One time step
@@ -239,7 +255,7 @@ cbar7.set_label('|ψ̃(k,t)|² (log)', fontsize=9)
 ax8 = fig.add_subplot(gs[3, 1])
 ax8.axis('off')
 
-summary_text = """
+summary_text = f"""
 OPERATOR FIRING ORDER COMPARISON
 
 ZSM-5 (10-ring channels):
@@ -247,14 +263,14 @@ ZSM-5 (10-ring channels):
   └─ Constraint fires FIRST
   └─ Prevents branching chemistry
   └─ Result: linear, small products
-  └─ ⟨Δr²⟩ ~ 0.3 Ų (narrow)
+  └─ ⟨Δr²⟩ = {vr_zsm5[-1]:.2f} Ų (computed)
 
 MCM-22 (12-ring supercage):
   C → F → K → U
   └─ Folding fires FIRST
   └─ Permits branching in cavity
   └─ Result: bulky, aromatic products
-  └─ ⟨Δr²⟩ ~ 2.1 Ų (broad)
+  └─ ⟨Δr²⟩ = {vr_mcm22[-1]:.2f} Ų (computed)
 
 Key Prediction:
   Time-resolved DRIFTS contact-time
@@ -266,6 +282,12 @@ Falsification Criterion:
   If final variance distributions
   overlap (p > 0.05), hypothesis
   requires revision.
+
+  As of 2026-09-20 this run puts
+  ZSM-5 BROADER than MCM-22
+  (ratio {vr_mcm22[-1]/vr_zsm5[-1]:.2f}x, not >1). The
+  criterion above is met against
+  the hypothesis. Unresolved.
 """
 
 ax8.text(0.05, 0.95, summary_text, transform=ax8.transAxes, fontsize=9.5,
@@ -308,8 +330,14 @@ print(f"  Probability in supercage (r < 6.0 Å): {np.sum(np.abs(psi_final_mcm22[
 print(f"\nOperator Order Effect:")
 ratio = vr_mcm22[-1] / vr_zsm5[-1]
 print(f"  Variance ratio (MCM-22 / ZSM-5): {ratio:.2f}x")
-print(f"  Interpretation: MCM-22 allows {ratio:.1f}× broader product distribution")
-print(f"                  consistent with aromatic/branched intermediates")
+if ratio > 1:
+    print(f"  Interpretation: MCM-22 allows {ratio:.1f}× broader product distribution")
+    print(f"                  consistent with aromatic/branched intermediates")
+else:
+    print(f"  NOT the predicted direction: this run makes ZSM-5 the broader of")
+    print(f"                  the two ({1/ratio:.2f}× ). The hypothesis predicts MCM-22")
+    print(f"                  broader. Reported, not reconciled -- see the paper's")
+    print(f"                  falsification criterion.")
 
 print("\n" + "="*70)
 print("Figure saved to dm3_zeolite_figures.{png,pdf}")
