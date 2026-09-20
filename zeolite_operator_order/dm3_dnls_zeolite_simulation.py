@@ -339,6 +339,65 @@ else:
     print(f"                  broader. Reported, not reconciled -- see the paper's")
     print(f"                  falsification criterion.")
 
+# ============================================================================
+# BREADTH OBSERVABLES -- three of them, chosen before looking
+# ============================================================================
+# The hypothesis says MCM-22 gives the BROADER product distribution. "Broader"
+# has to be committed to before the numbers are read, so all three reasonable
+# measures are computed and all three are reported, including the ones that
+# disagree. Picking the one that agrees, after the fact, is the defect this
+# repository exists to catch.
+#
+#   var       spatial variance of |psi|^2          -- what this script reported
+#   1/IPR     inverse participation ratio in r     -- the observable
+#                                                     CatGT_Main.lean defines
+#                                                     and proves theorems about
+#   n_modes   1/IPR of the normalised |psi_hat|^2  -- how many modes are
+#                                                     occupied; the closest
+#                                                     thing here to "branching"
+
+def breadth(psi):
+    d = np.abs(psi) ** 2
+    dn = d / (np.sum(d) * dr)
+    m = np.sum(r * dn) * dr
+    var = np.sum((r - m) ** 2 * dn) * dr
+    ipr_r = np.sum(dn ** 2) * dr
+    ph = np.abs(fft(psi)) ** 2
+    ph = ph / np.sum(ph)
+    n_modes = 1.0 / np.sum(ph ** 2)
+    return var, ipr_r, n_modes
+
+b_zsm5 = breadth(psi_final_zsm5)
+b_mcm22 = breadth(psi_final_mcm22)
+
+print("\n" + "=" * 70)
+print("BREADTH, BY THREE MEASURES")
+print("=" * 70)
+print("  %-22s %12s %12s" % ("", "ZSM-5", "MCM-22"))
+print("  %-22s %12.4f %12.4f" % ("spatial variance", b_zsm5[0], b_mcm22[0]))
+print("  %-22s %12.4f %12.4f" % ("delocalisation 1/IPR", 1 / b_zsm5[1], 1 / b_mcm22[1]))
+print("  %-22s %12.2f %12.2f" % ("effective mode count", b_zsm5[2], b_mcm22[2]))
+
+ratios = [("spatial variance", b_mcm22[0] / b_zsm5[0]),
+          ("delocalisation 1/IPR", (1 / b_mcm22[1]) / (1 / b_zsm5[1])),
+          ("effective mode count", b_mcm22[2] / b_zsm5[2])]
+agree = [n for n, x in ratios if x > 1.0]
+print("\n  MCM-22 / ZSM-5  (the hypothesis needs every one of these above 1)")
+for n, x in ratios:
+    print("    %-22s %6.2fx   %s" % (n, x, "agrees" if x > 1 else "CONTRADICTS"))
+if len(agree) == len(ratios):
+    print("\n  All three agree: MCM-22 is the broader by every measure tried.")
+elif not agree:
+    print("\n  None agree: the model puts ZSM-5 broader by every measure tried.")
+else:
+    print("\n  SPLIT: %d of %d agree (%s)." % (len(agree), len(ratios), ", ".join(agree)))
+    print("  The direction of the prediction is not determined by this model --")
+    print("  it depends on which breadth measure is chosen. Choosing the one")
+    print("  that agrees is not a result. Either the observable is fixed in")
+    print("  advance on physical grounds, or the model gains the degree of")
+    print("  freedom that can actually branch. Open.")
+print("=" * 70 + "\n")
+
 print("\n" + "="*70)
 print("Figure saved to dm3_zeolite_figures.{png,pdf}")
 print("="*70 + "\n")
