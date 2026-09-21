@@ -86,7 +86,7 @@ Together: **order-dependence is carried by whichever operator transports amplitu
 between sites, never by a gate acting pointwise.**
 
 Versions 1–2 of the paper (Zenodo
-[10.5281/zenodo.21296707](https://doi.org/10.5281/zenodo.21296707)) asserted the
+[20563363](https://doi.org/10.5281/zenodo.20563363), [21296707](https://doi.org/10.5281/zenodo.21296707)) asserted the
 opposite — `[K,F] ≠ 0` for gate and pointwise fold, escaping via a boundary term
 `∝ δ(r − r_ap)` that does not exist. That Theorem 1 was **false**; `v3`
 (`zeolite_operator_selectivity_v3.tex`) restates it and re-tags every downstream
@@ -121,4 +121,10 @@ Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
 
 ## License
 
-Formalizations released under CC BY 4.0.
+The V5 deposit (the paper, its page and the Lean files deposited with it: Zenodo
+[10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)) is released under
+**CC BY-NC-ND 4.0**. This is a new version of the same Zenodo record series as the
+earlier operator-order versions (V1 [20563363](https://doi.org/10.5281/zenodo.20563363),
+V2 [21296707](https://doi.org/10.5281/zenodo.21296707), V3 [21429016](https://doi.org/10.5281/zenodo.21429016),
+V4 [22849726](https://doi.org/10.5281/zenodo.22849726)), which stay published under the licence they were
+deposited with. `zeolite_operator_order/` keeps its own CC BY 4.0 statement.
