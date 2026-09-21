@@ -75,13 +75,34 @@
      reeb_alpha_eq_one is the actual defining fact, and reeb_orbit_
      advances now derives its z-advance claim FROM that pairing, kept
      under the same name since index.html and paper.tex both cite it.
+  Length-scale change (2026-09-20) — kernel-checked on Lean 4.32.0 /
+  Mathlib v4.32.0 by the file's owner (`lake env lean`, run from the
+  geometry checkout): no errors, all 13 `#print axioms` on [propext,
+  Classical.choice, Quot.sound], warnings only for unused binders (ha, hJ,
+  hlam, hN, hr). NOT yet checked under the v4.14.0 pin that this repo's CI
+  uses -- that run is the arbiter for this repo. The paragraphs above
+  describe the file as it was compiled earlier on 2026-09-20 (dimensionless
+  criticalRadius := √(J/λ), Claude-side check on 4.33.0-rc1). This edit adds the
+  explicit length scale `a > 0` to match Theorem 1's 2026-09-19 correction
+  on the paper's page, r*(λ) = a·√(J/λ): `criticalRadius`, `withinAttractor`,
+  `criticalRadius_pos`, `criticalRadius_antitone`, `helical_selectivity`,
+  `selectivityFactor` and `selectivityFactor_eq` all gain `a` and `ha`;
+  helical_selectivity's hypothesis becomes r² ≤ a²·(J/λ); and
+  selectivityFactor_eq now states σ = 1 - (J/λ)(a/r_pore)², the form the
+  paper's fit uses. No theorem was renamed. The statements checked are
+  exactly the ones printed by the #check block at the bottom of this file.
+  What is and is not established: this fixes the Lean file to carry the
+  length scale the paper's Theorem 1 states; it does not show r* = a√(J/λ)
+  is the right physical scaling (see the open item below).
   Still OPEN (honest prose, NOT theorems): Corollary 2 disk optimality
   (κ_stab maximiser); which Pt–Sn law ((1-x)² vs 1-(r*/r_pore)²) is
-  physical; whether r*(λ)=√(J/λ) needs an explicit length scale here to
-  match Theorem 1's 2026-09-19 correction on the paper's page (it does —
-  criticalRadius below still returns the dimensionless value; tracked,
-  not fixed in this pass). Full continuous DNLS norm conservation (ODE)
-  — open, awaits Mathlib ODE.
+  physical; whether r* = a√(J/λ) is the right DNLS self-trapping scaling at
+  all — the continuum DNLS ground state has width ≈ 4Ja/(λP) at fixed norm
+  P = Σ|ψ|² (linear in J/λ, not √), and ≈ a√(2J/λ)/A only at fixed peak
+  amplitude A; the √ form therefore encodes an unstated normalisation
+  choice (2026-09-20, hand-derived and checked numerically on a 400-site
+  chain, not yet in the paper). Full continuous DNLS norm conservation
+  (ODE) — open, awaits Mathlib ODE.
 
   Addition (September 2026), §9, NOT yet re-verified in a kernel: a
   genuinely dissipative relaxation map (relaxStep) with a real Lyapunov
@@ -111,9 +132,16 @@ noncomputable def IPR {N : ℕ} (c : DNLSChain N) : ℝ :=
   (∑ n : Fin N, ‖c.ψ n‖ ^ 4) /
   (∑ n : Fin N, ‖c.ψ n‖ ^ 2) ^ 2
 
-/-- Critical attractor radius r*(λ) = √(J/λ). -/
-noncomputable def criticalRadius (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam) : ℝ :=
-  Real.sqrt (J / lam)
+/-- Critical (self-trapping) radius r*(λ) = a·√(J/λ), where `a > 0` is the
+    lattice-spacing length scale. J and λ are both energies, so J/λ is
+    dimensionless and `a` is what gives r* the dimension of a length
+    (Theorem 1's 2026-09-19 correction on the paper's page). NOTE: this is
+    the *definition* the theorems below are stated against; that r* is the
+    physically correct DNLS self-trapping width is a separate claim, and
+    depends on what is held fixed (see the 2026-09-20 note in the header). -/
+noncomputable def criticalRadius (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hlam : 0 < lam) : ℝ :=
+  a * Real.sqrt (J / lam)
 
 /-! ## §2  IPR bounds -/
 
@@ -153,40 +181,63 @@ structure ReactionPathway (N : ℕ) where
   θ : ℝ → ℝ
   z : ℝ → ℝ
 
-def withinAttractor (N : ℕ) (γ : ReactionPathway N) (J lam : ℝ)
-    (hJ : 0 < J) (hlam : 0 < lam) : Prop :=
-  ∀ t : ℝ, γ.r t ≤ criticalRadius J lam hJ hlam
+def withinAttractor (N : ℕ) (γ : ReactionPathway N) (a J lam : ℝ)
+    (ha : 0 < a) (hJ : 0 < J) (hlam : 0 < lam) : Prop :=
+  ∀ t : ℝ, γ.r t ≤ criticalRadius a J lam ha hJ hlam
 
 /-! ## §4  Self-Trapping Selectivity Principle — Theorem 1 -/
 
 /-- The critical radius r*(λ) is strictly positive. -/
-theorem criticalRadius_pos (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam) :
-    0 < criticalRadius J lam hJ hlam := by
-  unfold criticalRadius; exact Real.sqrt_pos_of_pos (div_pos hJ hlam)
+theorem criticalRadius_pos (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hlam : 0 < lam) :
+    0 < criticalRadius a J lam ha hJ hlam := by
+  unfold criticalRadius
+  exact mul_pos ha (Real.sqrt_pos_of_pos (div_pos hJ hlam))
 
 /-- r*(λ) decreases as λ increases: stronger binding → tighter selectivity. -/
-theorem criticalRadius_antitone (J : ℝ) (hJ : 0 < J) (lam1 lam2 : ℝ)
-    (h1 : 0 < lam1) (h2 : 0 < lam2) (hle : lam1 ≤ lam2) :
-    criticalRadius J lam2 hJ h2 ≤ criticalRadius J lam1 hJ h1 := by
-  unfold criticalRadius; apply Real.sqrt_le_sqrt; gcongr
+theorem criticalRadius_antitone (a : ℝ) (ha : 0 < a) (J : ℝ) (hJ : 0 < J)
+    (lam1 lam2 : ℝ) (h1 : 0 < lam1) (h2 : 0 < lam2) (hle : lam1 ≤ lam2) :
+    criticalRadius a J lam2 ha hJ h2 ≤ criticalRadius a J lam1 ha hJ h1 := by
+  unfold criticalRadius
+  have h : J / lam2 ≤ J / lam1 := by gcongr
+  exact mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt h) ha.le
 
-/-- **Helical Selectivity Principle (HSP)** — formal core of Theorem 1.
-    r² ≤ J/λ ⟹ r ≤ r*(λ) = √(J/λ). -/
-theorem helical_selectivity (J lam : ℝ) (hJ : 0 < J) (hlam : 0 < lam)
-    (r_state : ℝ) (hr : 0 ≤ r_state) (h_confined : r_state ^ 2 ≤ J / lam) :
-    r_state ≤ criticalRadius J lam hJ hlam := by
-  unfold criticalRadius; rw [← Real.sqrt_sq hr]; exact Real.sqrt_le_sqrt h_confined
+/-- **Self-Trapping Selectivity Principle** — formal core of Theorem 1.
+    r² ≤ a²·(J/λ) ⟹ r ≤ r*(λ) = a·√(J/λ).
+    NOTE (what this does and does not say): the hypothesis is the squared
+    form of the conclusion, so this is the equivalence "r ≤ r* ⟸ r² ≤ r*²"
+    for r ≥ 0, i.e. sqrt-monotonicity. It does NOT derive confinement from
+    any DNLS dynamics; that is Theorem 1(ii)'s open content. -/
+theorem helical_selectivity (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hlam : 0 < lam) (r_state : ℝ) (hr : 0 ≤ r_state)
+    (h_confined : r_state ^ 2 ≤ a ^ 2 * (J / lam)) :
+    r_state ≤ criticalRadius a J lam ha hJ hlam := by
+  unfold criticalRadius
+  have h1 : r_state ≤ Real.sqrt (a ^ 2 * (J / lam)) := by
+    rw [← Real.sqrt_sq hr]; exact Real.sqrt_le_sqrt h_confined
+  have h2 : Real.sqrt (a ^ 2 * (J / lam)) = a * Real.sqrt (J / lam) := by
+    rw [Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq ha.le]
+  rw [h2] at h1
+  exact h1
 
-/-- Selectivity factor σ = 1 - J/(λ·r_pore²). -/
-noncomputable def selectivityFactor (J lam r_pore : ℝ)
-    (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) : ℝ :=
-  1 - (criticalRadius J lam hJ hlam / r_pore) ^ 2
+/-- Selectivity factor σ = 1 - (r*/r_pore)² = 1 - (J/λ)(a/r_pore)². -/
+noncomputable def selectivityFactor (a J lam r_pore : ℝ)
+    (ha : 0 < a) (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) : ℝ :=
+  1 - (criticalRadius a J lam ha hJ hlam / r_pore) ^ 2
 
-theorem selectivityFactor_eq (J lam r_pore : ℝ)
-    (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) :
-    selectivityFactor J lam r_pore hJ hlam hr = 1 - J / (lam * r_pore ^ 2) := by
+theorem selectivityFactor_eq (a J lam r_pore : ℝ)
+    (ha : 0 < a) (hJ : 0 < J) (hlam : 0 < lam) (hr : 0 < r_pore) :
+    selectivityFactor a J lam r_pore ha hJ hlam hr
+      = 1 - (J / lam) * (a / r_pore) ^ 2 := by
   unfold selectivityFactor criticalRadius
-  rw [div_pow, Real.sq_sqrt (div_nonneg hJ.le hlam.le)]; ring
+  have hs : Real.sqrt (J / lam) ^ 2 = J / lam :=
+    Real.sq_sqrt (div_nonneg hJ.le hlam.le)
+  have hkey : (a * Real.sqrt (J / lam) / r_pore) ^ 2
+      = (J / lam) * (a / r_pore) ^ 2 := by
+    calc (a * Real.sqrt (J / lam) / r_pore) ^ 2
+        = Real.sqrt (J / lam) ^ 2 * (a / r_pore) ^ 2 := by ring
+      _ = (J / lam) * (a / r_pore) ^ 2 := by rw [hs]
+  rw [hkey]
 
 /-! ## §5  Computational scaffold — DNLS iterator -/
 
@@ -227,7 +278,7 @@ noncomputable def dnlsNorm {N : ℕ} (c : DNLSChain N) : ℝ :=
 theorem dnlsNorm_nonneg {N : ℕ} (c : DNLSChain N) : 0 ≤ dnlsNorm c := by
   unfold dnlsNorm; exact Finset.sum_nonneg (fun n _ => by positivity)
 
-/-! ## §6  Reeb vector field of the CatGT contact structure -/
+/-! ## §6  Reeb vector field of the contact structure -/
 
 /-- The contact form α_cat = dz - r²dθ, evaluated at a point (r,θ,z) on a
     tangent vector (dr,dθ,dz): α_(r,θ,z)(dr,dθ,dz) = dz - r²·dθ. This is
@@ -252,7 +303,7 @@ theorem reeb_alpha_eq_one (p : ℝ × ℝ × ℝ) : alphaCat p reebR = 1 := by
 
 /-- The Reeb orbit through (r₀,θ₀,z₀), flowing for time t: γ(t) =
     (r₀,θ₀,z₀+t). Its integral curves hold r,θ fixed — straight lines in
-    z, not helices (see the CatGT page's own 2026-09-19 correction notes,
+    z, not helices (see the paper's own 2026-09-19 correction notes,
     which also drop the "attractor" language: a Reeb flow preserves
     α∧dα, hence contact volume, hence cannot have an attracting set). -/
 def reebOrbit (r₀ θ₀ z₀ t : ℝ) : ℝ × ℝ × ℝ := (r₀, θ₀, z₀ + t)
@@ -300,7 +351,7 @@ theorem ensemble_scaling_forms_diverge :
     attracting set — no choice of contact form changes this. If Theorem
     1's confinement claim is to be a genuine *dynamical* attraction
     rather than a re-grounding in DNLS self-trapping alone (the route
-    taken on the CatGT page's 2026-09-19 correction), it needs an
+    taken on the paper's 2026-09-19 correction), it needs an
     explicitly different, explicitly dissipative vector field — one
     that is NOT required to preserve α_cat, and does not claim to be.
     This section builds exactly that, honestly labeled as a separate

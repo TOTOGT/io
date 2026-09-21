@@ -1,0 +1,8 @@
+'ReebFlow.reebFlow_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reebFlow_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reebFlow_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reebFlow_fderiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reebFlow_preserves_alpha' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reeb_interior_dAlpha' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.dAlpha_reebFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReebFlow.reebFlow_preserves_contactVol' depends on axioms: [propext, Classical.choice, Quot.sound]

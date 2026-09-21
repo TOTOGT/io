@@ -197,3 +197,63 @@ this repo holds the machine-checked refutation the other records need to cite:
 Do **not** let anyone "fix" `PrincipiaOrthogona1/Theorem53NonCommutativity.lean`
 on account of this. It is a different, existential, chain-level claim, it is
 kernel-verified, and it is fine. Similar number, unrelated statement.
+
+---
+
+## CatGT V5: state and OPEN TO-DOs (written 2026-09-21; update in place, do not move to another .md)
+
+This section is the tracker. When an item is done, tick it here in the same commit that does it.
+The paper is *The Self-Trapping Selectivity Principle* (V5, Zenodo 10.5281/zenodo.22851704).
+
+### Standing rule: a new theorem goes into the tiered registry count the day it is kernel-checked (owner, 2026-09-21)
+The registry (published at `sluing.github.io/neuro/SBM/1080.html`) has three tiers, and the words are not synonyms
+(see `~/Desktop/geometry/CLAUDE.md`, "written / sorry-free / kernel-audited"): Tier 3 = *written* (a `theorem`/`lemma` exists),
+Tier 2 = *sorry-free*, Tier 1 = *kernel-audited* (`#print axioms` run on that named declaration, standard three axioms only).
+`tools/theorem_census.py --corpus --tracked` (geometry) counts only TRACKED files in the corpus roots, so **a file that is not
+committed is not counted, and is lost**. When the author pastes a clean run: (1) copy the file into the repo, (2) add the README
+row with BOTH numbers (audited / written), (3) add it to this section, (4) commit it, (5) re-run the census and diff against the
+published basis before any published number moves. Never raise a published number without the per-file basis. Mirrors and
+verbatim copies (e.g. `reeb_alpha_eq_one` in both `CatGT_Main` and `ReebFlow`) double-count unless the census groups them; say so.
+Count it CI-gated only once it is in `lakefile.toml` and printed by `verify-proofs.yml`; otherwise the row says "by paste".
+
+Basis as of 2026-09-21 (working tree, uncommitted -- not yet in any published number):
+| file | written (T3) | sorry-free (T2) | kernel-audited (T1) | CI-gated |
+|---|---:|---:|---:|:---:|
+| `CatGT/CatGT_Main.lean` | 13 | 13 | 13 | yes (CI prints 13 once the workflow edit lands) |
+| `CatGT/ReebFlow.lean` (new) | 11 | 11 | 8 | no |
+| `CatGT/ReebFlowExtDeriv.lean` (new; green 2026-09-21) | 13 | 13 | 11 | no |
+| `CatGT/ReebNoAttractor.lean` (new; green 2026-09-21, 2nd revision) | 9 | 9 | 9 | no |
+(`reeb_alpha_eq_one` and the copied defs `alphaCat`/`dAlpha`/`contactVol` recur across files: statement-level duplicates; the census does not group non-suffixed duplicates.)
+Not counted, no result reported: `CatGT_PROOFS_COMPLETE.fixed.lean` (10). `ReebNoAttractor.lean` 9/9 confirmed by a stdout-redirected run (`~/Desktop/Claude outputs/ReebNoAttractor.out.txt`, 880 bytes, 9 axiom lines, no errors or warnings; file sha256 prefix 6f95ee1088baab9d, identical to `io/CatGT/ReebNoAttractor.lean`).
+
+### What is kernel-checked (author's own terminal output, Lean 4.32.0 / Mathlib v4.32.0 ONLY)
+- `CatGT/CatGT_Main.lean`: 13 theorems, all `[propext, Classical.choice, Quot.sound]`. Not yet run under this repo's pinned v4.14.0.
+- `ContactMorphism.lean`, `Theorem53NonCommutativity.lean`: clean.
+- `ReebFlow.lean` (8 theorems, in the V5 deposit pack): elementary model of the Reeb flow of alpha_cat. `dAlpha` there is defined by a formula, not by Mathlib's `extDeriv`; the wedge in `contactVol` is an explicit formula.
+- `ReebFlowExtDeriv.lean` is now kernel-checked (11 audited of 13 written, 4.32.0): `dAlpha` = Mathlib's `extDeriv` of alpha_cat. `ReebNoAttractor.lean` is kernel-checked (9/9, 4.32.0, second revision): corrected no-attractor statement in the elementary (r,theta,z)-chart model; contact volume = const x Lebesgue in the Cartesian chart is by hand and no theorem instantiates Part B at `reebFlow`. NOT kernel-checked yet: `CatGT_PROOFS_COMPLETE.fixed.lean` (rewrite of the old proofs file). "Volume-preserving, hence no attracting set" is [VERIFIED] in the elementary model, [DERIVED] for a general contact form. Correct form: no closed attracting set of smaller volume than its basin; the unqualified version is false (the whole space attracts itself).
+- Files live in `~/Desktop/Claude outputs/` until they are moved into a repo.
+
+### Must not be reintroduced (cut on purpose in V5)
+Coherence Bridge (seven-domain shared invariant), Corollary 2 (extrudate shape), Prediction 3 (helical phase), GTCT / GOMC Opus branding, "clean energy" reach. A new domain or a "unifying" claim needs a real derivation or an explicit "shared functional form, not shared invariant" label.
+
+### To-do
+Before/at the deposit:
+- [x] `ReebFlowExtDeriv.lean` green 2026-09-21 (11/11); in the pack, `extDeriv` caveat replaced in README, paper and page.
+- [x] `ReebNoAttractor.lean` green 2026-09-21 (9/9, pasted run); in the pack, paper, page, README, CHANGES. Open: v4.14.0; instantiate Part B at `reebFlow` (one line, unwritten); the chart-to-manifold volume identification.
+- [ ] Run `CatGT_PROOFS_COMPLETE.fixed.lean`; paste the raw output.
+- [ ] geometry: run `lake env lean tools/verify-catgt/probe_catgt.lean > /tmp/catgt.txt` and `python3 tools/axiom_gate.py /tmp/catgt.txt 13`, then commit and push the five changed files (`verify-proofs.yml` needs a token with `workflow` scope).
+- [ ] geometry: commit the `ch-catgt-zeolite.html` attractor-wording fix.
+- [ ] io: working-tree `CatGT/CatGT_Main.lean` is uncommitted; land it via a draft PR. Check under v4.14.0.
+- [ ] io: `index.html` is still the pre-V5 page; swap in the pack's page.
+- [x] io CI: the four missing theorems (`reeb_alpha_eq_one`, `relaxStep_fixed`, `relaxStep_contracts`, `relax_iterate_dist`) are added to the CatGT `#print axioms` step (2026-09-21, working tree, uncommitted). It MUST land in the same commit/PR as the new `CatGT/CatGT_Main.lean`: the committed file does not contain those four names, so CI would fail on the workflow alone. Needs a token with `workflow` scope, or edit in the GitHub web UI. `ReebFlow.lean` is still not wired in.
+- [ ] Zenodo upload: decide the licence (CC BY 4.0 in the pack vs CC BY-NC-ND); get the prior CatGT record id for related identifiers; check the Sousa 2023 DOI.
+Later:
+- [ ] Sousa et al. quantitative fit. Blocked on paywalled selectivity numbers. Do NOT invent numbers.
+- [ ] `helical_selectivity` rename (proposed `selfTrapping_selectivity`). Four-file change: `.lean`, CI axiom list, `README.md`, `index.html`. Do it after the deposit.
+- [ ] Prediction 1 restatement (formula withdrawn; needs a decision on what "self-trapping threshold" means).
+- [ ] x*, G and the operators C/K/F/U are not defined on L²(X_cat). Theorem 1(ii) says so; keep saying it.
+- [ ] `criticalRadius` signature and the "attractor tube" docstring of `reeb_orbit_advances` are entangled; fix them together, not one at a time.
+- [ ] `CatGT_Main.lean` header still cites Zenodo 19117399 (comment only; the copies in io, geometry, dnls must stay identical, so change all three or none).
+- [ ] Companion operator-order paper: the text says discrete NLS with split-step Fourier, the code is a continuous split-step solver with damping 0.01. Re-run with damping 0 as a control, or fix the method statement. Its PDFs are stale after the DNLS = Discrete fix.
+- [ ] `AutophagyDm3.lean` says r* ≈ 0.80; the certified value is 0.77594059.
+- [ ] Does `theorem_census.py` double-count the mirrored `CatGT_Main` (io and geometry)? Unconfirmed.

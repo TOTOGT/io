@@ -13,13 +13,17 @@ is standalone and verified by paste — the table says which is which.
 | `CatGT` | `CatGT/CatGT_Main.lean` | 13 | 0 | yes | Kernel-checked — Self-Trapping Selectivity Principle (Thm 1), the Reeb pairing, and the relaxation block |
 | `ContactMorphism` | `CatGT/ContactMorphism.lean` | 1 | 0 | yes | Kernel-checked — dilation preserves the contact form. Added to `lakefile.toml` on 2026-09-20; before that it was in the repo but in no target, so CI never built it |
 | `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | yes | Kernel-checked — Theorem 5.3, operator-chain non-commutativity |
+| — | `CatGT/ReebFlowExtDeriv.lean` | 11 audited (13 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 11 axiom lines on the standard three; linter warnings only, no errors). Proves the `d(alpha)` of `ReebFlow.lean` equals Mathlib's `extDeriv` of `alpha_cat` as a 1-form; `d(alpha) = -2r dr∧dθ`; `contactVol` on the coordinate frame = `-2r`. `alphaCat` / `dAlpha` / `contactVol` are verbatim copies from `ReebFlow.lean` (statement-level duplicates). The wedge is still an explicit formula, not a Mathlib wedge. Not in `lakefile.toml`; not run under `v4.14.0`; header still says UNTESTED (predates the run). |
+| — | `CatGT/ReebNoAttractor.lean` | 9 audited (9 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 9 axiom lines on the standard three; second revision of the file). Corrected no-attractor statement: `measure_le_of_attractor` (mu(U) <= mu(A) for measure-preserving maps, closed A with finite-measure thickening), Reeb flow as isometry and Lebesgue-measure-preserving translation, no proper closed invariant attractor, no compact invariant set, and `univ_attracts` (the unqualified claim is false). Model = (r,theta,z) chart; contact volume = const x Lebesgue by hand; no theorem instantiates Part B at `reebFlow`. Not run under v4.14.0. |
+| — | `CatGT/ReebFlow.lean` | 8 audited (11 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 8 axiom lines on the standard three, no warnings). Reeb flow of `alpha_cat` in an elementary coordinate model: flow law, `phi_t^*alpha = alpha`, `i_R d(alpha) = 0`, preservation of `alpha ^ d(alpha)`. `d(alpha)` is defined by the constant-field formula, not yet checked against Mathlib's `extDeriv` (`ReebFlowExtDeriv.lean`, written, not yet green). Not in `lakefile.toml`; not run under `v4.14.0`; the file header still says UNTESTED (predates the run). `alphaCat` / `reebR` are verbatim copies of `CatGT_Main.lean`. |
 | — | `zeolite_operator_order/ZeoliteCommutation.lean` | 3 | 0 | **no** | Kernel-checked by paste (Lean `v4.33.0-rc1`, 2026-07-18). Not in `lakefile.toml`; standalone and self-contained |
 
 The two CI-gated libraries build against Lean `v4.14.0` / Mathlib `v4.14.0`
 (pinned in `lean-toolchain` and `lakefile.toml`). Their core theorems have
 additionally been spot-checked against current Mathlib (Lean `v4.33`).
-`#print axioms` reports only `[propext, Classical.choice, Quot.sound]` for all
-19 theorems — no `sorryAx` anywhere.
+`#print axioms` is printed by CI for the 20 theorems of `CatGT` (13) and `Theorem53` (7); it reports only
+`[propext, Classical.choice, Quot.sound]` — no `sorryAx` anywhere. `ContactMorphism` (1) is built by CI;
+`ReebNoAttractor` (9 kernel-audited of 9 written) and `ReebFlowExtDeriv` (11 kernel-audited of 13 written) and `ReebFlow` (8 kernel-audited of 11 written; `reeb_alpha_eq_one` is a verbatim duplicate of the `CatGT_Main` theorem, so 10 unique statements) and `ZeoliteCommutation` (3) are counted above as kernel-checked by paste, not CI-gated.
 
 ## Scope
 

@@ -107,6 +107,10 @@ jobs:
           #print axioms dnlsNorm_nonneg
           #print axioms catgt_dm3_disk
           #print axioms ensemble_scaling_forms_diverge
+          #print axioms reeb_alpha_eq_one
+          #print axioms relaxStep_fixed
+          #print axioms relaxStep_contracts
+          #print axioms relax_iterate_dist
           LEAN
           lake env lean /tmp/CheckCatGT.lean
 
