@@ -2,9 +2,10 @@
 
 Machine-checked Lean 4 / Mathlib formalizations from the *Principia Orthogona*
 series. There are no `sorry` placeholders and no admitted lemmas in any Lean file
-shipped here. Two libraries are additionally re-verified by the Lean kernel in
-continuous integration on every push, with per-theorem axiom audits; a third file
-is standalone and verified by paste — the table says which is which.
+shipped here. Three targets are built by the Lean kernel in continuous integration
+on every push (`CatGT`, `ContactMorphism`, `Theorem53`), the first and last with
+per-theorem axiom audits; the other files are standalone and were verified by the
+author by paste — the table says which is which.
 
 ## Verification status
 
@@ -18,24 +19,33 @@ is standalone and verified by paste — the table says which is which.
 | — | `CatGT/ReebFlow.lean` | 8 audited (11 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 8 axiom lines on the standard three, no warnings). Reeb flow of `alpha_cat` in an elementary coordinate model: flow law, `phi_t^*alpha = alpha`, `i_R d(alpha) = 0`, preservation of `alpha ^ d(alpha)`. `d(alpha)` is defined by the constant-field formula, not yet checked against Mathlib's `extDeriv` (`ReebFlowExtDeriv.lean`, written, not yet green). Not in `lakefile.toml`; not run under `v4.14.0`; the file header still says UNTESTED (predates the run). `alphaCat` / `reebR` are verbatim copies of `CatGT_Main.lean`. |
 | — | `zeolite_operator_order/ZeoliteCommutation.lean` | 3 | 0 | **no** | Kernel-checked by paste (Lean `v4.33.0-rc1`, 2026-07-18). Not in `lakefile.toml`; standalone and self-contained |
 
-The two CI-gated libraries build against Lean `v4.14.0` / Mathlib `v4.14.0`
-(pinned in `lean-toolchain` and `lakefile.toml`). Their core theorems have
-additionally been spot-checked against current Mathlib (Lean `v4.33`).
+The CI-gated targets build against Lean `v4.14.0` / Mathlib `v4.14.0`
+(pinned in `lean-toolchain` and `lakefile.toml`); what CI reports on a given commit is
+the record of that pin. The by-paste files were kernel-checked by the author under
+Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) or
+`v4.33.0-rc1` (`ZeoliteCommutation`), not under `v4.14.0`.
 `#print axioms` is printed by CI for the 20 theorems of `CatGT` (13) and `Theorem53` (7); it reports only
 `[propext, Classical.choice, Quot.sound]` — no `sorryAx` anywhere. `ContactMorphism` (1) is built by CI;
 `ReebNoAttractor` (9 kernel-audited of 9 written) and `ReebFlowExtDeriv` (11 kernel-audited of 13 written) and `ReebFlow` (8 kernel-audited of 11 written; `reeb_alpha_eq_one` is a verbatim duplicate of the `CatGT_Main` theorem, so 10 unique statements) and `ZeoliteCommutation` (3) are counted above as kernel-checked by paste, not CI-gated.
 
 ## Scope
 
-`CatGT` (Catalytic Generative Theory) applies the operator pipeline
-`G = U ∘ F ∘ K ∘ C` (compression, curvature, fold, unfold) to a contact-manifold
-model of catalytic reaction pathways. The central result is the **Self-Trapping
+`CatGT` is the Lean side of the paper *The Self-Trapping Selectivity Principle:
+Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects* (V5, Zenodo
+[10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)). The paper uses a
+contact-manifold model of catalytic reaction pathways for coordinates, and names an
+operator pipeline `G = U ∘ F ∘ K ∘ C` (compression, constraint, fold, stabilization).
+The operators and any fixed point of `G` are labels: they are not defined as objects
+on `L²` anywhere in the paper or in these files. The central result is the **Self-Trapping
 Selectivity Principle** — renamed from "Helical Selectivity Principle" on
 2026-09-19, because the Reeb orbits are straight lines rather than helices and a
 Reeb flow, being volume-preserving, cannot attract anything. It is a confinement
-bound `r ≤ r*(J, λ) = a√(J/λ)` that constrains which reaction pathways can reach
-the catalytic fixed point; the confinement comes from DNLS self-trapping, not
-from the Reeb flow.
+bound `r ≤ r*(J, λ) = a√(J/λ)` (with `a` a lattice length scale; the `CatGT_Main`
+`criticalRadius` still returns the dimensionless `√(J/λ)` — a known open item); the
+confinement is modelled on DNLS self-trapping, not on the Reeb flow. The Reeb-flow
+files (`ReebFlow`, `ReebFlowExtDeriv`, `ReebNoAttractor`) verify in an elementary
+coordinate model that the flow is z-translation, preserves `α ∧ dα`, and admits no
+closed attracting set of smaller measure than its basin.
 
 `Theorem53` establishes that the operator chain is **order-dependent in general**
 (firing order changes the outcome) while proving this is *not* universal: specific
@@ -46,7 +56,10 @@ order-dependent instance and a commuting instance are exhibited on the same mani
 
 ```
 CatGT/CatGT_Main.lean                    CatGT core — Thm 1 + lemmas (CI-verified)
-CatGT/ContactMorphism.lean               dilation preserves α_cat (CI-verified)
+CatGT/ContactMorphism.lean               dilation preserves α_cat (CI-built)
+CatGT/ReebFlow.lean (+ .axioms.txt)      Reeb flow in a coordinate model (by paste, not CI)
+CatGT/ReebFlowExtDeriv.lean (+ .axioms.txt)   dα equals Mathlib's extDeriv (by paste, not CI)
+CatGT/ReebNoAttractor.lean (+ .axioms.txt)    no closed attractor of smaller measure (by paste, not CI)
 PrincipiaOrthogona1/Theorem53...lean     Theorem 5.3 non-commutativity (CI-verified)
 zeolite_operator_order/
   ZeoliteCommutation.lean                3 commutation theorems (verified, not in CI)
@@ -54,7 +67,7 @@ zeolite_operator_order/
   zeolite_operator_selectivity_v3.tex    Paper v3 — corrects v1–v2 Theorem 1
 lakefile.toml, lean-toolchain            Build configuration
 .github/workflows/verify-proofs.yml      CI: kernel check + #print axioms
-index.html                               Rendered CatGT paper (GitHub Pages)
+index.html                               Rendered paper page (GitHub Pages)
 ```
 
 ### Note on the zeolite operator-order work
@@ -83,8 +96,9 @@ per-claim status: `zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.
 
 Earlier Lean drafts `CatGT_PROOFS_COMPLETE.lean` (17 `sorry`s) and `CatGT_v2.lean`
 (25) were removed on 2026-07-17: they compiled only because `sorry` compiles.
-A full Lean formalization of the selectivity result itself remains **future work** —
-what is shipped is the commutation layer, not the physics.
+`CatGT_PROOFS_COMPLETE.fixed.lean` (a rewrite with only true statements) has not yet
+been run. The quantitative comparison with the measured selectivities of Sousa et al.
+(2014) is **open**; no such numbers are used or claimed anywhere here.
 
 ## Build and verify locally
 
@@ -101,8 +115,8 @@ dependencies (and the absence of `sorryAx`) are visible in every run's log:
 
 Pablo Nogueira Grossi · G6 LLC, Newark NJ ·
 ORCID [0009-0000-6496-2186](https://orcid.org/0009-0000-6496-2186) ·
-Zenodo [10.5281/zenodo.19117399](https://doi.org/10.5281/zenodo.19117399) ·
-Google [Scholar] (https://scholar.google.com/citations?hl=en&user=LRR8YIAAAAAJ) . 
+Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704) (V5 paper) ·
+[Google Scholar](https://scholar.google.com/citations?hl=en&user=LRR8YIAAAAAJ) ·
 Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
 
 ## License

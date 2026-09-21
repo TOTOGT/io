@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CatGT — Catalytic Generative Theory, Part I</title>
+<title>The Self-Trapping Selectivity Principle — Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
@@ -349,16 +349,16 @@
 <body>
 <!-- ══════════════════════════════════ HEADER ══════════════════════════════════ -->
 <header class="masthead">
-  <div class="series-tag">GOMC Opus · Part I · Preprint V4 · September 2026</div>
-  <h1>Catalytic Generative Theory (CatGT):<br>The Self-Trapping Selectivity Principle</h1>
-  <div class="subtitle">A unified framework for zeolite shape selectivity, metal ensemble effects,<br>and dm³ reactor design via contact geometry and DNLS dynamics</div>
-  <div class="meta" style="margin-top:0.2rem;"><em>Renamed 2026-09-19, was "The Helical Selectivity Principle" — the Reeb orbits are straight lines, not helices, and a Reeb flow cannot be an attractor. See Theorem 1.</em></div>
+  <div class="series-tag">Preprint V5 · September 21, 2026</div>
+  <h1>The Self-Trapping Selectivity Principle:<br>Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects</h1>
+  <div class="subtitle">A mechanistic answer to Sousa et al. (2014) — why HZSM-5 and HMCM-22 diverge in<br>ethanol-to-hydrocarbon selectivity, and why Sn promotion raises Pt-ensemble selectivity</div>
+  <div class="meta" style="margin-top:0.2rem;"><em>V5 (2026-09-19): retitled and narrowed from "Catalytic Generative Theory," which framed this as a unified theory spanning zeolites, metal ensembles, DNLS solitons, and macroscopic reactor design. That framing is dropped — this paper is now scoped to the two catalytic cases it actually tests, and the extrudate-shape corollary and seven-domain "Coherence Bridge" (Collatz included) are cut, not carried forward. See the To-Do entry.</em></div>
   <div class="meta">
     Pablo Nogueira Grossi &nbsp;·&nbsp; G6 LLC, Newark, NJ &nbsp;·&nbsp;
     <a href="https://orcid.org/0009-0000-6496-2186">ORCID 0009-0000-6496-2186</a><br>
-    Zenodo: <a href="https://doi.org/10.5281/zenodo.19117399">10.5281/zenodo.19117399</a> &nbsp;·&nbsp;
-    AXLE: <a href="https://github.com/TOTOGT/AXLE">github.com/TOTOGT/AXLE</a><br>
-    Submitted to <em>Catalysis Today</em> (ISSN 0920-5861) · Elsevier
+    Zenodo: <a href="https://doi.org/10.5281/zenodo.22851704">10.5281/zenodo.22851704</a> &nbsp;·&nbsp;
+    Lean 4 source: <a href="https://github.com/TOTOGT/AXLE">github.com/TOTOGT/AXLE</a><br>
+    License: CC BY 4.0 &nbsp;·&nbsp; Preprint, V5
   </div>
 </header>
 <!-- ══════════════════════════════════ NAV ══════════════════════════════════ -->
@@ -371,9 +371,8 @@
     <li><a href="#hsp">Self-Trapping Selectivity Principle (Theorem 1)</a></li>
     <li><a href="#predictions">Falsifiable Predictions</a></li>
     <li><a href="#lean">Lean 4 Formal Verification</a>
-      <ul><li><a href="#lean">5.1 Operator order &amp; the 2026-06 correction</a></li></ul>
+      <ul><li><a href="#lean">5.1 Operator order: where non-commutativity actually lives</a></li></ul>
     </li>
-    <li><a href="#bridge">Coherence Bridge: Seven Domains</a></li>
     <li><a href="#discussion">Discussion</a></li>
     <li><a href="#audit">Sorry Audit</a></li>
     <li><a href="#refs">References</a></li>
@@ -384,23 +383,23 @@
 <section id="abstract">
   <div class="abstract">
     <div class="label">Abstract</div>
-    <p>We introduce <strong>Catalytic Generative Theory (CatGT)</strong>, a unified mathematical framework that integrates four previously separate levels of catalytic description — quantum-mechanical active-site geometry, mesoscale pore topology, discrete nonlinear Schrödinger (DNLS) soliton dynamics, and macroscopic dm³-scale reactor transport — under a single generative operator pipeline \(G = U \circ F \circ K \circ C\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\).</p>
-    <p>The central result, the <strong>Self-Trapping Selectivity Principle</strong> (renamed 2026-09-19, was "Helical Selectivity Principle" — see Theorem 1), establishes that only reaction pathways whose radial coordinate satisfies \(r \leq r^*(\lambda) = a\sqrt{J/\lambda}\) remain confined under the DNLS pipeline's dynamics, where \(a\) is a lattice-spacing length scale, \(J\) is inter-site coupling, and \(\lambda\) is the on-site binding energy. (How this connects to a fixed point \(x^*\) of the discrete pipeline \(G\) is not established here — see the To-Do list.) Zeolite shape-selectivity (HZSM-5, HMCM-22), metal ensemble effects (Pt–Sn), and macroscopic extrudate optimisation emerge as corollaries. Three falsifiable predictions are given. A Lean 4 formal verification of the core inequality accompanies this paper — the quoted code in §5 has not yet been updated to include the length scale \(a\) introduced here; see the note there.</p>
-    <p><strong>Keywords:</strong> catalytic generative theory · CatGT · helical selectivity principle · HSP · contact manifold · DNLS · zeolite · ensemble effect · Lean 4 · GTCT · GOMC Opus</p>
+    <p>Sousa et al. (2014) posed a specific mechanistic question that remains unanswered: HZSM-5 and HMCM-22 zeolites have nominally identical acid chemistry and both possess 10-ring apertures, yet ethanol conversion over them produces markedly different product distributions, coke locations, and deactivation profiles. This paper proposes a mechanism and states it as a testable theorem.</p>
+    <p>The central result, the <strong>Self-Trapping Selectivity Principle</strong> (Theorem 1), models the reaction coordinate on a contact manifold \(\mathcal{X}_\text{cat}\) whose Reeb vector field \(R=\partial_z\) supplies coordinate structure — but, being volume-preserving, cannot itself confine anything. The actual confinement comes from the DNLS equation's self-trapping transition: pathways whose radial coordinate satisfies \(r \leq r^*(\lambda) = a\sqrt{J/\lambda}\) remain confined, where \(a\) is a lattice-spacing length scale, \(J\) is inter-site coupling, and \(\lambda\) is the on-site binding energy. Zeolite pore selectivity and Pt–Sn metal-ensemble effects (Corollary 1) are both instances of this one confinement mechanism. Two falsifiable predictions are stated. A third, the DNLS self-trapping threshold in zeolite pores (Prediction 1), is reopened in this version: its 2026-09-19 formula is withdrawn because the formula and its accompanying sentence contradicted each other and its supporting argument misread the literature parameter χ = λN/J (see §4 and the To-Do).</p>
+    <p>This is a narrower paper than earlier drafts. A macroscopic extrudate-shape corollary and a seven-domain "Coherence Bridge" claiming the same functional form recurs across unrelated physical systems (Faraday rotation, swarm intelligence, the Collatz conjecture among them) have been cut — neither survived scrutiny as evidence for anything beyond the two catalytic cases actually tested here, and dimensional analysis alone predicts the shared functional form without requiring shared geometry. What remains is scoped to what can be checked: zeolite selectivity and Pt–Sn ensembles, against real literature, with the open items — a quantitative fit against Sousa et al.'s actual measured selectivity, and the connection between the DNLS confinement claim and a fixed point of the discrete operator pipeline — stated as open rather than assumed. A Lean 4 formal verification of the core inequality accompanies this paper.</p>
+    <p><strong>Keywords:</strong> zeolite shape-selectivity · HZSM-5 · HMCM-22 · Pt–Sn ensemble effect · discrete nonlinear Schrödinger equation · contact geometry · self-trapping · Lean 4</p>
   </div>
 </section>
 <!-- ══════════════════════════════════ INTRO ══════════════════════════════════ -->
 <section id="intro">
   <h2>1. Introduction</h2>
-  <p>Catalysis in the petrochemical and energy sectors operates simultaneously across at least four length scales: the Ångström scale of quantum-mechanical orbital overlap at the active site; the nanometre scale of zeolite pore networks and metal surface ensembles; the micrometre scale of soliton-like energy localisation in coupled oscillator chains; and the decimetre (dm³) scale of extrudate pellets and fixed-bed reactors.</p>
-  <p>Existing theories address each scale in isolation. Density-functional theory (DFT) handles electronic structure but is silent on reactor-scale transport. Computational fluid dynamics (CFD) models pressure drop but takes microscopic selectivity as a given. The discrete nonlinear Schrödinger (DNLS) equation captures energy localisation in molecular chains but has not been connected to industrial catalyst design.</p>
-  <p><strong>This paper closes that gap.</strong> We show that these four levels are not merely analogous but mathematically equivalent descriptions of the same object: a generative operator \(G\) acting on a contact 3-manifold \(\mathcal{X}_\text{cat}\). The Reeb vector field of \(\mathcal{X}_\text{cat}\) supplies its coordinate structure; the actual confinement observed in DNLS soliton dynamics and in the preferred reaction pathways of shape-selective catalysts comes from the DNLS equation's self-trapping transition, not from the Reeb flow itself — a Reeb flow preserves the contact volume and so cannot have an attracting set. <em>(Corrected 2026-09-19: earlier text called the Reeb orbits "helical attractors" — they are neither helical nor attracting; see Theorem 1 below.)</em></p>
+  <p>Sousa et al. (2014) compared ethanol-to-hydrocarbon conversion over HZSM-5 and HMCM-22 zeolites — both 10-ring, nominally identical acid chemistry — and found markedly different product distributions, coke locations, and deactivation profiles. Their in-situ DRIFTS data is direct evidence that pore topology, not acidity, is the operative variable, but the mechanism connecting topology to the observed selectivity difference was not derived. A separate but structurally similar question exists for Pt–Sn bimetallic catalysts: Sn promotion is well established to increase propylene selectivity in propane dehydrogenation by breaking up large Pt ensembles (a geometric, not electronic, effect), but the two are not usually treated as instances of the same underlying mechanism.</p>
+  <p>This paper proposes that both are: a single confinement mechanism, modeled on the discrete nonlinear Schrödinger (DNLS) equation, in which a reaction pathway's spatial extent is bounded by a self-trapping radius \(r^*(\lambda)\) set by the competition between inter-site coupling and on-site binding energy. Zeolite pore geometry and Pt-ensemble size are two different physical realizations of the same bound.</p>
+  <p><strong>The confining mechanism needs stating carefully, because an earlier version of this claim was wrong.</strong> The reaction coordinate is modeled on a contact manifold \(\mathcal{X}_\text{cat}\) whose Reeb vector field \(R=\partial_z\) supplies coordinate structure — but a Reeb flow preserves contact volume and so cannot have an attracting set of smaller volume than its basin (so no attracting fixed point, periodic orbit or lower-dimensional attractor; the whole space trivially attracts itself, so the qualification is needed), for any choice of contact form, on any contact manifold. The actual confinement is not the Reeb flow; it is the DNLS equation's self-trapping transition, a separate and genuinely different mechanism, stated as Theorem 1 below. <em>(Corrected 2026-09-19: earlier drafts called the Reeb orbits "helical attractors" — they are neither helical nor attracting.)</em></p>
   <!-- Fig 1 — Operator Pipeline (interactive) -->
   <div class="fig-wrap">
     <canvas class="fig-canvas" id="fig1" height="160"></canvas>
     <div class="fig-caption"><strong>Figure 1.</strong> The generative operator pipeline \(G = U \circ F \circ K \circ C\) and its catalytic interpretation. Hover over each operator for details.</div>
   </div>
-  <p>CatGT is a domain instantiation of the overarching <strong>Generative Temporal Contact Theory (GTCT)</strong>. The operators C, K, F, U and the contact manifold \(\mathcal{X}_\text{cat}\) are GTCT primitives; their catalytic interpretation is the subject of the present paper.</p>
 </section>
 <!-- ══════════════════════════════════ PRELIM ══════════════════════════════════ -->
 <section id="prelim">
@@ -410,7 +409,8 @@
     <strong>Definition (Contact 3-manifold).</strong> A contact 3-manifold is a pair \((M, \alpha)\) where \(M\) is a smooth orientable 3-manifold and \(\alpha\) is a 1-form satisfying \(\alpha \wedge d\alpha \neq 0\) everywhere.
   </div>
   <p>We define the catalyst contact manifold as \(\mathcal{X}_\text{cat} = (\mathbb{R}^3, \alpha_\text{cat})\) with \(\alpha_\text{cat} = dz - r^2\,d\theta\) in cylindrical coordinates \((r, \theta, z)\), where \(r\) is the pore aperture (Å), \(\theta\) is the catalytic cycle phase, and \(z\) is the reaction coordinate.</p>
-  <p>The Reeb vector field \(R = \partial_z\) satisfies \(\iota_R d\alpha = 0\) and \(\alpha(R) = 1\) — this part is a genuine, checkable fact about \(\alpha_\text{cat}\). But its integral curves \((r_0, \theta_0, z_0 + t)\) hold \(r\) and \(\theta\) fixed: they are straight vertical lines, not helices. And since the Reeb flow preserves \(\alpha\) (hence \(\alpha \wedge d\alpha\), the contact volume), it is volume-preserving and therefore cannot have an attracting set, for any choice of contact form on any contact manifold. <em>(Corrected 2026-09-19; see Theorem 1.)</em> The actual confinement claimed below comes from the DNLS equation's self-trapping transition, a separate and genuinely dissipative-free localization phenomenon (Eilbeck, Lomdahl &amp; Scott 1985) — the contact manifold supplies coordinates, not the confining dynamics.</p>
+  <p style="font-size:0.85rem;color:var(--ink3);"><em>Note (2026-09-21):</em> with this \(\alpha_\text{cat}\), \(d\alpha_\text{cat}=-2r\,dr\wedge d\theta\) and \(\alpha\wedge d\alpha=-2r\,dz\wedge dr\wedge d\theta\). The factor \(r\) is an artefact of the polar chart, which degenerates on the axis. With \(u=r\cos\theta,\ v=r\sin\theta\) one has \(r^2d\theta=u\,dv-v\,du\), so \(\alpha_\text{cat}=dz-(u\,dv-v\,du)\), \(d\alpha_\text{cat}=-2\,du\wedge dv\) and \(\alpha\wedge d\alpha=-2\,du\wedge dv\wedge dz\), nowhere zero on \(\mathbb{R}^3\), the axis included. So \(\alpha_\text{cat}\) is a contact form on all of \(\mathbb{R}^3\) (negative for the orientation \(du\wedge dv\wedge dz\), in the sense of Etnyre 2006), and the restriction to \(r\neq0\) stated in the 2026-09-20 note is not needed. <span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;">DERIVED</span> by hand, not formalized.</p>
+  <p>The Reeb vector field (defined by \(\iota_R d\alpha = 0\) and \(\alpha(R) = 1\); Geiges 2010, §2.5) is \(R = \partial_z\), and it does satisfy both — the pairing \(\alpha(R)=1\) is machine-checked (<code>reeb_alpha_eq_one</code>). In the separate file <code>ReebFlow.lean</code>, kernel-checked 2026-09-21 under Lean 4.32.0 / Mathlib v4.32.0 (eight axiom reports on the three standard axioms, no warnings), the following are verified in an elementary coordinate model: the orbit has velocity \(R\) and satisfies the flow law; the flow preserves \(\alpha\) (with the tangent map the actual Fréchet derivative); \(\iota_R d\alpha=0\); and the flow preserves \(\alpha\wedge d\alpha\). There \(d\alpha\) is defined from \(\alpha\) by the constant-field formula, not typed in. In <code>ReebFlowExtDeriv.lean</code> (kernel-checked 2026-09-21, same toolchain; eleven axiom reports on the three standard axioms, linter warnings only) it is proved equal to Mathlib's <code>extDeriv</code> of \(\alpha_\text{cat}\) as a Mathlib 1-form, with value \(-2r\,dr\wedge d\theta\), and \((\alpha\wedge d\alpha)(\partial_r,\partial_\theta,\partial_z)=-2r\); the wedge itself is still the explicit formula, not a Mathlib wedge. In <code>ReebNoAttractor.lean</code> (kernel-checked 2026-09-21, same toolchain; nine axiom reports on the three standard axioms) the step from volume preservation to no attracting set is verified in the elementary \((r,\theta,z)\)-chart model: \(\mu(U)\le\mu(A)\) for measure-preserving maps and a closed \(A\) with finite-measure thickening; translation preserves Lebesgue measure; a nonempty closed invariant set attracting a neighbourhood of itself is the whole space; there is no nonempty compact invariant set; and the unqualified claim is refuted (the whole space attracts itself). Still by hand: that the contact volume is a constant multiple of Lebesgue measure in the Cartesian chart, and that the model flow is the manifold's Reeb flow; no single theorem instantiates the general result at the Reeb flow. The Lean file defines the orbit as \((r_0,\theta_0,z_0+t)\) and proves its \(z\)-advance is \(t\,\alpha(R)\); that this curve is the integral curve of \(R\) is by inspection. But its integral curves \((r_0, \theta_0, z_0 + t)\) hold \(r\) and \(\theta\) fixed: they are straight vertical lines, not helices. And since the Reeb flow preserves \(\alpha\) (hence \(\alpha \wedge d\alpha\), the contact volume), it is volume-preserving and therefore cannot have an attracting set of smaller volume than its basin (so no attracting fixed point, periodic orbit or lower-dimensional attractor; the whole space trivially attracts itself, so the qualification is needed), for any choice of contact form on any contact manifold. Proof sketch (derived by hand): if a closed set \(A\) attracts every point of \(U\), the sets \(E_N=\{x\in U:\phi_n x\in A_\varepsilon\ \forall n\ge N\}\) increase to a set containing \(U\) and each has measure at most \(\mu(A_\varepsilon)\), so \(\mu(U)\le\mu(A)\). For this flow, translation in \(z\) and an isometry, more is true: a nonempty closed invariant set attracting a neighbourhood of itself is all of \(\mathbb{R}^3\), and there is no nonempty compact invariant set. (The flow of \(R\) is the case \(H\equiv-1\) of Gaset et al. 2020, Prop. 9, where \(X_{-1}=R\).) Dissipation on a contact manifold requires a contact Hamiltonian flow \(X_H\) with \(R(H)\neq0\): there \(\mathcal{L}_{X_H}\alpha=-R(H)\alpha\), so \(\mathcal{L}_{X_H}(\alpha\wedge d\alpha)=-2R(H)\,\alpha\wedge d\alpha\) (derived by hand). This paper does not derive its confinement from such a flow. <em>(Corrected 2026-09-19; see Theorem 1.)</em> The actual confinement claimed below comes from the DNLS equation's self-trapping transition, a separate and genuinely dissipative-free localization phenomenon (Eilbeck, Lomdahl &amp; Scott 1985) — the contact manifold supplies coordinates, not the confining dynamics.</p>
   <!-- Fig 2 — Helical Attractor (interactive) -->
   <div class="fig-wrap">
     <canvas class="fig-canvas" id="fig2" height="320"></canvas>
@@ -422,7 +422,7 @@
     <div class="fig-caption"><strong>Figure 2.</strong> The self-trapping tube \(\mathcal{T}_\lambda\) on the contact manifold \(\mathcal{X}_\text{cat}\). Gold: the Reeb orbit — a straight vertical line at fixed \(r,\theta\), not a helix, and not an attractor. Red dashed: a reaction pathway that exceeds \(r^*(\lambda)\), for contrast. Drag the slider to change \(\lambda\) and watch the tube's radius change.</div>
   </div>
   <h3>2.2 The generative operator pipeline</h3>
-  <p>Following GTCT, define the pipeline \(G = U \circ F \circ K \circ C\), where the four operators act on a state \(\psi \in L^2(\mathcal{X}_\text{cat})\):</p>
+  <p>Define the pipeline \(G = U \circ F \circ K \circ C\), where the four operators act on a state \(\psi \in L^2(\mathcal{X}_\text{cat})\):</p>
   <div class="table-scroll"><table class="bridge-table">
     <thead><tr><th>Operator</th><th>Physical role</th><th>Catalytic interpretation</th></tr></thead>
     <tbody>
@@ -444,9 +444,13 @@
   <div class="thm-box hsp">
     <div class="thm-label">Theorem 1 — Self-Trapping Selectivity · CatGT</div>
     <p>Let \((\mathcal{X}_\text{cat}, \alpha_\text{cat})\) be the catalyst contact manifold with Reeb field \(R=\partial_z\), \(a\) a lattice-spacing length scale, and \(G = U \circ F \circ K \circ C\) the generative pipeline. Define the self-trapping tube \(\mathcal{T}_\lambda = \{(r,\theta,z) : r \leq r^*(\lambda)\}\), with \(r^*(\lambda) := a\sqrt{J/\lambda}\) — now a genuine length, not the dimensionless \(\sqrt{J/\lambda}\) of earlier drafts. Then:</p>
-    <p>(i) \(\mathcal{T}_\lambda\) is a coordinate region of \(\mathcal{X}_\text{cat}\), not a dynamical attractor: \(R\)'s flow preserves \(\alpha \wedge d\alpha\) and so has no attracting set, and its orbits are straight lines in \(z\), not helices. \(\mathcal{T}_\lambda\) is simply the set of points with \(r \leq r^*(\lambda)\).</p>
+    <p>(i) \(\mathcal{T}_\lambda\) is a coordinate region of \(\mathcal{X}_\text{cat}\), not a dynamical attractor: \(R\)'s flow preserves \(\alpha \wedge d\alpha\) and so has no attracting set of smaller volume than its basin, and its orbits are straight lines in \(z\), not helices. \(\mathcal{T}_\lambda\) is simply the set of points with \(r \leq r^*(\lambda)\).</p>
     <p>(ii) <span class="status model" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">MODEL</span> A DNLS state whose radial coordinate satisfies the self-trapping condition remains confined to \(r(t) \leq r^*(\lambda)\) under the pipeline's (energy-conserving) dynamics — the discrete self-trapping transition of the DNLS equation itself is the confining mechanism, not the contact manifold's Reeb flow. How this connects to a fixed point of the discrete pipeline \(G\) is not established here; see the To-Do entry.</p>
     <p>(iii) The transition-state selectivity is \(\sigma = 1 - (r^*(\lambda)/r_\text{pore})^2 = 1 - (J/\lambda)(a/r_\text{pore})^2\) — dimensionally consistent now that \(r^*(\lambda)\) carries units of length, unlike the earlier \(\sigma = 1 - J/(\lambda r_\text{pore}^2)\), which required \(J/\lambda\) to carry length² on its own.</p>
+  </div>
+  <div class="thm-box pred" style="border-color:var(--gold2);background:#fbf6e8;">
+    <div class="thm-label" style="color:#7a5a05;">Normalization of \(r^*\) — <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;">OPEN</span> (added 2026-09-20)</div>
+    <p>The form \(r^*=a\sqrt{J/\lambda}\) is what a continuum sech soliton of <em>fixed peak amplitude</em> \(A\) gives: \(w=a\sqrt{2J/\lambda}/A\). The DNLS is usually studied at <em>fixed conserved norm</em> \(P=\sum|\psi_n|^2\), where the soliton width is \(w\simeq 4Ja/(\lambda P)\) — linear, not square-root, in \(J/\lambda\). <span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">SIMULATION</span> <code>scripts/soliton_width_check.py</code> (400-site ring, \(J=1\), \(P=1\), energy minimisation at fixed norm): widths 9.977, 19.988, 40.171 at \(\lambda=0.4,0.2,0.1\) against \(4J/(\lambda P)=10,20,40\); fitted exponent \(d\ln w/d\ln\lambda=-1.005\) over \(\lambda\in[0.1,0.4]\) (a square-root law would give \(-0.5\)); \(-1.006\) against \(P\) at \(\lambda=0.1\). The \(\lambda=0.05\) point is finite-ring affected and excluded. Valid only for \(w\gg a\), i.e. \(J/\lambda\gg1\). The <em>direction</em> of the claim (larger \(\lambda\), smaller \(r^*\), more confinement) is the same either way; the quantitative form of \(r^*\), and so the numbers in \(\sigma\), depend on which normalization the physical problem realises, and that is not decided here.</p>
   </div>
   <!-- Fig 3 — DNLS dynamics (interactive) -->
   <div class="fig-wrap">
@@ -459,109 +463,107 @@
       <input type="range" id="j3" min="0.5" max="4" step="0.1" value="1.0">
       <span class="val" id="j3val">J = 1.0</span>
     </div>
-    <div class="fig-caption"><strong>Figure 3.</strong> (Left) IPR(t) dynamics — self-trapping transition. (Right) Critical radius \(r^*(\lambda) = \sqrt{J/\lambda}\) vs nonlinearity. The green tube is accessible; the red zone is blocked. Sliders change λ and J live.</div>
+    <div class="fig-caption"><strong>Figure 3.</strong> (Left) IPR(t) dynamics — self-trapping transition. (Right) Critical radius \(r^*(\lambda) = a\sqrt{J/\lambda}\) vs nonlinearity (\(a=1\) here, for illustration). The green tube is accessible; the red zone is blocked. Sliders change λ and J live.</div>
   </div>
   <h3>Corollary 1 — Metal ensemble effects (Pt–Sn)</h3>
   <div class="thm-box">
     <div class="thm-label">Corollary 1</div>
-    <p>On a bimetallic Pt–Sn surface, the promoter Sn reduces the effective ensemble size \(N\), raising \(\lambda_c\) and shrinking \(r^*(\lambda)\). This constrains pathways to those requiring ≤ 2 adjacent Pt atoms, recovering the geometric ensemble effect.</p>
+    <p>On a bimetallic Pt–Sn surface, <span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">MODEL</span> the promoter Sn reduces the size of contiguous Pt ensembles. In the model this constrains pathways to those requiring ≤ 2 adjacent Pt atoms, recovering the geometric ensemble effect — and, via Theorem 1(iii)'s \(\sigma=1-(r^*/r_\text{pore})^2\), correctly predicts selectivity <em>increasing</em> with Sn loading (Prediction 2), not decreasing as earlier drafts of that prediction had it.</p>
   </div>
-  <h3>Corollary 2 — Macroscopic dm³ transport</h3>
-  <div class="thm-box">
-    <div class="thm-label">Corollary 2</div>
-    <p>For a catalyst pellet of characteristic dimension \(\ell \sim 1\,\text{mm}\), the optimal extrudate shape (trilobe/tetralobe) is the one whose cross-sectional boundary most closely approximates a level set of \(r^*(\lambda)\) in \(\mathcal{X}_\text{cat}\). <em>(Formal Lean 4 proof: the candidate shape and two sanity facts about it are proved — see §5; the optimality claim itself is still an open obligation.)</em></p>
-  </div>
+  <p style="font-size:0.85rem;color:var(--ink3);"><em>Removed 2026-09-19: a Corollary 2 on macroscopic extrudate-pellet shape optimization sat here in earlier drafts. Its optimality claim was, and remains, unproved (still <code>[OPEN]</code> in the Lean file — see the To-Do entry), and it doesn't bear on either of this paper's two actual catalytic test cases (zeolite pore selectivity, Pt–Sn ensembles). Cut rather than kept as decoration.</em></p>
 </section>
 <!-- ══════════════════════════════════ PREDICTIONS ══════════════════════════════════ -->
 <section id="predictions">
   <h2>4. Falsifiable Predictions</h2>
   <div class="thm-box pred">
     <div class="thm-label">Prediction 1 — DNLS self-trapping threshold in zeolite pores</div>
-    <p><em>Corrected 2026-09-19 — see the To-Do entry for the derivation.</em> For a zeolitic cracking catalyst with pore radius \(r_\text{pore}\), the self-trapping nonlinearity \(\lambda_c\) measured by molecular dynamics should satisfy \(\lambda_c \approx J \cdot (\sigma_\text{LJ}/r_\text{pore})^2\), where \(\sigma_\text{LJ}\) is the Lennard-Jones diameter of the reactant molecule. Narrower pores confine fewer lattice modes (\(N \sim r_\text{pore}/\sigma_\text{LJ}\)), reducing the kinetic bandwidth available to disperse the wavepacket, so <em>smaller</em> pores require <em>less</em> nonlinearity to self-trap — hence \(\lambda_c\) decreasing as \(r_\text{pore}\) decreases, the reciprocal of the ratio in earlier drafts.</p>
+    <p><span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">OPEN</span> <strong>Reopened 2026-09-20. The formula stated in the 2026-09-19 revision, \(\lambda_c\approx J(\sigma_\text{LJ}/r_\text{pore})^2\), is withdrawn.</strong> Two problems. First, that revision contradicted itself: the formula <em>increases</em> as \(r_\text{pore}\) decreases, while the accompanying sentence said smaller pores need <em>less</em> nonlinearity. Second, its supporting argument read \(N\) in the Eilbeck–Lomdahl–Scott parameter \(\chi=\lambda N/J\) as a site count \(N\sim(r_\text{pore}/\sigma_\text{LJ})^2\). In the DNLS literature \(N\) there is the conserved norm \(\sum_j|A_j|^2\), not the number of sites. (Read from the Eilbeck–Johansson review, arXiv:nlin/0211049; the 1985 paper itself has not been re-checked.)</p>
+    <p>What the deposit does support, for a uniform state on an \(N\)-site ring at fixed norm \(P\), is a modulational-instability threshold that <em>decreases</em> with site count: \(\lambda_\text{MI}=NJ(1-\cos\tfrac{2\pi}{N})\approx 2\pi^2J/N\) — <span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">DERIVED</span> from the Bogoliubov dispersion \(\omega_k^2=\epsilon_k(\epsilon_k-2\lambda\rho)\), \(\epsilon_k=2J(1-\cos k)\), \(\rho=P/N\), at \(k=2\pi/N\). <span class="status" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:3px;background:var(--gold2);color:#2b1f04;">SIMULATION</span> <code>scripts/mi_threshold_check.py</code> brackets it: for \(N=8,16,32\) the peak density relative to uniform is 1.00 at \(0.7\lambda_\text{MI}\), and 7.10 / 5.02 / 4.69 at \(1.5\lambda_\text{MI}\), 6.95 / 13.32 / 7.55 at \(3\lambda_\text{MI}\), norm conserved to six digits. A bracket only; it does not locate the threshold more finely than the 0.7× to 1.5× interval. A separate energetic estimate for full localisation, \(\lambda P\gtrsim 4J\) (from \(w\simeq 4Ja/(\lambda P)\lesssim a\)), is independent of \(N\) at large \(N\) and was not simulated.</p>
+    <p>These are thresholds for two different notions of "self-trapped" on a 1D ring; neither has been mapped to a zeolite pore. That mapping needs an operational definition of \(\lambda_c\), a decision whether the relevant \(N\) is a site count or a norm, and a treatment of a two-dimensional pore cross-section (the literature reports a finite threshold in 2D that 1D does not have). A falsifiable version of this prediction needs those three choices first, then a molecular-dynamics comparison. The sign of the dependence of \(\lambda_c\) on pore size is <strong>not asserted</strong>.</p>
   </div>
   <div class="thm-box pred">
     <div class="thm-label">Prediction 2 — Ensemble-radius scaling on Pt–Sn</div>
-    <p>The propane dehydrogenation selectivity of \(\text{Pt}_{1-x}\text{Sn}_x\) catalysts scales as \((1-x)^2 \approx 1 - (r^*/r_\text{pore})^2\), testable via in-situ XAS measurements of average Pt ensemble size.</p>
+    <p><em>Corrected 2026-09-19 — see the To-Do entry.</em> The fraction of surviving size-2 Pt-only ensembles on \(\text{Pt}_{1-x}\text{Sn}_x\) — the geometric quantity driving the undesired hydrogenolysis/coking pathway — is proposed to scale as \((1-x)^2\) (pending resolution against the alternative form \(1-x^2\); see <code>ensemble_scaling_forms_diverge</code> below), matching the DNLS confinement fraction: \((1-x)^2 \approx (r^*/r_\text{pore})^2\). Propane dehydrogenation selectivity toward propylene is the <em>complement</em> of this survival fraction, \(\sigma = 1-(r^*/r_\text{pore})^2 \approx 1-(1-x)^2\) — increasing from 0 at \(x=0\) toward 1 as \(x\to1\), matching the empirically established effect of Sn addition raising propylene selectivity by breaking up large Pt ensembles. Earlier drafts equated \((1-x)^2\) directly with selectivity — backwards, since \((1-x)^2\) is a decreasing quantity (ensemble survival) while selectivity is its increasing complement. Testable via in-situ XAS measurements of average Pt ensemble size correlated against measured propylene selectivity.</p>
   </div>
-  <div class="thm-box pred">
-    <div class="thm-label">Prediction 3 — Reeb-helix signature in reaction coordinate</div>
-    <p>For any CatGT-designed catalyst, the reaction coordinate \(z(t)\) measured by operando IR or neutron spectroscopy should exhibit a helical phase \(\theta(t) = \omega t + \theta_0\) with angular frequency \(\omega = \lambda\|\psi^*\|^2\), where \(\psi^*\) is the self-trapped amplitude.</p>
-  </div>
+  <p style="font-size:0.85rem;color:var(--ink3);"><em>Removed 2026-09-19: a Prediction 3 claiming a "helical phase" θ(t)=ωt+θ₀ in the reaction coordinate sat here in earlier drafts. It depended entirely on the Reeb orbits being helical, which they aren't — the orbits hold θ fixed (Theorem 1(i)); there is no advancing angular phase for a measurement to detect. Cut rather than restated around a different, unestablished mechanism.</em></p>
 </section>
 <!-- ══════════════════════════════════ LEAN ══════════════════════════════════ -->
 <section id="lean">
   <h2>5. Lean 4 Formal Verification</h2>
-  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>, CI-verified on every push) provides a sorry-free Lean 4 proof of the Theorem 1(i) core inequality, a computational DNLS scaffold, a Lyapunov relaxation block, and one honest open obligation. <strong>13 theorems closed, 0 admits, 0 hidden sorries — every one on exactly [propext, Classical.choice, Quot.sound], kernel-checked under Lean 4.33.0-rc1 against Mathlib v4.33.0-rc1 on 2026-09-20.</strong></p>
+  <p>The file <code>CatGT_Main.lean</code> (deposited in <a href="https://github.com/TOTOGT/io">TOTOGT/io</a>; the filename predates the retitling and is kept so the repository and CI still resolve) provides sorry-free Lean 4 proofs of a square-root-monotonicity inequality and the selectivity identity that Theorem 1 uses, a computational DNLS scaffold, a scalar Lyapunov-decay map, and one honest open obligation. <strong>13 theorems, 0 admits, 0 sorries.</strong></p>
+  <p><strong>Verification status of the file quoted below.</strong> Compiled by the author with <code>lake env lean</code> under Lean 4.32.0 / Mathlib v4.32.0: exit clean, 13/13 <code>#print axioms</code> report only <code>[propext, Classical.choice, Quot.sound]</code>, warnings only for unused hypotheses. The run was repeated on the final file (sha256 prefix <code>19e8df03ad44</code>) after a set of comment-only edits (header and docstring wording): no errors, five unused-hypothesis warnings, 13/13 axiom lines clean. The repository CI pins Lean v4.14.0 and has <strong>not</strong> been run on this version. A hand run establishes the file on the day it is run.</p>
   <p style="font-size:0.85rem;color:var(--ink3);">Revision note (2026-07-10): two theorems on this page previously proved vacuous statements — <code>catgt_dm3_transport</code> proved <code>∃ shape, True</code> (true for any shape) and <code>ensemble_scaling</code> proved <code>∃ selectivity, selectivity = (1-x)²</code> (true by construction for any x) — and both reported "closed"/"admit" badges that overstated what was actually established. Both have been corrected below to prove real, checkable facts instead, and the deeper open claims each was gesturing at (Corollary 2 optimality; which Pt–Sn scaling law is correct) are now stated as open prose rather than dressed up as theorems.</p>
   <p style="font-size:0.85rem;color:var(--ink3);">Note: Lean 4 reserves the bare <code>λ</code> character for anonymous-function syntax, so it cannot be used as a parameter/identifier name — the source uses <code>lam</code>/<code>hlam</code> where this page's prose uses \(\lambda\). The snippets below show the actual compiling identifiers.</p>
-  <p style="font-size:0.85rem;color:var(--ink3);"><strong>Note (2026-09-19):</strong> Theorem 1 above was corrected to introduce an explicit length scale \(a\) and drop the helix/attractor language — <code>CatGT_Main.lean</code> itself has <strong>not</strong> been updated to match yet, so the quoted code below (verbatim from the current file) still uses the old dimensionless <code>criticalRadius := Real.sqrt(J/lam)</code> and the docstring still says "attractor tube." This is a known gap, not an oversight: fixing it means changing <code>criticalRadius</code>'s signature to take a length parameter and re-verifying every downstream theorem that uses it, tracked in the To-Do list rather than done silently here.</p>
+  <p style="font-size:0.85rem;color:var(--ink3);"><strong>Note (2026-09-20):</strong> the length scale \(a\) has now been carried into the Lean file: <code>criticalRadius (a J lam) := a * Real.sqrt (J / lam)</code>, and <code>criticalRadius_pos</code>, <code>criticalRadius_antitone</code>, <code>helical_selectivity</code>, <code>selectivityFactor</code> and <code>selectivityFactor_eq</code> were restated and re-proved against it (this closes the 2026-09-19 gap that the quoted code did not match Theorem 1). <code>reeb_orbit_advances</code> (§6 of the file) proves the z-advance of the orbit equals \(t\,\alpha(R)\), from the actual 1-form pairing. The snippets below are extracted from the file itself. The theorem name <code>helical_selectivity</code> is retained from the earlier draft that called the confining set a "helical attractor"; the paper no longer claims that, and a rename (which touches the Lean file, CI axiom list, README and this page) has not been done — do not read the name as asserting helical structure. Also note what it proves: its hypothesis \(r^2\le a^2J/\lambda\) is the squared form of its conclusion, so it is monotonicity of the square root and carries no DNLS dynamics.</p>
   <div class="lean-wrap">
     <div class="lean-header">
-      <span>CatGT_Main.lean — HSP (Theorem 1, formal core)</span>
+      <span>CatGT_Main.lean — Theorem 1, core inequality (square-root monotonicity)</span>
       <span class="status-closed">✓ CLOSED — sorry-free</span>
     </div>
-    <pre class="lean"><span class="comment">/-- **Helical Selectivity Principle (HSP)** — formal statement of Theorem 1.
-    A DNLS state with radial coordinate r satisfying r² ≤ J/λ
-    is confined within the attractor tube of radius r*(λ) = √(J/λ). -/</span>
-<span class="kw">theorem</span> <span class="thm-name">helical_selectivity</span> (J lam : ℝ) (hJ : <span class="kw">0</span> < J) (hlam : <span class="kw">0</span> < lam)
-    (r_state : ℝ) (hr : <span class="kw">0</span> ≤ r_state)
-    (h_confined : r_state ^ <span class="kw">2</span> ≤ J / lam) :
-    r_state ≤ criticalRadius J lam hJ hlam := <span class="kw">by</span>
+    <pre class="lean"><span class="comment">/-- Critical (self-trapping) radius r*(λ) = a·√(J/λ), where `a &gt; 0` is the
+    lattice-spacing length scale. J and λ are both energies, so J/λ is
+    dimensionless and `a` is what gives r* the dimension of a length
+    (Theorem 1's 2026-09-19 correction on the paper's page). NOTE: this is
+    the *definition* the theorems below are stated against; that r* is the
+    physically correct DNLS self-trapping width is a separate claim, and
+    depends on what is held fixed (see the 2026-09-20 note in the header). -/</span>
+noncomputable def criticalRadius (a J lam : ℝ) (ha : 0 &lt; a) (hJ : 0 &lt; J)
+    (hlam : 0 &lt; lam) : ℝ :=
+  a * Real.sqrt (J / lam)
+
+<span class="comment">/-- **Self-Trapping Selectivity Principle** — formal core of Theorem 1.
+    r² ≤ a²·(J/λ) ⟹ r ≤ r*(λ) = a·√(J/λ).
+    NOTE (what this does and does not say): the hypothesis is the squared
+    form of the conclusion, so this is the equivalence "r ≤ r* ⟸ r² ≤ r*²"
+    for r ≥ 0, i.e. sqrt-monotonicity. It does NOT derive confinement from
+    any DNLS dynamics; that is Theorem 1(ii)'s open content. -/</span>
+theorem helical_selectivity (a J lam : ℝ) (ha : 0 &lt; a) (hJ : 0 &lt; J)
+    (hlam : 0 &lt; lam) (r_state : ℝ) (hr : 0 ≤ r_state)
+    (h_confined : r_state ^ 2 ≤ a ^ 2 * (J / lam)) :
+    r_state ≤ criticalRadius a J lam ha hJ hlam := by
   unfold criticalRadius
-  rw [← Real.sqrt_sq hr]
-  apply Real.sqrt_le_sqrt
-  exact h_confined</pre>
+  have h1 : r_state ≤ Real.sqrt (a ^ 2 * (J / lam)) := by
+    rw [← Real.sqrt_sq hr]; exact Real.sqrt_le_sqrt h_confined
+  have h2 : Real.sqrt (a ^ 2 * (J / lam)) = a * Real.sqrt (J / lam) := by
+    rw [Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq ha.le]
+  rw [h2] at h1
+  exact h1</pre>
   </div>
   <div class="lean-wrap">
     <div class="lean-header">
-      <span>CatGT_Main.lean — Selectivity factor (Theorem 1, part iii)</span>
+      <span>CatGT_Main.lean — Selectivity factor (Theorem 1, part iii; algebraic identity only)</span>
       <span class="status-closed">✓ CLOSED — sorry-free</span>
     </div>
-    <pre class="lean"><span class="kw">theorem</span> <span class="thm-name">selectivityFactor_eq</span> (J lam r_pore : ℝ)
-    (hJ : <span class="kw">0</span> < J) (hlam : <span class="kw">0</span> < lam) (hr : <span class="kw">0</span> < r_pore) :
-    selectivityFactor J lam r_pore hJ hlam hr =
-    <span class="kw">1</span> - J / (lam * r_pore ^ <span class="kw">2</span>) := <span class="kw">by</span>
+    <pre class="lean"><span class="comment">/-- Selectivity factor σ = 1 - (r*/r_pore)² = 1 - (J/λ)(a/r_pore)². -/</span>
+noncomputable def selectivityFactor (a J lam r_pore : ℝ)
+    (ha : 0 &lt; a) (hJ : 0 &lt; J) (hlam : 0 &lt; lam) (hr : 0 &lt; r_pore) : ℝ :=
+  1 - (criticalRadius a J lam ha hJ hlam / r_pore) ^ 2
+
+theorem selectivityFactor_eq (a J lam r_pore : ℝ)
+    (ha : 0 &lt; a) (hJ : 0 &lt; J) (hlam : 0 &lt; lam) (hr : 0 &lt; r_pore) :
+    selectivityFactor a J lam r_pore ha hJ hlam hr
+      = 1 - (J / lam) * (a / r_pore) ^ 2 := by
   unfold selectivityFactor criticalRadius
-  rw [div_pow, Real.sq_sqrt (div_nonneg (le_of_lt hJ) (le_of_lt hlam))]
-  ring</pre>
+  have hs : Real.sqrt (J / lam) ^ 2 = J / lam :=
+    Real.sq_sqrt (div_nonneg hJ.le hlam.le)
+  have hkey : (a * Real.sqrt (J / lam) / r_pore) ^ 2
+      = (J / lam) * (a / r_pore) ^ 2 := by
+    calc (a * Real.sqrt (J / lam) / r_pore) ^ 2
+        = Real.sqrt (J / lam) ^ 2 * (a / r_pore) ^ 2 := by ring
+      _ = (J / lam) * (a / r_pore) ^ 2 := by rw [hs]
+  rw [hkey]</pre>
   </div>
-  <div class="lean-wrap">
-    <div class="lean-header">
-      <span>CatGT_Main.lean — dm³ transport (Corollary 2)</span>
-      <span class="status-closed">✓ CLOSED — narrowed scope, see note</span>
-    </div>
-    <pre class="lean"><span class="comment">/-- Previously proved `∃ shape, True` — vacuously true for any shape,
-    established nothing. Now pins the witness to the actual candidate
-    (disk of radius r_star) and proves two real facts about it. The
-    full Corollary 2 optimality claim (this disk maximises κ_stab over
-    convex cross-sections of equal area) is NOT proved here — left as
-    open prose, not a fake theorem. Path to closing: define κ_stab,
-    import Convex.Basic + a 2D isoperimetric lemma. Target: Part II. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">catgt_dm3_disk</span>
-    (r_star : ℝ) (hr : <span class="kw">0</span> < r_star) :
-      (<span class="kw">0</span>, <span class="kw">0</span>) ∈ {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} ∧
-      (<span class="kw">2</span> * r_star, <span class="kw">0</span>) ∉ {p : ℝ × ℝ | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>} := <span class="kw">by</span>
-  refine ⟨{p | p.<span class="kw">1</span> ^ <span class="kw">2</span> + p.<span class="kw">2</span> ^ <span class="kw">2</span> ≤ r_star ^ <span class="kw">2</span>}, rfl, ?_, ?_⟩
-  · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star]
-  · simp only [Set.mem_setOf_eq]; nlinarith [sq_nonneg r_star, hr]</pre>
-  </div>
+  <p style="font-size:0.85rem;color:var(--ink3);"><em>Removed 2026-09-19: this section previously quoted <code>catgt_dm3_transport</code> (later corrected to <code>catgt_dm3_disk</code>), the Lean support for the extrudate-shape Corollary 2. That corollary is cut from this narrower paper (see §3); the theorem itself still exists, verified, in <code>CatGT_Main.lean</code>, and remains listed in the Sorry Audit below as an accurate inventory of that file — it just no longer has a matching claim in this paper's prose to illustrate.</em></p>
   <div class="lean-wrap">
     <div class="lean-header">
       <span>CatGT_Main.lean — ensemble scaling (Corollary 1)</span>
       <span class="status-closed">✓ CLOSED — narrowed scope, see note</span>
     </div>
-    <pre class="lean"><span class="comment">/-- Previously proved `∃ selectivity, selectivity = (1-x)²` — true by
-    construction for any x, established nothing about Pt-Sn or the
-    CatGT model. This surfaced a real gap: the two forms this page
-    proposes, (1-x)² and 1-(r*/r_pore)², are NOT the same function —
-    they agree only at x ∈ {0,1} (e.g. x=1/2 gives 1/4 vs 3/4). Which
-    form is physically correct is still open; awaits XAS validation. -/</span>
-<span class="kw">theorem</span> <span class="thm-name">ensemble_scaling_forms_diverge</span> :
-    (<span class="kw">1</span> - (<span class="kw">0</span>:ℝ)) ^ <span class="kw">2</span> = <span class="kw">1</span> - (<span class="kw">0</span>:ℝ) ^ <span class="kw">2</span> ∧
-    (<span class="kw">1</span> - (<span class="kw">1</span>:ℝ)) ^ <span class="kw">2</span> = <span class="kw">1</span> - (<span class="kw">1</span>:ℝ) ^ <span class="kw">2</span> ∧
-    ∃ x : ℝ, <span class="kw">0</span> < x ∧ x < <span class="kw">1</span> ∧ (<span class="kw">1</span> - x) ^ <span class="kw">2</span> ≠ <span class="kw">1</span> - x ^ <span class="kw">2</span> := <span class="kw">by</span>
-  refine ⟨<span class="kw">by</span> ring, <span class="kw">by</span> ring, <span class="kw">1</span>/<span class="kw">2</span>, <span class="kw">by</span> norm_num, <span class="kw">by</span> norm_num, ?_⟩
-  norm_num</pre>
+    <pre class="lean"><span class="comment">/-- The two proposed Pt–Sn scaling forms are NOT the same function:
+    (1-x)² and 1-x² agree only at x∈{0,1}; at x=1/2, 1/4 ≠ 3/4.
+    Which form is physical is OPEN (awaits XAS, Part III). -/</span>
+theorem ensemble_scaling_forms_diverge :
+    (1 - (1/2 : ℝ)) ^ 2 ≠ 1 - (1/2 : ℝ) ^ 2 := by norm_num</pre>
   </div>
 
   <h3>5.1 Operator order: where non-commutativity actually lives</h3>
@@ -592,70 +594,50 @@
   <p style="font-size:0.85rem;color:var(--ink3);"><strong>v4 published (September 2026):</strong> Zenodo <a href="https://doi.org/10.5281/zenodo.22849726">10.5281/zenodo.22849726</a> (supersedes v3 above). v4 narrows Theorem 4 to the aperture-specific scope its proof actually supports, replaces Theorem 5's unproved (and arithmetically backwards — it moved a barrier feature in the wrong direction) rescaling assertion with a derived one, and adds two evidentiary caveats distinguishing the paper's restated literature review from its actual novel content. A new status tag, <code>[DERIVED]</code> (a complete proof given in the text, not yet in Lean), was introduced for Theorem 5(ii)–(iii); Theorem 5(i) itself — the contactomorphism claim — is kernel-checked in <code>ContactMorphism.lean</code> (see the audit block below) and tagged <code>[VERIFIED]</code>.</p>
   <p style="font-size:0.85rem;color:var(--ink3);"><strong>Reference correction (June 2026):</strong> independently of the commutation fix, 6 of the paper's original 10 references carried fabricated titles, page numbers, or author lists despite correct-looking DOIs (e.g. a citation to Sastre, Catlow &amp; Corma attached to the wrong paper under its own DOI; an author list for ref. [1] naming people who did not write it). All references were re-checked against CrossRef and corrected in v3; one unverifiable entry (Zhou et al.) was dropped rather than left uncorrected. The full before/after list and per-reference diagnosis are in <code>zeolite_paper_reference_corrections.md</code> in the repository. <em>(This section of the page last updated 2026-09-19.)</em></p>
 </section>
-<!-- ══════════════════════════════════ BRIDGE ══════════════════════════════════ -->
-<section id="bridge">
-  <h2>6. Coherence Bridge: Seven Domains</h2>
-  <p>The central invariant \(r^*(\lambda) = \sqrt{J/\lambda}\) maps across seven physical domains. Solid rows are covered in Part I; italic rows are future parts or open conjectures.</p>
-  <!-- Fig 4 — Coherence Bridge (interactive spoke diagram) -->
-  <div class="fig-wrap">
-    <canvas class="fig-canvas" id="fig4" height="360"></canvas>
-    <div class="fig-caption"><strong>Figure 4.</strong> Coherence Bridge — the invariant \(r^*(\lambda) = \sqrt{J/\lambda}\) across seven domains. Click a node to highlight its J/λ analogs. Solid borders: Part I. Dashed: future parts / open conjectures.</div>
-  </div>
-  <div class="table-scroll"><table class="bridge-table">
-    <thead><tr><th>Domain</th><th>J analog</th><th>λ analog</th><th>Observable</th></tr></thead>
-    <tbody>
-      <tr class="part1"><td>Zeolite catalysis</td><td>Diffusivity D</td><td>Binding energy E_b</td><td>Pore cut-off r*</td></tr>
-      <tr class="part1"><td>Metal ensembles</td><td>Hopping t_ij</td><td>On-site U</td><td>Ensemble size N*</td></tr>
-      <tr class="part1"><td>DNLS soliton</td><td>Coupling J</td><td>Nonlinearity λ</td><td>Self-trapping IPR</td></tr>
-      <tr class="part1"><td>dm³ reactor</td><td>Permeability κ</td><td>Pressure loss ΔP</td><td>Shape optimality</td></tr>
-      <tr class="future"><td>Faraday / IFE</td><td>Verdet const. V</td><td>Optical intensity I</td><td>Non-reciprocity φ</td></tr>
-      <tr class="future"><td>Swarm / intelligence</td><td>Diffusion D_s</td><td>Cohesion γ</td><td>Swarm radius</td></tr>
-      <tr class="conj"><td>Collatz (conjectured)</td><td>Step size s</td><td>Branching ratio b</td><td>Attractor bound (open)</td></tr>
-    </tbody>
-  </table></div>
-</section>
 <!-- ══════════════════════════════════ DISCUSSION ══════════════════════════════════ -->
 <section id="discussion">
-  <h2>7. Discussion</h2>
+  <h2>6. Discussion</h2>
   <h3>Relation to existing theory</h3>
-  <p>CatGT does not contradict DFT-based design or CFD reactor models — it unifies them. The Brønsted–Evans–Polanyi relation corresponds to the linearisation of \(K\) near \(x^*\). The Thiele modulus is the ratio \(r_\text{pore}/r^*(\lambda)\).</p>
+  <p>This does not contradict DFT-based active-site design — it addresses a different question. DFT explains why a given site is reactive; it is silent on why identical acid sites in different pore geometries give different products. The Brønsted–Evans–Polanyi relation corresponds to the linearisation of \(K\) near \(x^*\) (that connection remains stated informally; \(x^*\) is not formally defined here — see the To-Do entry). The Thiele modulus is the ratio \(r_\text{pore}/r^*(\lambda)\).</p>
   <h3>Operator order and zeolite selectivity</h3>
-  <p>A key insight of CatGT is that the firing order of operators is not fixed but system-dependent. In ZSM-5, K fires before F (pore constrains first). In MCM-22, F fires before K (fold inside the supercage). This operator order switching under varied T/P/concentration is a new falsifiable DRIFTS prediction.</p>
-  <h3>Clean energy applications</h3>
-  <p>A catalyst optimised for clean energy (CO₂ hydrogenation, water splitting) should be engineered so that \(r_\text{pore} = r^*(\lambda_\text{target})\) for the desired product pathway — simultaneous tuning of pore size and metal loading.</p>
+  <p>The firing order of the compression/constraint/fold/unfold operators is not fixed but system-dependent. In ZSM-5, constraint fires before folding (the pore constrains first). In MCM-22, folding fires before constraint (the intermediate folds inside the supercage first). This operator-order switching under varied temperature, pressure, or concentration is a falsifiable DRIFTS prediction, independent of the self-trapping radius claim above.</p>
   <h3>Open questions</h3>
-  <p>1. Finite-size scaling of \(r^*(\lambda)\) for chain lengths \(N \in \{100, 500, 1000\}\) (Part II). 2. Formal Lean 4 proof of Corollary 2 once Mathlib volume-form support matures. 3. Photocatalysis extension — a photon-driven compression operator \(C_\text{photo}\) (Part IV). 4. MD validation of Prediction 1 for ZSM-5, SAPO-34, MFI.</p>
+  <p>1. Quantitative fit against Sousa et al.'s measured selectivity, blocked on access to the data tables — see the To-Do entry. 2. Normalization of \(r^*(\lambda)\): fixed peak amplitude versus fixed norm (§3). 3. Prediction 1: an operational definition of \(\lambda_c\), the role of \(N\), and 2D pore cross-sections (§4). 4. Finite-size scaling of \(r^*(\lambda)\) for chain lengths \(N \in \{100, 500, 1000\}\). 5. Definition of \(C,K,F,U\) and \(x^*\) on \(L^2(\mathcal{X}_\text{cat})\).</p>
 </section>
 <!-- ══════════════════════════════════ AUDIT ══════════════════════════════════ -->
 <section id="audit">
-  <h2>8. Sorry Audit</h2>
+  <h2>7. Sorry Audit</h2>
   <div class="audit">
-<span class="section">── CatGT_Main.lean · May 2026 ──────────────────────────────</span>
-<span class="section">Framework : CatGT (Catalytic Generative Theory)</span>
-<span class="section">Theorem 1 : Self-Trapping Selectivity Principle</span>
-<span class="section">Parent    : GTCT (Generative Temporal Contact Theory)</span>
-<span class="section">Closed (sorry-free · kernel-checked):</span>
-<span class="closed">  ✓ ipr_between_zero_and_one       IPR ∈ (0,1], Cauchy-Schwarz / Finset.sum</span>
-<span class="closed">  ✓ criticalRadius_pos             div_pos + sqrt_pos_of_pos</span>
-<span class="closed">  ✓ criticalRadius_antitone        sqrt_le_sqrt + gcongr</span>
-<span class="closed">  ✓ helical_selectivity            sqrt_le_sqrt + algebraic  ← HSP</span>
-<span class="closed">  ✓ selectivityFactor_eq           ring + Real.sq_sqrt</span>
-<span class="closed">  ✓ reeb_alpha_eq_one              α_cat(R)=1 — the actual 1-form pairing</span>
-<span class="closed">  ✓ reeb_orbit_advances            z-advance derived FROM that pairing</span>
-<span class="closed">  ✓ dnlsNorm_nonneg                discrete norm ≥ 0; Finset.sum_nonneg</span>
-<span class="closed">  ✓ catgt_dm3_disk                 disk membership facts (nlinarith)</span>
-<span class="closed">  ✓ ensemble_scaling_forms_diverge (1-x)² ≠ 1-x² at x=1/2 (norm_num)</span>
-<span class="closed">  ✓ relaxStep_fixed                r* is a fixed point of the relaxation</span>
+<span class="section">── CatGT_Main.lean · corrected September 2026 ────────────────</span>
+<span class="section">Supports : "The Self-Trapping Selectivity Principle" (Theorem 1)</span>
+<span class="section">Header   : renamed in the file (comments only); the earlier CatGT / HSP / GTCT</span>
+<span class="section">           branding no longer appears in the file header.</span>
+<span class="section">Closed (sorry-free · no admits):</span>
+<span class="closed">  ✓ ipr_between_zero_and_one       IPR ∈ (0,1] for N&gt;0, nonzero norm</span>
+<span class="closed">  ✓ criticalRadius_pos             r* &gt; 0  (mul_pos + sqrt_pos_of_pos)</span>
+<span class="closed">  ✓ criticalRadius_antitone        r* non-increasing in λ  (sqrt_le_sqrt + gcongr)</span>
+<span class="closed">  ✓ helical_selectivity            r² ≤ a²J/λ ⇒ r ≤ r*  (sqrt monotonicity; no DNLS dynamics)</span>
+<span class="closed">  ✓ selectivityFactor_eq           1-(r*/r_pore)² = 1-(J/λ)(a/r_pore)²  (algebra only)</span>
+<span class="closed">  ✓ reeb_alpha_eq_one              α(R)=1, the actual pairing</span>
+<span class="closed">  ✓ reeb_orbit_advances            z-advance over t equals t·α(R)</span>
+<span class="closed">  ✓ dnlsNorm_nonneg                discrete norm ≥ 0</span>
+<span class="closed">  ✓ catgt_dm3_disk                 disk membership facts (supports the cut Corollary 2)</span>
+<span class="closed">  ✓ ensemble_scaling_forms_diverge (1-1/2)² ≠ 1-(1/2)²  (norm_num)</span>
+<span class="closed">  ✓ relaxStep_fixed                r* is a fixed point of the relaxation map</span>
 <span class="closed">  ✓ relaxStep_contracts            Lyapunov decay, one step (0&lt;k&lt;2)</span>
-<span class="closed">  ✓ relax_iterate_dist             Lyapunov decay, iterated: |1-k|ⁿ</span>
-<span class="section">Total: 13 closed · 0 admits · 0 sorries · 0 vacuous</span>
-<span class="section">Sept 2026: reeb_orbit_advances previously proved a fact about a scalar</span>
-<span class="section">  potential F=z-r²θ, not about α_cat=dz-r²dθ (dF has an extra -2rθ·dr),</span>
-<span class="section">  and any F=z+g(r,θ) would have proved it. Replaced by the real pairing.</span>
-<span class="section">Still open in prose (not theorems): Corollary 2 disk optimality;</span>
-<span class="section">  which Pt–Sn scaling form ((1-x)² vs 1-(r*/r_pore)²) is correct.</span>
-<span class="section">Collatz: not claimed. Tracked in AXLE/OPEN_QUESTIONS.md.</span>
-<span class="section">Verified in CI: github.com/TOTOGT/io/actions (real Lean kernel, every push)</span>
+<span class="closed">  ✓ relax_iterate_dist             |r_n - r*| = |1-k|ⁿ |r_0 - r*|</span>
+<span class="section">Total: 13 closed · 0 admits · 0 sorries · 0 vacuous (reviewed by reading each statement)</span>
+<span class="section">Kernel status: author's run, Lean 4.32.0 / Mathlib v4.32.0, 13/13 axioms</span>
+<span class="section">  [propext, Classical.choice, Quot.sound]. Repeated on the final file after the</span>
+<span class="section">  comment-only edits (sha256 19e8df03ad44). NOT run under v4.14.0 (the repository CI pin). No CI result exists</span>
+<span class="section">  for this version.</span>
+<span class="section">Known limits: helical_selectivity keeps a stale name; DNLS dynamics (Theorem 1(ii))</span>
+<span class="section">  and the operators C,K,F,U are not formalized.</span>
+<span class="section">Still open in prose (not theorems): Corollary 2 disk optimality (cut from this</span>
+<span class="section">  paper); which ensemble-survival form ((1-x)² vs 1-x²) is correct — NOT a</span>
+<span class="section">  question about selectivity itself, which is the survival fraction's</span>
+<span class="section">  complement either way (see Prediction 2, corrected 2026-09-19).</span>
+<span class="section">Collatz: removed from the Bridge table 2026-09-19 (no J/λ analog exists).</span>
 
 <span class="section">── ZeoliteCommutation.lean · June 2026 ─────────────────────</span>
 <span class="section">Scope     : operator-order commutation facts (3-site ring)</span>
@@ -691,14 +673,16 @@
 <section id="refs" class="references">
   <h2>References</h2>
   <ol>
+    <li>Sousa, Z.S.B., Cesar, D.V., Henriques, C.A., Teixeira da Silva, V. "Bioethanol conversion into hydrocarbons on HZSM-5 and HMCM-22 zeolites: Use of in situ DRIFTS to elucidate the role of the acidity and of the pore structure over the coke formation and product distribution." <em>Catal. Today</em> 234:182–191, 2014. <a href="https://doi.org/10.1016/j.cattod.2014.03.023">doi:10.1016/j.cattod.2014.03.023</a></li>
+    <li>Weisz, P.B., Frilette, V.J. "Intracrystalline and molecular-shape-selective catalysis by zeolite salts." <em>J. Phys. Chem.</em> 64(3):382, 1960. <a href="https://doi.org/10.1021/j100832a513">doi:10.1021/j100832a513</a></li>
+    <li>Csicsery, S.M. "Shape-selective catalysis in zeolites." <em>Zeolites</em> 4(3):202–213, 1984. <a href="https://doi.org/10.1016/0144-2449(84)90024-1">doi:10.1016/0144-2449(84)90024-1</a></li>
     <li>Eilbeck, J.C., Lomdahl, P.S., Scott, A.C. "The discrete self-trapping equation." <em>Physica D</em> 16(3):318–338, 1985.</li>
-    <li>Scott, A.C. <em>Nonlinear Science: Emergence and Dynamics of Coherent Structures.</em> Oxford University Press, 1999.</li>
-    <li>Weisz, P.B., Frilette, V.J. "Intracrystalline and molecular-shape selective catalysis by zeolite salts." <em>J. Phys. Chem.</em> 64(3):382, 1960.</li>
-    <li>Csicsery, S.M. "Shape-selective catalysis in zeolites." <em>Zeolites</em> 4(3):202–213, 1984.</li>
-    <li>Sousa, Z.S.B., Cesar, D.V., Henriques, C.A., Teixeira da Silva, V. "Ethanol conversion over HZSM-5 and HMCM-22." <em>Catal. Today</em> 234:182, 2014.</li>
+    <li>Eilbeck, J.C., Johansson, M. "The discrete nonlinear Schrödinger equation — 20 years on." arXiv:nlin/0211049.</li>
+    <li>Gaset, J., Gràcia, X., Muñoz-Lecanda, M.C., Rivas, X., Román-Roy, N. "New contributions to the Hamiltonian and Lagrangian contact formalisms for dissipative mechanical systems and their symmetries." Int. J. Geom. Methods Mod. Phys. 17 (2020) 2050090, doi:10.1142/S0219887820500905. Cited for the Reeb field (Prop. 2), contact Hamiltonian vector fields (Thm. 7) and \(\mathcal{L}_{X_H}\eta=-R(H)\eta\) (Prop. 9).</li>
+    <li>Geiges, H. "Contact structures and geometric topology." arXiv:1004.3172 (2010). Cited for the definitions of a contact form (§1), contact vector field (§2.4) and Reeb vector field (§2.5).</li>
+    <li>Etnyre, J.B. "Lectures on contact geometry in low-dimensional topology." arXiv:math/0610798 (2006). Cited for the definition of positive/negative contact structures and of a contactomorphism; it does not treat Reeb vector fields.</li>
     <li>Somorjai, G.A., Li, Y. <em>Introduction to Surface Chemistry and Catalysis.</em> Wiley, 2nd ed., 2010.</li>
-    <li>Grossi, P.N. "Generative Temporal Contact Theory (GTCT) — Part I of the GOMC Opus." Zenodo, 2026. doi:10.5281/zenodo.19117399.</li>
-    <li>Cohn, H. "Advice for amateur mathematicians on writing and publishing papers." MIT, 2025.</li>
+    <li>Grossi, P.N. "Operator Firing Order as the Missing Mechanism in Ethanol-to-Hydrocarbon Selectivity: Contact-Geometric Analysis of ZSM-5 and MCM-22 Zeolites" (v4). Zenodo, September 2026. <a href="https://doi.org/10.5281/zenodo.22849726">doi:10.5281/zenodo.22849726</a></li>
   </ol>
 </section>
 <!-- ══════════════════════════════════ TODO ══════════════════════════════════ -->
@@ -710,34 +694,46 @@
     <ul>
       <li><del><strong>Reeb-attractor contradiction.</strong> A Reeb flow preserves α ∧ dα (since it preserves α itself), hence is volume-preserving, hence cannot have an attracting set — so "helical attractor of a Reeb flow" is inconsistent for any choice of contact form on any contact manifold, not just this one. Either replace the confinement dynamics in Theorem 1(i)–(ii) with a genuinely dissipative vector field and demote \(\mathcal{X}_\text{cat}\) to kinematic background, or drop the Reeb/attractor language entirely.</del> <strong>Resolved 2026-09-19:</strong> dropped the Reeb/attractor language. Theorem 1 now states plainly that \(R\)'s flow is volume-preserving and has no attracting set, and re-grounds the actual confinement claim in DNLS self-trapping instead — the Reeb field is kept only as the genuine (if separate) structural fact that it is.</li>
       <li><del><strong>Reeb orbits aren't helical as written.</strong> With \(\alpha_\text{cat} = dz - r^2\,d\theta\), \(R = \partial_z\) and the integral curves \((r_0,\theta_0,z_0+t)\) hold \(\theta\) fixed — they're vertical lines, not helices. This is separate from the point above and would need fixing even if the attractor issue is resolved.</del> <strong>Resolved 2026-09-19:</strong> Theorem 1, Figure 2, and its caption now say "straight vertical line," not helix; Figure 2's animation actually draws one. The theorem itself is renamed "Self-Trapping Selectivity Principle" (was "Helical Selectivity Principle") throughout the page's own prose.</li>
-      <li><del><strong>Units of \(r^*(\lambda) = \sqrt{J/\lambda}\).</strong> With \(J\), \(\lambda\) as defined in §2.3, \(J/\lambda\) is dimensionless, but Theorem 1(iii) and Predictions 1–2 require it to carry length². Introduce an explicit length scale (lattice spacing, or \(\sigma_\text{LJ}\)) and carry it through every downstream formula rather than leaving it implicit.</del> <strong>Resolved 2026-09-19, in Theorem 1 only:</strong> \(r^*(\lambda) := a\sqrt{J/\lambda}\), with \(a\) a lattice-spacing length scale, giving \(\sigma = 1-(J/\lambda)(a/r_\text{pore})^2\) in place of the old \(\sigma=1-J/(\lambda r_\text{pore}^2)\). <strong>Not yet propagated:</strong> Figure 3, Figure 4/the Coherence Bridge table, and Predictions 1–2 in §4 still use the bare dimensionless \(\sqrt{J/\lambda}\) — added as a new item below.</li>
+      <li><del><strong>Units of \(r^*(\lambda) = \sqrt{J/\lambda}\).</strong> With \(J\), \(\lambda\) as defined in §2.3, \(J/\lambda\) is dimensionless, but Theorem 1(iii) and Predictions 1–2 require it to carry length². Introduce an explicit length scale (lattice spacing, or \(\sigma_\text{LJ}\)) and carry it through every downstream formula rather than leaving it implicit.</del> <strong>Resolved 2026-09-19:</strong> \(r^*(\lambda) := a\sqrt{J/\lambda}\), with \(a\) a lattice-spacing length scale, giving \(\sigma = 1-(J/\lambda)(a/r_\text{pore})^2\) in place of the old \(\sigma=1-J/(\lambda r_\text{pore}^2)\). Propagated to Figure 3 (now uses <code>latticeA</code>) and its caption. Figure 4/the Coherence Bridge is addressed separately below rather than by propagating <code>a</code> into it, since the deeper issue there is what the bridge claims, not just its units.</li>
       <li><strong>New, surfaced while fixing the above:</strong> Theorem 1(ii) now explicitly states that how the DNLS confinement claim connects to a fixed point \(x^*\) of the discrete pipeline \(G\) is <em>not established</em> — \(x^*\), and the operators \(C,K,F,U\) themselves, are never defined as actual mathematical objects on \(L^2(\mathcal{X}_\text{cat})\) anywhere on this page. This is a real gap, not just a labeling one, and is larger than today's fix.</li>
-      <li><strong>New, surfaced while fixing the above:</strong> <code>CatGT_Main.lean</code>'s <code>criticalRadius</code> still returns the dimensionless \(\sqrt{J/\lambda}\) — the quoted code in §5 was deliberately <em>not</em> edited to match the corrected prose, since that would mean displaying Lean code as verbatim/verified when it isn't. Fixing this means adding a length parameter to <code>criticalRadius</code> and re-verifying <code>helical_selectivity</code> and <code>selectivityFactor_eq</code> against it — folds into the pending decision on <code>CatGT_Main.lean</code> (fix-first vs. deposit-with-caveat) already on record.</li>
-      <li><del><strong>New, surfaced while fixing the above:</strong> Prediction 1 (\(\lambda_c \approx J\cdot(r_\text{pore}/\sigma_\text{LJ})^2\)) may have the ratio inverted relative to the corrected \(r^*(\lambda)=a\sqrt{J/\lambda}\) — setting \(r_\text{pore}=r^*(\lambda_c)\) and solving gives \(\lambda_c = J\cdot(a/r_\text{pore})^2\), the reciprocal of what's currently written. Flagged, not changed: the correct direction depends on the actual self-trapping threshold criterion in the cited DNLS literature (Eilbeck–Lomdahl–Scott 1985), which requires checking against the source rather than assuming from dimensional analysis alone.</del> <strong>Resolved 2026-09-19:</strong> confirmed against the actual self-trapping criterion, not just dimensional matching. Eilbeck–Lomdahl–Scott's threshold is \(\chi = \lambda N/J \gtrsim 1 \Rightarrow \lambda_c \sim J/N\); with \(N \sim (r_\text{pore}/\sigma_\text{LJ})^2\) lattice modes in a 2D pore cross-section, \(\lambda_c \sim J(\sigma_\text{LJ}/r_\text{pore})^2\) — narrower pores confine fewer modes, reducing the kinetic bandwidth available to disperse the wavepacket, so smaller pores need less nonlinearity to self-trap. The original \((r_\text{pore}/\sigma_\text{LJ})^2\) had this backwards (larger pores self-trapping more easily, which is unphysical). Prediction 1 in §4 corrected accordingly.</li>
+      <li><strong>criticalRadius length scale (2026-09-20):</strong> <code>criticalRadius</code> now takes the length scale \(a\) (<code>a * Real.sqrt (J / lam)</code>), and <code>helical_selectivity</code> and <code>selectivityFactor_eq</code> were re-proved against it. Kernel-checked <em>by the author</em> on Lean 4.32.0 / Mathlib v4.32.0 (13/13 axioms clean). <strong>Still open on this item:</strong> (a) the run was repeated on the final file after the comment-only edits (clean); (b) the repository CI pins v4.14.0 and has not been run on this version; (c) the theorem name <code>helical_selectivity</code> is stale — renaming (proposed <code>selfTrapping_selectivity</code>) means changing the Lean file, the CI <code>#print axioms</code> list, README and this page, and is pending; (d) the file's header comment still cites Zenodo 10.5281/zenodo.19117399, not this paper's 10.5281/zenodo.22851704 — comment-only, not changed so all copies of the file stay identical.</li>
+      <li><del><strong>Superseded 2026-09-20 — see the next item.</strong> <strong>New, surfaced while fixing the above:</strong> Prediction 1 (\(\lambda_c \approx J\cdot(r_\text{pore}/\sigma_\text{LJ})^2\)) may have the ratio inverted relative to the corrected \(r^*(\lambda)=a\sqrt{J/\lambda}\) — setting \(r_\text{pore}=r^*(\lambda_c)\) and solving gives \(\lambda_c = J\cdot(a/r_\text{pore})^2\), the reciprocal of what's currently written. Flagged, not changed: the correct direction depends on the actual self-trapping threshold criterion in the cited DNLS literature (Eilbeck–Lomdahl–Scott 1985), which requires checking against the source rather than assuming from dimensional analysis alone.</del> <strong>Resolved 2026-09-19:</strong> confirmed against the actual self-trapping criterion, not just dimensional matching. Eilbeck–Lomdahl–Scott's threshold is \(\chi = \lambda N/J \gtrsim 1 \Rightarrow \lambda_c \sim J/N\); with \(N \sim (r_\text{pore}/\sigma_\text{LJ})^2\) lattice modes in a 2D pore cross-section, \(\lambda_c \sim J(\sigma_\text{LJ}/r_\text{pore})^2\) — narrower pores confine fewer modes, reducing the kinetic bandwidth available to disperse the wavepacket, so smaller pores need less nonlinearity to self-trap. The original \((r_\text{pore}/\sigma_\text{LJ})^2\) had this backwards (larger pores self-trapping more easily, which is unphysical). Prediction 1 in §4 corrected accordingly.</li>
+      <li><strong>Reopened 2026-09-20 (Prediction 1).</strong> The 2026-09-19 resolution above is withdrawn. Its formula \(\lambda_c\approx J(\sigma_\text{LJ}/r_\text{pore})^2\) increases as \(r_\text{pore}\) decreases while its sentence said smaller pores need less nonlinearity — the two contradict each other. Its argument also treated \(N\) in \(\chi=\lambda N/J\) as a site count; in the DNLS literature it is the conserved norm. What is supported on a ring of \(N\) sites at fixed norm: \(\lambda_\text{MI}=NJ(1-\cos(2\pi/N))\approx 2\pi^2J/N\) (derived; bracketed numerically by <code>scripts/mi_threshold_check.py</code>). Still needed before Prediction 1 can be falsifiable: an operational definition of \(\lambda_c\), whether the relevant \(N\) is sites or norm, and the 2D pore cross-section. Note also that the 2026-09-19 Corollary 1 wording ("raising \(\lambda_c\) and shrinking \(r^*\)") depended on that relation and was removed in V5.1.</li>
+      <li><strong>Normalization of \(r^*\) (2026-09-20).</strong> \(r^*=a\sqrt{J/\lambda}\) corresponds to fixed peak amplitude; at fixed conserved norm the DNLS soliton width is \(\approx4Ja/(\lambda P)\) (exponent −1.005 numerically, not −0.5). The direction of Theorem 1(iii) is unaffected; its quantitative form depends on which normalization the catalytic problem realises. Open.</li>
+      <li><strong>New, V5 (2026-09-19):</strong> Prediction 3 ("Reeb-helix signature," a claimed helical phase θ(t)=ωt+θ₀) is removed, not fixed — it depended entirely on the Reeb orbits being helical, which the first item above already established they aren't. No replacement mechanism for an angular-phase signature currently exists; this is a genuine loss of content, not a relabeling, and nothing currently fills the gap.</li>
+    </ul>
+    <h4 class="cat-structural">V5 restructuring (2026-09-19) — scope narrowed, not just relabeled</h4>
+    <ul>
+      <li>The paper is retitled and rescoped: "Catalytic Generative Theory" framing dropped; title now centers the two catalytic test cases (zeolite selectivity, Pt–Sn ensembles) and the specific question from Sousa et al. (2014). Abstract, intro, and masthead rewritten accordingly.</li>
+      <li>Corollary 2 (macroscopic extrudate-pellet shape optimization) is cut entirely — not resolved, removed. Its optimality claim was always <code>[OPEN]</code> with no data behind it, and it doesn't bear on either test case this paper actually makes. Its supporting Lean theorem (<code>catgt_dm3_disk</code>) still exists, verified, in <code>CatGT_Main.lean</code> — cutting it from this paper's prose doesn't touch the Lean file itself.</li>
+      <li>The Coherence Bridge (§6, six domains plus the Collatz footnote) is cut entirely, superseding the earlier "resolved via relabeling" entry below — that fix stopped short; this one removes the section.</li>
+      <li>"Clean energy applications" (a speculative extension to CO₂ hydrogenation and water splitting, neither tested anywhere in this paper) is cut for the same reason as the Bridge: reach beyond what's actually tested.</li>
     </ul>
     <h4 class="cat-evidence">Evidentiary</h4>
     <ul>
-      <li><strong>Prediction 2's sign is backwards.</strong> \((1-x)^2\) decreases as Sn loading \(x\) increases, but Pt–Sn ensemble dilution is empirically well established to increase propylene selectivity as Sn loading rises (geometric ensemble effect; confirmed against multiple independent studies). Re-derive the scaling from the CatGT pipeline itself rather than patching the exponent — this is also where the two candidate forms flagged in <code>ensemble_scaling_forms_diverge</code> should be resolved, not left open.</li>
-      <li><strong>No quantitative fit against real data yet.</strong> Before adding further Coherence Bridge domains, fit \(r^*\) (with its length scale fixed, per above) against one real dataset — e.g. the HZSM-5/HMCM-22 selectivity difference in Sousa et al. 2014 — and report the number.</li>
-      <li><strong>Coherence Bridge overreach.</strong> \(\sqrt{J/\lambda}\) is the generic crossover scale for any linear-spreading-vs-linear-localizing competition (healing length, Debye length, Thiele modulus, etc.), so seven domains sharing that functional form is weak evidence of shared geometry by itself. Either exhibit an explicit unit-consistent mapping (or a derivation from a shared governing equation) for at least one non-catalysis row, or relabel the bridge as "shared functional form, not shared invariant." Cut the Collatz row regardless — there's no coupling or nonlinearity term in 3n+1 to assign \(J\) and \(\lambda\) to.</li>
+      <li><del><strong>Prediction 2's sign is backwards.</strong> \((1-x)^2\) decreases as Sn loading \(x\) increases, but Pt–Sn ensemble dilution is empirically well established to increase propylene selectivity as Sn loading rises (geometric ensemble effect; confirmed against multiple independent studies). Re-derive the scaling from the CatGT pipeline itself rather than patching the exponent — this is also where the two candidate forms flagged in <code>ensemble_scaling_forms_diverge</code> should be resolved, not left open.</del> <strong>Resolved 2026-09-19:</strong> the bug wasn't the exponent, it was conflating two different quantities. \((1-x)^2\) is the fraction of <em>surviving bad ensembles</em> (correctly decreasing) — selectivity is its <em>complement</em>, \(\sigma=1-(r^*/r_\text{pore})^2\approx1-(1-x)^2\) (correctly increasing). Prediction 2, Corollary 1, the <code>ensemble_scaling_forms_diverge</code> comment, and the Sorry Audit's "still open" line all updated to keep these two quantities distinct. The genuinely open question — whether \((1-x)^2\) or \(1-x^2\) is the correct survival form — is unaffected and remains open, now correctly scoped as a question about survival probability, not about selectivity.</li>
+      <li><strong>No quantitative fit against real data yet.</strong> <em>Progress 2026-09-19:</em> confirmed the direction is right — Sousa et al. 2014's own abstract and highlights state HZSM-5 favors propene/BTX with coke "severely inhibited by the pore structure," while HMCM-22 forms coke in its larger channels and favors ethene, matching this paper's prediction. But the actual numbers (selectivity percentages, coke wt%, product distribution tables) are behind a paywall — only the abstract was accessible. The fit itself is still not done; direction confirmed, magnitude is not.</li>
+      <li><del><strong>Coherence Bridge overreach.</strong> \(\sqrt{J/\lambda}\) is the generic crossover scale for any linear-spreading-vs-linear-localizing competition (healing length, Debye length, Thiele modulus, etc.), so seven domains sharing that functional form is weak evidence of shared geometry by itself. Either exhibit an explicit unit-consistent mapping (or a derivation from a shared governing equation) for at least one non-catalysis row, or relabel the bridge as "shared functional form, not shared invariant." Cut the Collatz row regardless — there's no coupling or nonlinearity term in 3n+1 to assign \(J\) and \(\lambda\) to.</del> <strong>Resolved 2026-09-19 (relabeling), then superseded 2026-09-19 (V5):</strong> the section was first relabeled as "shared functional form, not shared invariant," with Collatz demoted to a footnote. That didn't go far enough — the V5 restructuring (see Structural, above) removes the section entirely, footnote included. The relabeling is left here as a record of the intermediate step, not because it's still the current state.</li>
     </ul>
     <h4 class="cat-house">Housekeeping</h4>
     <ul>
       <li><del>Masthead still reads "Preprint V2 · May 2026" while §5 and §8 carry June and July 2026 revisions — bump the version tag once the structural items above are addressed.</del> <strong>Resolved 2026-09-19:</strong> masthead now reads "Preprint V4 · September 2026." Structural items (Reeb-attractor, units, Prediction 2 sign) above are unaffected and remain open — this was a date fix only, not a substantive revision.</li>
-      <li>DOI <code>10.5281/zenodo.19117399</code> is used both as this paper's own identifier (masthead, footer) and as the citation for "GTCT — Part I" (reference 7) — confirm this is an intentional self-reference and not a copy-paste duplicate.</li>
+      <li><del>DOI <code>10.5281/zenodo.19117399</code> is used both as this paper's own identifier (masthead, footer) and as the citation for "GTCT — Part I" (reference 7) — confirm this is an intentional self-reference and not a copy-paste duplicate.</del> <strong>Resolved 2026-09-19:</strong> this paper now has its own dedicated DOI, <code>10.5281/zenodo.22851704</code>, updated in the masthead and footer. <code>10.5281/zenodo.19117399</code> remains correctly attached only to reference [7] ("GTCT — Part I of the GOMC Opus"), a separate work this paper no longer claims to be part of — not a duplicate, just no longer shared. <em>(V5.1, 2026-09-20: reference [7] has since been removed from the reference list; this paper no longer cites it.)</em></li>
       <li>The "Revision note (2026-07-10)" for <code>CatGT_Main.lean</code> (<code>catgt_dm3_transport</code>, <code>ensemble_scaling</code>) predates the June-date correction applied elsewhere on this page — confirm whether it should also move, or whether it's a genuinely separate, later event.</li>
     </ul>
     <h4 class="cat-formal">Formal — tracked, not yet closed</h4>
     <ul>
-      <li>Corollary 2 disk-optimality proof (that the disk maximises \(\kappa_\text{stab}\) over convex cross-sections of equal area) — needs Mathlib's <code>Convex.Basic</code> plus a 2D isoperimetric lemma; targeted for Part II.</li>
+      <li><del>Corollary 2 disk-optimality proof (that the disk maximises \(\kappa_\text{stab}\) over convex cross-sections of equal area) — needs Mathlib's <code>Convex.Basic</code> plus a 2D isoperimetric lemma; targeted for Part II.</del> <strong>Moot for this paper, 2026-09-19:</strong> Corollary 2 is cut from this paper's scope entirely (see the V5 restructuring, above), so there's no claim here left to close. The underlying Lean theorem (<code>catgt_dm3_disk</code>) still exists, verified, in <code>CatGT_Main.lean</code> — this item would only matter again if a future, separate paper picked the extrudate-shape claim back up.</li>
       <li>The companion zeolite operator-order paper (v4, Zenodo 22849726) carries its own open items — Theorem 5(i) (the contact-morphism claim) was Lean-verified in v4 (<code>ContactMorphism.lean</code>); Theorem 5(ii)–(iii) (the WKB momentum correspondence and L² norm preservation) remain <code>[DERIVED]</code>, and Theorem 7's selectivity–order bijection remains <code>[OPEN]</code> — cross-referenced here rather than duplicated.</li>
+      <li><del><strong>New, V5 (2026-09-19):</strong> <code>CatGT_Main.lean</code>'s own header still described itself as "Part I of the GOMC Opus," named its central theorem "Helical Selectivity Principle (HSP)," and stated a "Relation to GTCT."</del> <em>Resolved 2026-09-20 (comments only):</em> the header and docstrings were renamed to match this paper. Not yet re-run since that edit (comments cannot change a proof, but the rule here is that a claim is not closed until the real file has been re-run). The Sorry Audit above now reflects the edited header.</li>
+      <li><strong>Toolchain (2026-09-20).</strong> The repository pins Lean v4.14.0; the file has been compiled on 4.32.0 only. Run it under the pinned toolchain (or bump the pin as a separate, deliberate change) before describing the result as CI-verified. The quoted §5 code and all Lean status lines on this page describe the 4.32.0 run.</li>
+      <li><strong>Sousa DRIFTS fit.</strong> No number from Sousa et al. (2014) is used or estimated anywhere in this paper. The fit recipe: insert measured selectivities into \(\sigma=1-(J/\lambda)(a/r_\text{pore})^2\) with the two aperture radii, solve for \(a\), and check it is a physically reasonable lattice spacing.</li>
     </ul>
   </div>
 </section>
 <footer>
-  CatGT / HSP · Part I of the GOMC Opus · Pablo Nogueira Grossi · G6 LLC · Newark, NJ · May 2026<br>
-  GTCT (Generative Temporal Contact Theory) is the overarching framework. CatGT is its catalysis instantiation.<br>
-  Lean 4 source: github.com/TOTOGT/io · Zenodo: 10.5281/zenodo.19117399 · CC BY 4.0
+  The Self-Trapping Selectivity Principle · Pablo Nogueira Grossi · G6 LLC · Newark, NJ · V5, September 21, 2026<br>
+  Lean 4 source: github.com/TOTOGT/io · Zenodo: 10.5281/zenodo.22851704 · CC BY 4.0
 </footer>
 <!-- ══════════════════════════════════ SCRIPTS ══════════════════════════════════ -->
 <script>
@@ -930,6 +926,7 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     ctx.clearRect(0, 0, W, H);
     const lam = parseFloat(lamSl.value);
     const J = parseFloat(jSl.value);
+    const latticeA = 1.0; // length scale 'a' (Theorem 1, corrected 2026-09-19)
     const half = W / 2 - 10;
     const pad = { l:40, r:10, t:20, b:30 };
     // ── Left: IPR(t) ──
@@ -983,7 +980,7 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     ctx.beginPath(); ctx.moveTo(rx, oy + iH);
     for (let i = 0; i <= 100; i++) {
       const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
+      const r = Math.min(latticeA * Math.sqrt(J/l), maxR);
       const x = rx + (l/maxL) * rW;
       const y = oy + iH * (1 - r/maxR);
       ctx.lineTo(x, y);
@@ -994,7 +991,7 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     ctx.beginPath(); ctx.moveTo(rx, oy);
     for (let i = 0; i <= 100; i++) {
       const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
+      const r = Math.min(latticeA * Math.sqrt(J/l), maxR);
       const x = rx + (l/maxL) * rW;
       const y = oy + iH * (1 - r/maxR);
       ctx.lineTo(x, y);
@@ -1005,14 +1002,14 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
     ctx.beginPath();
     for (let i = 1; i <= 100; i++) {
       const l = 0.1 + (i/100) * maxL;
-      const r = Math.min(Math.sqrt(J/l), maxR);
+      const r = Math.min(latticeA * Math.sqrt(J/l), maxR);
       const x = rx + (l/maxL) * rW;
       const y = oy + iH * (1 - r/maxR);
       i === 1 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
     // current λ dot
-    const curR = Math.min(Math.sqrt(J/lam), maxR);
+    const curR = Math.min(latticeA * Math.sqrt(J/lam), maxR);
     const dotX = rx + (lam/maxL) * rW;
     const dotY = oy + iH * (1 - curR/maxR);
     ctx.fillStyle = TEAL;
@@ -1024,87 +1021,6 @@ const GOLD = '#b8860b', TEAL = '#1a5f5a', CORAL = '#8b3a2a',
   jSl.addEventListener('input', () => { jV.textContent = `J = ${jSl.value}`; draw(); });
   window.addEventListener('resize', () => setTimeout(draw, 50));
   setTimeout(draw, 150);
-})();
-// ── Figure 4 — Coherence Bridge spoke diagram ─────────────────────────────────
-(function() {
-  const canvas = document.getElementById('fig4');
-  let selected = -1;
-  const nodes = [
-    { label:'Zeolite\ncatalysis', sub:'D/E_b', col:TEAL, part:1, angle: -Math.PI/2 },
-    { label:'Metal\nensembles', sub:'t_ij/U', col:'#2d4a7a', part:1, angle: -Math.PI/2 + Math.PI*2/7 },
-    { label:'DNLS\nsoliton', sub:'J/λ', col:GOLD, part:1, angle: -Math.PI/2 + Math.PI*4/7 },
-    { label:'dm³\nreactor', sub:'κ/ΔP', col:TEAL, part:1, angle: -Math.PI/2 + Math.PI*6/7 },
-    { label:'Faraday\n/ IFE', sub:'V/I', col:INK3, part:0, angle: -Math.PI/2 + Math.PI*8/7 },
-    { label:'Swarm /\nintelligence', sub:'D_s/γ', col:INK3, part:0, angle: -Math.PI/2 + Math.PI*10/7 },
-    { label:'Collatz\n(conjectured)', sub:'s/b', col:CORAL, part:0, angle: -Math.PI/2 + Math.PI*12/7 },
-  ];
-  function draw() {
-    const { ctx, W, H } = dpr(canvas);
-    ctx.clearRect(0, 0, W, H);
-    const cx = W/2, cy = H/2 + 10, R = Math.min(W, H) * 0.38;
-    // spokes
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle);
-      const y = cy + R * Math.sin(n.angle);
-      ctx.strokeStyle = n.part ? (i === selected ? n.col : 'rgba(26,95,90,0.4)') : 'rgba(100,100,100,0.25)';
-      ctx.lineWidth = n.part ? (i === selected ? 2 : 1.5) : 0.8;
-      if (!n.part) ctx.setLineDash([4,3]);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
-      ctx.setLineDash([]);
-    });
-    // center node
-    ctx.fillStyle = GOLD;
-    ctx.beginPath(); ctx.ellipse(cx, cy, 56, 36, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px EB Garamond, serif'; ctx.textAlign = 'center';
-    ctx.fillText('r*(λ)', cx, cy - 4);
-    ctx.font = '11px JetBrains Mono, monospace';
-    ctx.fillText('= √(J/λ)', cx, cy + 10);
-    // outer nodes
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle);
-      const y = cy + R * Math.sin(n.angle);
-      const bW = 88, bH = 58, bx = x - bW/2, by = y - bH/2;
-      const isSel = i === selected;
-      ctx.save();
-      ctx.strokeStyle = n.part ? n.col : '#aaa';
-      ctx.lineWidth = isSel ? 2 : 1;
-      if (!n.part) ctx.setLineDash([4,3]);
-      ctx.fillStyle = isSel ? (n.col + '22') : '#fff8';
-      ctx.beginPath(); ctx.roundRect(bx, by, bW, bH, 6); ctx.fill(); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-      const lines = n.label.split('\n');
-      ctx.fillStyle = n.part ? n.col : INK3;
-      ctx.font = `${isSel ? 'bold ' : ''}12px EB Garamond, serif`;
-      ctx.textAlign = 'center';
-      lines.forEach((l, li) => ctx.fillText(l, x, y - 8 + li * 16));
-      ctx.fillStyle = INK3; ctx.font = '10px JetBrains Mono, monospace';
-      ctx.fillText(n.sub, x, y + 20);
-    });
-    // legend
-    ctx.strokeStyle = TEAL; ctx.lineWidth = 2; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(20, H-22); ctx.lineTo(45, H-22); ctx.stroke();
-    ctx.fillStyle = INK2; ctx.font = '11px EB Garamond, serif'; ctx.textAlign = 'left';
-    ctx.fillText('Part I (this paper)', 50, H-18);
-    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
-    ctx.beginPath(); ctx.moveTo(200, H-22); ctx.lineTo(225, H-22); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText('Future parts / conjectured', 230, H-18);
-  }
-  canvas.addEventListener('click', e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    const cx = W/2, cy = H/2 + 10, R = Math.min(W,H) * 0.38;
-    selected = -1;
-    nodes.forEach((n, i) => {
-      const x = cx + R * Math.cos(n.angle), y = cy + R * Math.sin(n.angle);
-      if (Math.abs(mx-x) < 50 && Math.abs(my-y) < 35) selected = i;
-    });
-    draw();
-  });
-  window.addEventListener('resize', () => setTimeout(draw, 50));
-  setTimeout(draw, 200);
 })();
 </script>
 </body>

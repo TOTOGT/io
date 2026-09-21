@@ -216,10 +216,10 @@ published basis before any published number moves. Never raise a published numbe
 verbatim copies (e.g. `reeb_alpha_eq_one` in both `CatGT_Main` and `ReebFlow`) double-count unless the census groups them; say so.
 Count it CI-gated only once it is in `lakefile.toml` and printed by `verify-proofs.yml`; otherwise the row says "by paste".
 
-Basis as of 2026-09-21 (working tree, uncommitted -- not yet in any published number):
+Basis as of 2026-09-21 (committed and pushed; CI verdicts below; not yet in any published number):
 | file | written (T3) | sorry-free (T2) | kernel-audited (T1) | CI-gated |
 |---|---:|---:|---:|:---:|
-| `CatGT/CatGT_Main.lean` | 13 | 13 | 13 | yes (CI prints 13 once the workflow edit lands) |
+| `CatGT/CatGT_Main.lean` | 13 | 13 | 13 | yes (CI runs the 13 `#print axioms`; Verify proofs #66 and #67 succeeded, log needs sign-in) |
 | `CatGT/ReebFlow.lean` (new) | 11 | 11 | 8 | no |
 | `CatGT/ReebFlowExtDeriv.lean` (new; green 2026-09-21) | 13 | 13 | 11 | no |
 | `CatGT/ReebNoAttractor.lean` (new; green 2026-09-21, 2nd revision) | 9 | 9 | 9 | no |
@@ -227,7 +227,7 @@ Basis as of 2026-09-21 (working tree, uncommitted -- not yet in any published nu
 Not counted, no result reported: `CatGT_PROOFS_COMPLETE.fixed.lean` (10). `ReebNoAttractor.lean` 9/9 confirmed by a stdout-redirected run (`~/Desktop/Claude outputs/ReebNoAttractor.out.txt`, 880 bytes, 9 axiom lines, no errors or warnings; file sha256 prefix 6f95ee1088baab9d, identical to `io/CatGT/ReebNoAttractor.lean`).
 
 ### What is kernel-checked (author's own terminal output, Lean 4.32.0 / Mathlib v4.32.0 ONLY)
-- `CatGT/CatGT_Main.lean`: 13 theorems, all `[propext, Classical.choice, Quot.sound]`. Not yet run under this repo's pinned v4.14.0.
+- `CatGT/CatGT_Main.lean`: 13 theorems, all `[propext, Classical.choice, Quot.sound]`. Under this repo's pinned v4.14.0 the CI job (Verify proofs #66, #67 on 7e55ccc and ec84753) succeeded; its log needs a GitHub sign-in, so the 13 axiom lines themselves have not been read.
 - `ContactMorphism.lean`, `Theorem53NonCommutativity.lean`: clean.
 - `ReebFlow.lean` (8 theorems, in the V5 deposit pack): elementary model of the Reeb flow of alpha_cat. `dAlpha` there is defined by a formula, not by Mathlib's `extDeriv`; the wedge in `contactVol` is an explicit formula.
 - `ReebFlowExtDeriv.lean` is now kernel-checked (11 audited of 13 written, 4.32.0): `dAlpha` = Mathlib's `extDeriv` of alpha_cat. `ReebNoAttractor.lean` is kernel-checked (9/9, 4.32.0, second revision): corrected no-attractor statement in the elementary (r,theta,z)-chart model; contact volume = const x Lebesgue in the Cartesian chart is by hand and no theorem instantiates Part B at `reebFlow`. NOT kernel-checked yet: `CatGT_PROOFS_COMPLETE.fixed.lean` (rewrite of the old proofs file). "Volume-preserving, hence no attracting set" is [VERIFIED] in the elementary model, [DERIVED] for a general contact form. Correct form: no closed attracting set of smaller volume than its basin; the unqualified version is false (the whole space attracts itself).
@@ -241,10 +241,10 @@ Before/at the deposit:
 - [x] `ReebFlowExtDeriv.lean` green 2026-09-21 (11/11); in the pack, `extDeriv` caveat replaced in README, paper and page.
 - [x] `ReebNoAttractor.lean` green 2026-09-21 (9/9, pasted run); in the pack, paper, page, README, CHANGES. Open: v4.14.0; instantiate Part B at `reebFlow` (one line, unwritten); the chart-to-manifold volume identification.
 - [ ] Run `CatGT_PROOFS_COMPLETE.fixed.lean`; paste the raw output.
-- [ ] geometry: run `lake env lean tools/verify-catgt/probe_catgt.lean > /tmp/catgt.txt` and `python3 tools/axiom_gate.py /tmp/catgt.txt 13`, then commit and push the five changed files (`verify-proofs.yml` needs a token with `workflow` scope).
-- [ ] geometry: commit the `ch-catgt-zeolite.html` attractor-wording fix.
-- [ ] io: working-tree `CatGT/CatGT_Main.lean` is uncommitted; land it via a draft PR. Check under v4.14.0.
-- [ ] io: `index.html` is still the pre-V5 page; swap in the pack's page.
+- [x] geometry: probe + gate green locally ("OK: 13 theorems, no sorryAx", 3:55) and pushed as 205533d. CI #519: the CatGT step no longer errors; the job FAILS later at "Vocabulary guard" (tools/terms.py --check): disowned terms `Harmonic Resonance Bands (HRB)` and `Log-Psi Recurrence Operator` in docs/corpus-inventory.md, and undeclared terms from docs/audit-log.md and book4/chIV-preface.html. Not caused by CatGT; needs the corpus owner's decision (declare in TERMS.md or remove).
+- [x] geometry: `ch-catgt-zeolite.html` attractor-wording fix committed and pushed (205533d).
+- [x] io: `CatGT_Main.lean`, the Reeb files and the CI list are committed and pushed (47c7c6f, 7e55ccc, ec84753); Verify proofs #66/#67 succeeded.
+- [x] io: `index.html` replaced by the pack's V5 page (2026-09-21, working tree; commits with `finish_all.sh`). Backup of the old page: ~/index.io.pre-v5.backup.html and git history.
 - [x] io CI: the four missing theorems (`reeb_alpha_eq_one`, `relaxStep_fixed`, `relaxStep_contracts`, `relax_iterate_dist`) are added to the CatGT `#print axioms` step (2026-09-21, working tree, uncommitted). It MUST land in the same commit/PR as the new `CatGT/CatGT_Main.lean`: the committed file does not contain those four names, so CI would fail on the workflow alone. Needs a token with `workflow` scope, or edit in the GitHub web UI. `ReebFlow.lean` is still not wired in.
 - [ ] Zenodo upload: decide the licence (CC BY 4.0 in the pack vs CC BY-NC-ND); get the prior CatGT record id for related identifiers; check the Sousa 2023 DOI.
 Later:
@@ -255,5 +255,5 @@ Later:
 - [ ] `criticalRadius` signature and the "attractor tube" docstring of `reeb_orbit_advances` are entangled; fix them together, not one at a time.
 - [ ] `CatGT_Main.lean` header still cites Zenodo 19117399 (comment only; the copies in io, geometry, dnls must stay identical, so change all three or none).
 - [ ] Companion operator-order paper: the text says discrete NLS with split-step Fourier, the code is a continuous split-step solver with damping 0.01. Re-run with damping 0 as a control, or fix the method statement. Its PDFs are stale after the DNLS = Discrete fix.
-- [ ] `AutophagyDm3.lean` says r* ≈ 0.80; the certified value is 0.77594059.
+- [ ] `AutophagyDm3.lean` (untracked copies under ~/Desktop/AXLE, neuro, dnls; `:190-193`, `:291`) says r* ≈ 0.80 "= 4/5": a hand-typed stand-in, not a run and not a rounding of the certified value (0.80 rounds from 0.7759 only loosely; it rounds to 0.78). The theorem is `1/3 < 4/5`, so it holds for 0.77594058 too. Certified value: 0.77594058 (`book4/certify_rstar.py:40`; rigorous 0.7759405755 in `certify_rstar_rigorous.py:54`); the earlier "0.77594059" here was a typo. Also `geometry/dm3-lab-index.html:193` (tile 0.80) and `:176` (pt: 0,80) contradict `:175`/`:244`/`:326` (0.776).
 - [ ] Does `theorem_census.py` double-count the mirrored `CatGT_Main` (io and geometry)? Unconfirmed.
