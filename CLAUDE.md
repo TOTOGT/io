@@ -253,7 +253,7 @@ Later:
 - [ ] Prediction 1 restatement (formula withdrawn; needs a decision on what "self-trapping threshold" means).
 - [ ] x*, G and the operators C/K/F/U are not defined on L²(X_cat). Theorem 1(ii) says so; keep saying it.
 - [ ] `criticalRadius` signature and the "attractor tube" docstring of `reeb_orbit_advances` are entangled; fix them together, not one at a time.
-- [ ] `CatGT_Main.lean` header still cites Zenodo 19117399 (comment only; the copies in io, geometry, dnls must stay identical, so change all three or none).
+- [x] (2026-09-21, pending the re-run in run_v5_fixes.sh) `CatGT_Main.lean` header now cites 22851704; was: header still cites Zenodo 19117399 (comment only; the copies in io, geometry, dnls must stay identical, so change all three or none).
 - [ ] Companion operator-order paper: the text says discrete NLS with split-step Fourier, the code is a continuous split-step solver with damping 0.01. Re-run with damping 0 as a control, or fix the method statement. Its PDFs are stale after the DNLS = Discrete fix.
 - [ ] `AutophagyDm3.lean` (untracked copies under ~/Desktop/AXLE, neuro, dnls; `:190-193`, `:291`) says r* ≈ 0.80 "= 4/5": a hand-typed stand-in, not a run and not a rounding of the certified value (0.80 rounds from 0.7759 only loosely; it rounds to 0.78). The theorem is `1/3 < 4/5`, so it holds for 0.77594058 too. Certified value: 0.77594058 (`book4/certify_rstar.py:40`; rigorous 0.7759405755 in `certify_rstar_rigorous.py:54`); the earlier "0.77594059" here was a typo. Also `geometry/dm3-lab-index.html:193` (tile 0.80) and `:176` (pt: 0,80) contradict `:175`/`:244`/`:326` (0.776).
 - [ ] Does `theorem_census.py` double-count the mirrored `CatGT_Main` (io and geometry)? Unconfirmed.

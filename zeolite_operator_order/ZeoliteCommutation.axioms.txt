@@ -1,0 +1,3 @@
+'gate_commutes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'coupling_not_commute' depends on axioms: [propext, Classical.choice, Quot.sound]
+'gate_fold_not_commute' depends on axioms: [propext, Classical.choice, Quot.sound]
