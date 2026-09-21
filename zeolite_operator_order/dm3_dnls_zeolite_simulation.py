@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
 dm3_dnls_zeolite_simulation.py
-Dissipative Nonlinear Schrödinger (DNLS) simulation of operator firing order
+Discrete Nonlinear Schrödinger (DNLS) family simulation of operator firing order
 in ZSM-5 vs. MCM-22 zeolite pore systems.
+NOTE (2026-09-21): DNLS = Discrete NLS. This script itself is a continuous-space split-step
+Fourier solver with a pore potential and a damping term (gamma), not the lattice DNLS of the
+V5 paper (Zenodo 10.5281/zenodo.22851704).
 
 Author: Pablo Nogueira Grossi
 License: CC-BY-4.0

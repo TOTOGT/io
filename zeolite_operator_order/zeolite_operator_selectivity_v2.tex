@@ -131,7 +131,7 @@ Classical Theory & Restricted transition state selectivity: no large intermediat
 
 \section{Computational Validation: DNLS Simulation of Operator-Order Dynamics}
 
-To quantitatively validate the hypothesis, we solve the Dissipative Nonlinear Schr\"odinger (DNLS) equation modeling the wavefunction evolution of a reaction intermediate in each pore geometry. The solver implements a split-step Fourier method with explicit parameters corresponding to ZSM-5 and MCM-22 channel geometries:
+To quantitatively validate the hypothesis, we solve the discrete nonlinear Schr\"odinger (DNLS) equation modeling the wavefunction evolution of a reaction intermediate in each pore geometry. The solver implements a split-step Fourier method with explicit parameters corresponding to ZSM-5 and MCM-22 channel geometries:
 
 \begin{itemize}[itemsep=1pt]
 \item ZSM-5: narrow 10-ring channel ($\sigma = 0.5$~\AA) with early aperture-gated constraint (barrier onset $r=4.5$~\AA)
@@ -227,7 +227,7 @@ Selectivity uniquely determines operator order and vice versa: there is a biject
 
 \section{DNLS Modeling and Simulation}
 
-To illustrate the operator-order principle in a concrete mathematical setting, we implement the evolution using a Dissipative Nonlinear Schr\"odinger (DNLS) equation coupled with a pore-constraint potential.
+To illustrate the operator-order principle in a concrete mathematical setting, we implement the evolution using a discrete nonlinear Schr\"odinger (DNLS) equation coupled with a pore-constraint potential.
 
 \subsection{DNLS Equation for Supercage Dynamics}
 
@@ -400,6 +400,6 @@ end CatGT
 These stubs outline the structure; \texttt{CatGT\_PROOFS\_COMPLETE.lean} contains the actual proof attempts against a concrete \texttt{Wavefunction}/\texttt{LinearOperator} model, with the sorry-count breakdown given in Section~4.4. Full proofs would still require: geometry of the pore-constrained potential (contact manifold theory), kinematics of adsorption and desorption (chemical kinetics), reaction bifurcations (catastrophe theory in Lean), and stability/attractiveness of equilibrium states (Lyapunov analysis).
 
 \section{Notation and Glossary}
-\textbf{C} (Compression): reduction of degrees of freedom; adsorption. \textbf{K} (Constraint): geometric restriction by pore aperture. \textbf{F} (Folding/Branching): isomerization and oligomerization reactions. \textbf{U} (Unfolding/Selection): selective desorption of products. \textbf{DRIFTS}: Diffuse Reflectance Infrared Fourier Transform Spectroscopy. \textbf{DEE}: Diethyl ether, (C$_2$H$_5$)$_2$O. \textbf{DNLS}: Dissipative Nonlinear Schr\"odinger equation. \textbf{MFI}: Zeolite structure type (ZSM-5, Silicalite). \textbf{MWW}: Zeolite structure type (MCM-22, MCM-36). \textbf{TOGT}: Topographical Orthogenetic Theory.
+\textbf{C} (Compression): reduction of degrees of freedom; adsorption. \textbf{K} (Constraint): geometric restriction by pore aperture. \textbf{F} (Folding/Branching): isomerization and oligomerization reactions. \textbf{U} (Unfolding/Selection): selective desorption of products. \textbf{DRIFTS}: Diffuse Reflectance Infrared Fourier Transform Spectroscopy. \textbf{DEE}: Diethyl ether, (C$_2$H$_5$)$_2$O. \textbf{DNLS}: Discrete Nonlinear Schr\"odinger equation. \textbf{MFI}: Zeolite structure type (ZSM-5, Silicalite). \textbf{MWW}: Zeolite structure type (MCM-22, MCM-36). \textbf{TOGT}: Topographical Orthogenetic Theory.
 
 \end{document}
