@@ -79,8 +79,11 @@
   Mathlib v4.32.0 by the file's owner (`lake env lean`, run from the
   geometry checkout): no errors, all 13 `#print axioms` on [propext,
   Classical.choice, Quot.sound], warnings only for unused binders (ha, hJ,
-  hlam, hN, hr). NOT yet checked under the v4.14.0 pin that this repo's CI
-  uses -- that run is the arbiter for this repo. The paragraphs above
+  hlam, hN, hr). v4.14.0 CHECK (2026-09-23): run by the file's owner as
+  `lake env lean ~/Desktop/io/CatGT/CatGT_Main.lean` from the local AXLE
+  checkout (Lean v4.14.0 / Mathlib v4.14.0 build): no errors, 13/13
+  `#print axioms` on [propext, Classical.choice, Quot.sound], same 5
+  unused-binder warnings. Unchanged file; io's pin now matches a real run. The paragraphs above
   describe the file as it was compiled earlier on 2026-09-20 (dimensionless
   criticalRadius := √(J/λ), Claude-side check on 4.33.0-rc1). This edit adds the
   explicit length scale `a > 0` to match Theorem 1's 2026-09-19 correction
@@ -138,7 +141,10 @@ noncomputable def IPR {N : ℕ} (c : DNLSChain N) : ℝ :=
     (Theorem 1's 2026-09-19 correction on the paper's page). NOTE: this is
     the *definition* the theorems below are stated against; that r* is the
     physically correct DNLS self-trapping width is a separate claim, and
-    depends on what is held fixed (see the 2026-09-20 note in the header). -/
+    depends on what is held fixed (see the 2026-09-20 note in the header).
+    CONVENTION (2026-09-23): this is the FIXED-AMPLITUDE branch, A = √2
+    (criticalRadius_eq_fixedAmplitude, §4b); the fixed-norm branch is
+    criticalRadiusNorm. -/
 noncomputable def criticalRadius (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
     (hlam : 0 < lam) : ℝ :=
   a * Real.sqrt (J / lam)
@@ -238,6 +244,77 @@ theorem selectivityFactor_eq (a J lam r_pore : ℝ)
         = Real.sqrt (J / lam) ^ 2 * (a / r_pore) ^ 2 := by ring
       _ = (J / lam) * (a / r_pore) ^ 2 := by rw [hs]
   rw [hkey]
+
+/-! ## §4b  Normalisation of r* — fixed amplitude vs fixed norm (2026-09-23)
+
+  Continuum DNLS (x = na):  i ψ_t = -J a² ψ_xx - λ|ψ|²ψ.  Stationary 1D profile
+  φ = A sech(x/w): matching the sech³ terms gives 2 J a² = λ A² w²  (h_match);
+  the discrete norm is P = Σ|ψ_n|² ≈ (1/a)∫φ² = 2A²w/a  (h_norm).
+  · Fixed peak amplitude A:  w = (a/A)·√(2J/λ).  `criticalRadius` above is this
+    branch with A = √2 (criticalRadius_eq_fixedAmplitude).
+  · Fixed norm P (the quantity DNLS conserves; P = 1 for one excitation):
+    w = 4Ja/(λP)  (sech_width_fixed_norm) — linear in J/λ, not √.
+  Scope, NOT theorems: (1) h_match / h_norm are the continuum sech ansatz,
+  hand-derived, not derived here from the lattice equation; (2) valid for
+  w ≳ 2a — numerically (2001-site chain, P = 1) the ground state is
+  single-site for J/λ ≲ 0.25 and matches 4J/λ to <1% for J/λ ∈ [1, 8];
+  (3) one-dimensional: by scaling P ~ (J/λ)(w/a)^{d-2}, so in d = 2 the norm
+  does not fix w (critical case) and in d = 3 the stationary branch is
+  unstable. The fixed-norm law is a quasi-1D (channel) result. -/
+
+/-- The paper's r* = a·√(J/λ) is the fixed-amplitude width (a/A)·√(2J/λ)
+    at A = √2 (peak occupation |ψ|² = 2). -/
+theorem criticalRadius_eq_fixedAmplitude (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hlam : 0 < lam) :
+    criticalRadius a J lam ha hJ hlam
+      = a / Real.sqrt 2 * Real.sqrt (2 * (J / lam)) := by
+  unfold criticalRadius
+  have h2 : Real.sqrt 2 ≠ 0 := Real.sqrt_ne_zero'.2 (by norm_num)
+  rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
+  field_simp <;> ring
+
+/-- **Fixed-norm width.** From the sech matching condition and the norm
+    relation, eliminating the amplitude A gives w = 4Ja/(λP).
+    Algebra only: the two hypotheses are the continuum ansatz. -/
+theorem sech_width_fixed_norm (a J lam A w P : ℝ) (ha : 0 < a)
+    (hlam : 0 < lam) (hP : 0 < P)
+    (h_match : 2 * J * a ^ 2 = lam * A ^ 2 * w ^ 2)
+    (h_norm : P * a = 2 * A ^ 2 * w) :
+    w = 4 * J * a / (lam * P) := by
+  rw [eq_div_iff (mul_pos hlam hP).ne']
+  have h1 : (w * (lam * P) - 4 * J * a) * a = 0 := by
+    linear_combination (w * lam) * h_norm - 2 * h_match
+  rcases mul_eq_zero.1 h1 with h | h
+  · linarith
+  · exact absurd h ha.ne'
+
+/-- Fixed-norm self-trapping radius r*_P = 4aJ/(λP). -/
+noncomputable def criticalRadiusNorm (a J lam P : ℝ) : ℝ :=
+  4 * a * J / (lam * P)
+
+theorem criticalRadiusNorm_pos (a J lam P : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hlam : 0 < lam) (hP : 0 < P) :
+    0 < criticalRadiusNorm a J lam P := by
+  unfold criticalRadiusNorm
+  positivity
+
+/-- r*_P decreases as λ increases (same direction as the √ form). -/
+theorem criticalRadiusNorm_antitone (a J P : ℝ) (ha : 0 < a) (hJ : 0 < J)
+    (hP : 0 < P) (lam1 lam2 : ℝ) (h1 : 0 < lam1) (hle : lam1 ≤ lam2) :
+    criticalRadiusNorm a J lam2 P ≤ criticalRadiusNorm a J lam1 P := by
+  unfold criticalRadiusNorm
+  gcongr
+
+/-- Fixed-norm selectivity: σ_P = 1 - (r*_P/r_pore)² = 1 - 16·(J/(λP))²·(a/r_pore)²
+    — quadratic in J/λ, where the fixed-amplitude σ is linear. -/
+noncomputable def selectivityFactorNorm (a J lam P r_pore : ℝ) : ℝ :=
+  1 - (criticalRadiusNorm a J lam P / r_pore) ^ 2
+
+theorem selectivityFactorNorm_eq (a J lam P r_pore : ℝ) :
+    selectivityFactorNorm a J lam P r_pore
+      = 1 - 16 * (J / (lam * P)) ^ 2 * (a / r_pore) ^ 2 := by
+  unfold selectivityFactorNorm criticalRadiusNorm
+  ring
 
 /-! ## §5  Computational scaffold — DNLS iterator -/
 
@@ -422,6 +499,11 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #check @relaxStep_fixed
 #check @relaxStep_contracts
 #check @relax_iterate_dist
+#check @criticalRadius_eq_fixedAmplitude
+#check @sech_width_fixed_norm
+#check @criticalRadiusNorm_pos
+#check @criticalRadiusNorm_antitone
+#check @selectivityFactorNorm_eq
 
 #print axioms ipr_between_zero_and_one
 #print axioms helical_selectivity
@@ -436,3 +518,8 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #print axioms relaxStep_fixed
 #print axioms relaxStep_contracts
 #print axioms relax_iterate_dist
+#print axioms criticalRadius_eq_fixedAmplitude
+#print axioms sech_width_fixed_norm
+#print axioms criticalRadiusNorm_pos
+#print axioms criticalRadiusNorm_antitone
+#print axioms selectivityFactorNorm_eq

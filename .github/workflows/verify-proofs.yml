@@ -111,6 +111,11 @@ jobs:
           #print axioms relaxStep_fixed
           #print axioms relaxStep_contracts
           #print axioms relax_iterate_dist
+          #print axioms criticalRadius_eq_fixedAmplitude
+          #print axioms sech_width_fixed_norm
+          #print axioms criticalRadiusNorm_pos
+          #print axioms criticalRadiusNorm_antitone
+          #print axioms selectivityFactorNorm_eq
           LEAN
           lake env lean /tmp/CheckCatGT.lean
 
