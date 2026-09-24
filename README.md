@@ -11,7 +11,7 @@ author by paste — the table says which is which.
 
 | Library | Source | Theorems | `sorry` | CI-gated | Status |
 |---|---|---:|---:|:---:|---|
-| `CatGT` | `CatGT/CatGT_Main.lean` | 13 | 0 | yes | Kernel-checked — Self-Trapping Selectivity Principle (Thm 1), the Reeb pairing, and the relaxation block |
+| `CatGT` | `CatGT/CatGT_Main.lean` | 23 | 0 | yes | Kernel-checked — Self-Trapping Selectivity Principle (Thm 1), the Reeb pairing, the relaxation block, the r\* normalisation (§4b) and the sech relation derived from the continuum DNLS equation (§4c). Owner's runs 2026-09-24: 23/23 on Lean/Mathlib `v4.14.0` and `v4.32.0` (geometry mirror) |
 | `ContactMorphism` | `CatGT/ContactMorphism.lean` | 1 | 0 | yes | Kernel-checked — dilation preserves the contact form. Added to `lakefile.toml` on 2026-09-20; before that it was in the repo but in no target, so CI never built it |
 | `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | yes | Kernel-checked — Theorem 5.3, operator-chain non-commutativity |
 | — | `CatGT/ReebFlowExtDeriv.lean` | 11 audited (13 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 11 axiom lines on the standard three; linter warnings only, no errors). Proves the `d(alpha)` of `ReebFlow.lean` equals Mathlib's `extDeriv` of `alpha_cat` as a 1-form; `d(alpha) = -2r dr∧dθ`; `contactVol` on the coordinate frame = `-2r`. `alphaCat` / `dAlpha` / `contactVol` are verbatim copies from `ReebFlow.lean` (statement-level duplicates). The wedge is still an explicit formula, not a Mathlib wedge. Not in `lakefile.toml`; not run under `v4.14.0`; header still says UNTESTED (predates the run). |
@@ -31,8 +31,8 @@ Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) 
 ## Scope
 
 `CatGT` is the Lean side of the paper *The Self-Trapping Selectivity Principle:
-Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects* (V5, Zenodo
-[10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)). The paper uses a
+Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects* (V6, 2026-09-24, DOI not yet
+reserved; V5 is Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)). The paper uses a
 contact-manifold model of catalytic reaction pathways for coordinates, and names an
 operator pipeline `G = U ∘ F ∘ K ∘ C` (compression, constraint, fold, stabilization).
 The operators and any fixed point of `G` are labels: they are not defined as objects
@@ -40,9 +40,13 @@ on `L²` anywhere in the paper or in these files. The central result is the **Se
 Selectivity Principle** — renamed from "Helical Selectivity Principle" on
 2026-09-19, because the Reeb orbits are straight lines rather than helices and a
 Reeb flow, being volume-preserving, cannot attract anything. It is a confinement
-bound `r ≤ r*(J, λ) = a√(J/λ)` (with `a` a lattice length scale; the `CatGT_Main`
-`criticalRadius` still returns the dimensionless `√(J/λ)` — a known open item); the
-confinement is modelled on DNLS self-trapping, not on the Reeb flow. The Reeb-flow
+bound `r ≤ r*`. Since V6 the adopted form is the fixed-norm width `r*_P = 4aJ/(λP)`
+(`criticalRadiusNorm`; the DNLS conserves the norm `P`), and the earlier `a√(J/λ)`
+(`criticalRadius`) is kept as the fixed-amplitude convention; `sech_stationary_forces`
+derives the relation behind both from the continuum DNLS equation. The width law is
+one-dimensional: in two- and three-dimensional cages simulation shows a threshold, not a
+width (`scripts/cage_threshold_check.py`). The confinement is modelled on DNLS
+self-trapping, not on the Reeb flow. The Reeb-flow
 files (`ReebFlow`, `ReebFlowExtDeriv`, `ReebNoAttractor`) verify in an elementary
 coordinate model that the flow is z-translation, preserves `α ∧ dα`, and admits no
 closed attracting set of smaller measure than its basin.
@@ -115,7 +119,7 @@ dependencies (and the absence of `sorryAx`) are visible in every run's log:
 
 Pablo Nogueira Grossi · G6 LLC, Newark NJ ·
 ORCID [0009-0000-6496-2186](https://orcid.org/0009-0000-6496-2186) ·
-Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704) (V5 paper) ·
+Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704) (V5 paper; V6 DOI pending) ·
 [Google Scholar](https://scholar.google.com/citations?hl=en&user=LRR8YIAAAAAJ) ·
 Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
 

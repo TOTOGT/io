@@ -204,6 +204,10 @@ kernel-verified, and it is fine. Similar number, unrelated statement.
 
 This section is the tracker. When an item is done, tick it here in the same commit that does it.
 The paper is *The Self-Trapping Selectivity Principle* (V5, Zenodo 10.5281/zenodo.22851704).
+**V6 (2026-09-24, owner's decision: "if this changes V5 we should deposit V6"):** r* normalisation decided (fixed norm adopted, √ form kept as the fixed-amplitude convention), sech relation derived from the continuum DNLS equation (§4c), Theorem 1 scoped to 1D channels (2D/3D cages: threshold, not width; `scripts/cage_threshold_check.py`), Prediction 1 updated. CatGT_Main 13 -> 23, owner's runs 23/23 on v4.14.0 (via AXLE checkout) and v4.32.0 (geometry `lake build CatGT`); geometry CI gate #546 green at 23. io commits 28b018d (§4b), c64b0fb (§4c). Page masthead/footer say V6 with "V6 DOI pending".
+- [ ] Reserve the V6 DOI on Zenodo as a NEW VERSION of the same record series (after V5 22851704); then replace "V6 DOI pending" in index.html (masthead meta, footer), README, and the CatGT_Main header comment (io + geometry copies together, comment only).
+- [ ] Build the V6 deposit pack (V5 pack at ~/Desktop/Claude outputs/V5_deposit_pack; its verify.sh expects CatGT_Main 13 -> must be 23; paper.tex needs the V6 changes: Theorem 1 conventions and scope, (iii) both σ forms, normalization section, Prediction 1 cage result, §4b/§4c in the Lean appendix).
+- [ ] Figure 3's live plot still draws the √ (fixed-amplitude) form; caption says so.
 
 ### Standing rule: a new theorem goes into the tiered registry count the day it is kernel-checked (owner, 2026-09-21)
 The registry (published at `sluing.github.io/neuro/SBM/1080.html`) has three tiers, and the words are not synonyms
@@ -219,7 +223,7 @@ Count it CI-gated only once it is in `lakefile.toml` and printed by `verify-proo
 Basis as of 2026-09-21 (committed and pushed; CI verdicts below; not yet in any published number):
 | file | written (T3) | sorry-free (T2) | kernel-audited (T1) | CI-gated |
 |---|---:|---:|---:|:---:|
-| `CatGT/CatGT_Main.lean` | 13 | 13 | 13 | yes (CI runs the 13 `#print axioms`; Verify proofs #66 and #67 succeeded, log needs sign-in) |
+| `CatGT/CatGT_Main.lean` | 23 | 23 | 23 | yes (CI runs the 23 `#print axioms` since c64b0fb, 2026-09-24; was 13, Verify proofs #66/#67) |
 | `CatGT/ReebFlow.lean` (new) | 11 | 11 | 8 | no |
 | `CatGT/ReebFlowExtDeriv.lean` (new; green 2026-09-21) | 13 | 13 | 11 | no |
 | `CatGT/ReebNoAttractor.lean` (new; green 2026-09-21, 2nd revision) | 9 | 9 | 9 | no |
