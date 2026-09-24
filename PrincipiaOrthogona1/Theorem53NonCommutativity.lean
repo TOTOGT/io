@@ -64,7 +64,12 @@ structure FoldOp (M : GenerativeManifold) where
 structure UnfoldOp (M : GenerativeManifold) where
   map : M.carrier -> M.carrier
   decreases_Phi : ∀ x, M.Phi (map x) ≤ M.Phi x
-  stable_branch : ∀ x, ∃ n : ℕ, Function.IsFixedPt (map^[n]) (map x)
+  -- REPAIR (verified on Lean v4.14.0, 2026-09-24): n = 0 satisfied the old form vacuously for ANY map,
+  -- since map^[0] = id reduces the claim to `map x = map x`. Requiring n > 0
+  -- makes it a real constraint: shiftMap (x ↦ x+1) has no periodic points and
+  -- now correctly fails to be an UnfoldOp. NOTE: this states IMAGE-POINT
+  -- PERIODICITY, not attraction; rename to `image_points_periodic` if approved.
+  stable_branch : ∀ x, ∃ n > 0, Function.IsFixedPt (map^[n]) (map x)
 
 def GenerativeOp (M : GenerativeManifold)
     (C : CompressionOp M) (K : CurvatureOp M)
@@ -180,7 +185,10 @@ noncomputable def F_ex : FoldOp intManifold where
 noncomputable def U_ex : UnfoldOp intManifold where
   map := idMap
   decreases_Phi := fun x => le_refl _
-  stable_branch := fun x => ⟨0, rfl⟩
+  -- n = 1: idMap^[1] (idMap x) = idMap x.  Verified on Lean v4.14.0, 2026-09-24.
+  stable_branch := fun x => ⟨1, by norm_num, by
+    show idMap (idMap x) = idMap x
+    rfl⟩
 
 noncomputable def C_nd : CompressionOp intManifold where
   map := shiftMap
@@ -220,7 +228,12 @@ noncomputable def U_nd : UnfoldOp intManifold where
     have h : ((negMap x : ℤ) : ℝ) ^ 2 = ((x : ℤ) : ℝ) ^ 2 := by
       simp only [negMap]; push_cast; ring
     exact h.le
-  stable_branch := fun x => ⟨0, rfl⟩
+  -- n = 2: negMap is an involution, so negMap^[2] (negMap x) = negMap x.
+  -- n = 1 does NOT work (negMap (negMap x) = x ≠ -x in general).  Verified on Lean v4.14.0, 2026-09-24.
+  stable_branch := fun x => ⟨2, by norm_num, by
+    show negMap (negMap (negMap x)) = negMap x
+    unfold negMap
+    ring⟩
 
 noncomputable def F_sym : FoldOp intManifold where
   map := foldSym
