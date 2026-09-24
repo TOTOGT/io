@@ -316,6 +316,133 @@ theorem selectivityFactorNorm_eq (a J lam P r_pore : ℝ) :
   unfold selectivityFactorNorm criticalRadiusNorm
   ring
 
+/-! ## §4c  The sech relation derived from the continuum equation (2026-09-23)
+
+  §4b took h_match (2Ja² = λA²w²) as a hypothesis. Here it is DERIVED: the
+  profile φ(x) = A·sech(x/w) solves the stationary continuum DNLS equation
+      -J a² φ'' - λ φ³ = ω φ      for all x
+  if and only if 2Ja² = λA²w² and ω = -Ja²/w² (A ≠ 0, w ≠ 0).
+  Still NOT derived here: (1) the continuum limit itself (discrete Laplacian
+  ≈ a²∂ₓ², relative error O((a/w)²), checked numerically only); (2) the norm
+  relation P = 2A²w/a (∫sech² = 2, hand-derived; the discrete-sum version is
+  what the numerics check). -/
+
+/-- φ(x) = A·sech(x/w). -/
+noncomputable def sechProfile (A w x : ℝ) : ℝ := A / Real.cosh (x / w)
+
+/-- φ'(x), closed form. -/
+noncomputable def sechProfile' (A w x : ℝ) : ℝ :=
+  -(A / w) * Real.sinh (x / w) / Real.cosh (x / w) ^ 2
+
+/-- φ''(x), closed form: (A/w²)(sech − 2 sech³). -/
+noncomputable def sechProfile'' (A w x : ℝ) : ℝ :=
+  (A / w ^ 2) * (1 / Real.cosh (x / w) - 2 / Real.cosh (x / w) ^ 3)
+
+theorem sechProfile_hasDerivAt (A w x : ℝ) (hw : w ≠ 0) :
+    HasDerivAt (sechProfile A w) (sechProfile' A w x) x := by
+  have hc : Real.cosh (x / w) ≠ 0 := (Real.cosh_pos _).ne'
+  have h1 : HasDerivAt (fun y => y / w) (1 / w) x := (hasDerivAt_id x).div_const w
+  -- COMPAT: `h1.cosh` (not `.comp`) and `congr_deriv` (not `convert`) so the
+  -- same proof checks on Mathlib v4.14 (lambda forms) and v4.32 (Pi forms).
+  have h2 : HasDerivAt (fun y => Real.cosh (y / w)) (Real.sinh (x / w) * (1 / w)) x :=
+    h1.cosh
+  have h3 := (h2.inv hc).const_mul A
+  have hf : sechProfile A w = fun y => A * (Real.cosh (y / w))⁻¹ := by
+    funext y; simp only [sechProfile]; ring
+  rw [hf]
+  refine h3.congr_deriv ?_
+  simp only [sechProfile']
+  ring
+
+theorem sechProfile'_hasDerivAt (A w x : ℝ) (hw : w ≠ 0) :
+    HasDerivAt (sechProfile' A w) (sechProfile'' A w x) x := by
+  have hc : Real.cosh (x / w) ≠ 0 := (Real.cosh_pos _).ne'
+  have h1 : HasDerivAt (fun y => y / w) (1 / w) x := (hasDerivAt_id x).div_const w
+  have hs : HasDerivAt (fun y => Real.sinh (y / w)) (Real.cosh (x / w) * (1 / w)) x :=
+    h1.sinh
+  have hch : HasDerivAt (fun y => Real.cosh (y / w)) (Real.sinh (x / w) * (1 / w)) x :=
+    h1.cosh
+  have hq := (hs.div (hch.mul hch) (mul_ne_zero hc hc)).const_mul (-(A / w))
+  have hf : sechProfile' A w
+      = fun y => -(A / w) * (Real.sinh (y / w) / (Real.cosh (y / w) * Real.cosh (y / w))) := by
+    funext y; simp only [sechProfile']; ring
+  rw [hf]
+  refine hq.congr_deriv ?_
+  symm  -- certificate below is for (φ'' closed form) − (derivative value)
+  simp only [sechProfile'', Pi.mul_apply]
+  have hinv : Real.cosh (x / w) * (Real.cosh (x / w))⁻¹ = 1 := mul_inv_cancel₀ hc
+  have hid : Real.cosh (x / w) ^ 2 - Real.sinh (x / w) ^ 2 = 1 := Real.cosh_sq_sub_sinh_sq _
+  -- certificate computed with sympy: L − R = k₁·(C·C⁻¹ − 1) + k₂·(C² − S² − 1)
+  linear_combination
+    (A * (Real.cosh (x / w))⁻¹ * w⁻¹ ^ 2 *
+      (Real.cosh (x / w) ^ 2 * (Real.cosh (x / w))⁻¹ ^ 2
+        - Real.cosh (x / w) * (Real.cosh (x / w))⁻¹
+        - 2 * Real.sinh (x / w) ^ 2 * (Real.cosh (x / w))⁻¹ ^ 2 - 1)) * hinv
+    + (2 * A * w⁻¹ ^ 2 * (Real.cosh (x / w))⁻¹ ^ 3) * hid
+
+/-- **Sufficiency.** If 2Ja² = λA²w², the sech profile solves the stationary
+    continuum equation with ω = −Ja²/w², at every x. -/
+theorem sech_solves_stationary (J a lam A w x : ℝ) (hw : w ≠ 0)
+    (h_match : 2 * J * a ^ 2 = lam * A ^ 2 * w ^ 2) :
+    -(J * a ^ 2) * sechProfile'' A w x - lam * sechProfile A w x ^ 3
+      = (-(J * a ^ 2) / w ^ 2) * sechProfile A w x := by
+  simp only [sechProfile, sechProfile'']
+  have hwinv : w * w⁻¹ = 1 := mul_inv_cancel₀ hw
+  linear_combination (A * (Real.cosh (x / w))⁻¹ ^ 3 * w⁻¹ ^ 2) * h_match
+    + (lam * A ^ 3 * (Real.cosh (x / w))⁻¹ ^ 3 * (w * w⁻¹ + 1)) * hwinv
+
+/-- **Necessity.** If the sech profile solves the stationary equation at every
+    x for some ω (A ≠ 0), then 2Ja² = λA²w² and ω = −Ja²/w². So h_match of
+    §4b is forced by the continuum equation, not a free assumption. -/
+theorem sech_stationary_forces (J a lam A w ω : ℝ) (hw : w ≠ 0) (hA : A ≠ 0)
+    (h : ∀ x, -(J * a ^ 2) * sechProfile'' A w x - lam * sechProfile A w x ^ 3
+      = ω * sechProfile A w x) :
+    2 * J * a ^ 2 = lam * A ^ 2 * w ^ 2 ∧ ω = -(J * a ^ 2) / w ^ 2 := by
+  have h0 := h 0
+  have h1 := h w
+  simp only [sechProfile, sechProfile'', zero_div, Real.cosh_zero] at h0
+  simp only [sechProfile, sechProfile'', div_self hw] at h1
+  have hc1 : 1 < Real.cosh 1 := Real.one_lt_cosh.2 one_ne_zero
+  have hcne : Real.cosh 1 ≠ 0 := (Real.cosh_pos 1).ne'
+  have hcq : Real.cosh 1 * (Real.cosh 1)⁻¹ = 1 := mul_inv_cancel₀ hcne
+  have hq0 : (Real.cosh 1)⁻¹ ≠ 0 := inv_ne_zero hcne
+  have hq1 : 1 - (Real.cosh 1)⁻¹ ^ 2 ≠ 0 := by
+    intro hq
+    have hc2 : Real.cosh 1 ^ 2 = 1 := by
+      linear_combination Real.cosh 1 ^ 2 * hq + (Real.cosh 1 * (Real.cosh 1)⁻¹ + 1) * hcq
+    nlinarith
+  have hAK : A * (Real.cosh 1)⁻¹ * (2 * J * a ^ 2 * w⁻¹ ^ 2 - lam * A ^ 2)
+      * (1 - (Real.cosh 1)⁻¹ ^ 2) = 0 := by
+    linear_combination (Real.cosh 1)⁻¹ * h0 - h1
+  have hK : 2 * J * a ^ 2 * w⁻¹ ^ 2 - lam * A ^ 2 = 0 := by
+    rcases mul_eq_zero.1 hAK with h' | h'
+    · rcases mul_eq_zero.1 h' with h'' | h''
+      · rcases mul_eq_zero.1 h'' with h3 | h3
+        · exact absurd h3 hA
+        · exact absurd h3 hq0
+      · exact h''
+    · exact absurd h' hq1
+  have hwinv : w * w⁻¹ = 1 := mul_inv_cancel₀ hw
+  refine ⟨?_, ?_⟩
+  · linear_combination w ^ 2 * hK - 2 * J * a ^ 2 * (w * w⁻¹ + 1) * hwinv
+  · have hA0 : A * (ω + J * a ^ 2 * w⁻¹ ^ 2) = 0 := by
+      linear_combination -h0 + A * hK
+    have hX : ω + J * a ^ 2 * w⁻¹ ^ 2 = 0 := (mul_eq_zero.1 hA0).resolve_left hA
+    linear_combination hX
+
+/-- The chain in one statement: a sech stationary state of the continuum
+    equation with discrete norm P = 2A²w/a has width w = 4Ja/(λP).
+    The only remaining hypothesis beyond the equation itself is the norm
+    relation (continuum ∫sech² = 2). -/
+theorem sech_width_fixed_norm_of_stationary (J a lam A w ω P : ℝ)
+    (ha : 0 < a) (hlam : 0 < lam) (hP : 0 < P) (hw : w ≠ 0) (hA : A ≠ 0)
+    (h : ∀ x, -(J * a ^ 2) * sechProfile'' A w x - lam * sechProfile A w x ^ 3
+      = ω * sechProfile A w x)
+    (h_norm : P * a = 2 * A ^ 2 * w) :
+    w = 4 * J * a / (lam * P) :=
+  sech_width_fixed_norm a J lam A w P ha hlam hP
+    (sech_stationary_forces J a lam A w ω hw hA h).1 h_norm
+
 /-! ## §5  Computational scaffold — DNLS iterator -/
 
 /-- One explicit Euler step of the DNLS equation (periodic BC).
@@ -504,6 +631,11 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #check @criticalRadiusNorm_pos
 #check @criticalRadiusNorm_antitone
 #check @selectivityFactorNorm_eq
+#check @sechProfile_hasDerivAt
+#check @sechProfile'_hasDerivAt
+#check @sech_solves_stationary
+#check @sech_stationary_forces
+#check @sech_width_fixed_norm_of_stationary
 
 #print axioms ipr_between_zero_and_one
 #print axioms helical_selectivity
@@ -523,3 +655,8 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #print axioms criticalRadiusNorm_pos
 #print axioms criticalRadiusNorm_antitone
 #print axioms selectivityFactorNorm_eq
+#print axioms sechProfile_hasDerivAt
+#print axioms sechProfile'_hasDerivAt
+#print axioms sech_solves_stationary
+#print axioms sech_stationary_forces
+#print axioms sech_width_fixed_norm_of_stationary

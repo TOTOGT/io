@@ -116,6 +116,11 @@ jobs:
           #print axioms criticalRadiusNorm_pos
           #print axioms criticalRadiusNorm_antitone
           #print axioms selectivityFactorNorm_eq
+          #print axioms sechProfile_hasDerivAt
+          #print axioms sechProfile'_hasDerivAt
+          #print axioms sech_solves_stationary
+          #print axioms sech_stationary_forces
+          #print axioms sech_width_fixed_norm_of_stationary
           LEAN
           lake env lean /tmp/CheckCatGT.lean
 

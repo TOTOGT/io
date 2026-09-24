@@ -16,3 +16,8 @@
 'criticalRadiusNorm_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'criticalRadiusNorm_antitone' depends on axioms: [propext, Classical.choice, Quot.sound]
 'selectivityFactorNorm_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sechProfile_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sechProfile'_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sech_solves_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sech_stationary_forces' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sech_width_fixed_norm_of_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
