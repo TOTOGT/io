@@ -13,7 +13,7 @@ author by paste — the table says which is which.
 |---|---|---:|---:|:---:|---|
 | `CatGT` | `CatGT/CatGT_Main.lean` | 23 | 0 | yes | Kernel-checked — Self-Trapping Selectivity Principle (Thm 1), the Reeb pairing, the relaxation block, the r\* normalisation (§4b) and the sech relation derived from the continuum DNLS equation (§4c). Owner's runs 2026-09-24: 23/23 on Lean/Mathlib `v4.14.0` and `v4.32.0` (geometry mirror) |
 | `ContactMorphism` | `CatGT/ContactMorphism.lean` | 1 | 0 | yes | Kernel-checked — dilation preserves the contact form. Added to `lakefile.toml` on 2026-09-20; before that it was in the repo but in no target, so CI never built it |
-| `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | yes | Kernel-checked — Theorem 5.3, operator-chain non-commutativity |
+| `Theorem53` | `PrincipiaOrthogona1/Theorem53NonCommutativity.lean` | 7 | 0 | yes | Kernel-checked — Theorem 5.3, operator-chain non-commutativity. **Repaired 2026-09-24** (commit 8cdd05f): the `UnfoldOp.stable_branch` field was vacuous — `∃ n, IsFixedPt (map^[n]) (map x)` holds at n = 0 for any map — and now requires `n > 0`; the witnesses are n = 1 for `idMap` and n = 2 for `negMap` (n = 1 fails there). The 7 theorem statements are unchanged. Owner's run 2026-09-24, Lean/Mathlib `v4.14.0` (AXLE checkout, same pins as this repo): 7/7 on the standard axioms, no errors. The field states image-point periodicity, not stability or attraction; a rename to `image_points_periodic` is approved and not yet done |
 | — | `CatGT/ReebFlowExtDeriv.lean` | 11 audited (13 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 11 axiom lines on the standard three; linter warnings only, no errors). Proves the `d(alpha)` of `ReebFlow.lean` equals Mathlib's `extDeriv` of `alpha_cat` as a 1-form; `d(alpha) = -2r dr∧dθ`; `contactVol` on the coordinate frame = `-2r`. `alphaCat` / `dAlpha` / `contactVol` are verbatim copies from `ReebFlow.lean` (statement-level duplicates). The wedge is still an explicit formula, not a Mathlib wedge. Not in `lakefile.toml`; not run under `v4.14.0`; header still says UNTESTED (predates the run). |
 | — | `CatGT/ReebNoAttractor.lean` | 9 audited (9 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 9 axiom lines on the standard three; second revision of the file). Corrected no-attractor statement: `measure_le_of_attractor` (mu(U) <= mu(A) for measure-preserving maps, closed A with finite-measure thickening), Reeb flow as isometry and Lebesgue-measure-preserving translation, no proper closed invariant attractor, no compact invariant set, and `univ_attracts` (the unqualified claim is false). Model = (r,theta,z) chart; contact volume = const x Lebesgue by hand; no theorem instantiates Part B at `reebFlow`. Not run under v4.14.0. |
 | — | `CatGT/ReebFlow.lean` | 8 audited (11 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 8 axiom lines on the standard three, no warnings). Reeb flow of `alpha_cat` in an elementary coordinate model: flow law, `phi_t^*alpha = alpha`, `i_R d(alpha) = 0`, preservation of `alpha ^ d(alpha)`. `d(alpha)` is defined by the constant-field formula, not yet checked against Mathlib's `extDeriv` (`ReebFlowExtDeriv.lean`, written, not yet green). Not in `lakefile.toml`; not run under `v4.14.0`; the file header still says UNTESTED (predates the run). `alphaCat` / `reebR` are verbatim copies of `CatGT_Main.lean`. |
@@ -24,7 +24,7 @@ The CI-gated targets build against Lean `v4.14.0` / Mathlib `v4.14.0`
 the record of that pin. The by-paste files were kernel-checked by the author under
 Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) or
 `v4.33.0-rc1` (`ZeoliteCommutation`), not under `v4.14.0`.
-`#print axioms` is printed by CI for the 20 theorems of `CatGT` (13) and `Theorem53` (7); it reports only
+`#print axioms` is printed by CI for the 30 theorems of `CatGT` (23) and `Theorem53` (7); it reports only
 `[propext, Classical.choice, Quot.sound]` — no `sorryAx` anywhere. `ContactMorphism` (1) is built by CI;
 `ReebNoAttractor` (9 kernel-audited of 9 written) and `ReebFlowExtDeriv` (11 kernel-audited of 13 written) and `ReebFlow` (8 kernel-audited of 11 written; `reeb_alpha_eq_one` is a verbatim duplicate of the `CatGT_Main` theorem, so 10 unique statements) and `ZeoliteCommutation` (3) are counted above as kernel-checked by paste, not CI-gated.
 
@@ -55,6 +55,10 @@ closed attracting set of smaller measure than its basin.
 (firing order changes the outcome) while proving this is *not* universal: specific
 configurations provably commute. The statement is exactly existential, and both an
 order-dependent instance and a commuting instance are exhibited on the same manifold.
+Since 2026-09-24 the unfold operators in both instances satisfy a non-vacuous
+`stable_branch` (every image point is periodic with period n > 0); before that the
+field was satisfiable by any map via n = 0, so the instances constrained nothing
+about `U`. The headline statements did not change; what they rest on did.
 
 ## Repository structure
 

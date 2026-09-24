@@ -197,6 +197,10 @@ this repo holds the machine-checked refutation the other records need to cite:
 Do **not** let anyone "fix" `PrincipiaOrthogona1/Theorem53NonCommutativity.lean`
 on account of this. It is a different, existential, chain-level claim, it is
 kernel-verified, and it is fine. Similar number, unrelated statement.
+(2026-09-24, commit 8cdd05f: a *different* defect in this file WAS fixed — `UnfoldOp.stable_branch`
+was satisfiable by any map via n = 0; it now requires n > 0, witnesses n = 1 `idMap`, n = 2 `negMap`.
+The 7 statements are unchanged. Owner's run on v4.14.0 via AXLE: 7/7 clean. That repair has nothing
+to do with the false book4 commutator lemma above.)
 
 ---
 
@@ -232,7 +236,9 @@ Not counted, no result reported: `CatGT_PROOFS_COMPLETE.fixed.lean` (10). `ReebN
 
 ### What is kernel-checked (author's own terminal output, Lean 4.32.0 / Mathlib v4.32.0 ONLY)
 - `CatGT/CatGT_Main.lean`: 13 theorems, all `[propext, Classical.choice, Quot.sound]`. Under this repo's pinned v4.14.0 the CI job (Verify proofs #66, #67 on 7e55ccc and ec84753) succeeded; its log needs a GitHub sign-in, so the 13 axiom lines themselves have not been read.
-- `ContactMorphism.lean`, `Theorem53NonCommutativity.lean`: clean.
+- `ContactMorphism.lean`, `Theorem53NonCommutativity.lean`: clean. (Theorem53's `stable_branch` was vacuous via n = 0 until 2026-09-24; repaired in 8cdd05f, see above.)
+- [ ] Theorem53: rename `stable_branch` -> `image_points_periodic` (approved by owner; separate commit; states image-point periodicity, not stability).
+- [ ] io: `lake env lean` inside io fails locally (`external command 'git' exited with code 128` during dependency resolution); compile via the AXLE checkout meanwhile. Check with `lake update`.
 - `ReebFlow.lean` (8 theorems, in the V5 deposit pack): elementary model of the Reeb flow of alpha_cat. `dAlpha` there is defined by a formula, not by Mathlib's `extDeriv`; the wedge in `contactVol` is an explicit formula.
 - `ReebFlowExtDeriv.lean` is now kernel-checked (11 audited of 13 written, 4.32.0): `dAlpha` = Mathlib's `extDeriv` of alpha_cat. `ReebNoAttractor.lean` is kernel-checked (9/9, 4.32.0, second revision): corrected no-attractor statement in the elementary (r,theta,z)-chart model; contact volume = const x Lebesgue in the Cartesian chart is by hand and no theorem instantiates Part B at `reebFlow`. NOT kernel-checked yet: `CatGT_PROOFS_COMPLETE.fixed.lean` (rewrite of the old proofs file). "Volume-preserving, hence no attracting set" is [VERIFIED] in the elementary model, [DERIVED] for a general contact form. Correct form: no closed attracting set of smaller volume than its basin; the unqualified version is false (the whole space attracts itself).
 - Files live in `~/Desktop/Claude outputs/` until they are moved into a repo.

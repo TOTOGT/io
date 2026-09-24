@@ -718,6 +718,27 @@ theorem ensemble_scaling_forms_diverge :
 <span class="section">  arithmetically backwards (mapped a 4.5 Å feature to 3.375 Å, not 6.0 Å</span>
 <span class="section">  as claimed). Corrected in v4. Parts (ii)-(iii) remain [DERIVED], not</span>
 <span class="section">  yet formalized — see the paper's Formalization Status (v4).</span>
+<span class="section">── Theorem53NonCommutativity.lean · repaired 2026-09-24 ─────</span>
+<span class="section">Scope     : Principia Orthogona Vol I §5.3 — the chain U∘F∘K∘C is order-dependent</span>
+<span class="section">            in general but not universally (exactly existential). Not a CatGT result;</span>
+<span class="section">            listed here because this repo builds it in CI.</span>
+<span class="closed">  ✓ foldMap_not_odd                the example fold is not odd (norm_num)</span>
+<span class="closed">  ✓ nonCommutativity_instance      two orderings differ at x = 5</span>
+<span class="closed">  ✓ nonCommutativity_nondegenerate two orderings differ at x = 4, non-identity U</span>
+<span class="closed">  ✓ commuting_instance             a configuration where the orderings agree, ∀ x</span>
+<span class="closed">  ✓ exists_order_dependent         ∃ an order-dependent configuration</span>
+<span class="closed">  ✓ not_forall_order_dependent     ¬ ∀: order dependence is not universal</span>
+<span class="closed">  ✓ thm_5_3_is_exactly_existential the conjunction of the two</span>
+<span class="section">Total: 7 closed · 0 admits · 0 sorries · 0 vacuous</span>
+<span class="section">Repair : the structure field UnfoldOp.stable_branch was vacuous — ∃ n with</span>
+<span class="section">  map^[n] fixing map x holds at n = 0 for ANY map. Now n &gt; 0; witnesses</span>
+<span class="section">  n = 1 (idMap), n = 2 (negMap, an involution; n = 1 fails). The seven</span>
+<span class="section">  statements are unchanged; the operators they are exhibited on now meet</span>
+<span class="section">  a real constraint. The field says image points are periodic — not</span>
+<span class="section">  stable, not attracting; rename to image_points_periodic pending.</span>
+<span class="section">Kernel status: author's run 2026-09-24, Lean/Mathlib v4.14.0 (the CI pin,</span>
+<span class="section">  via the AXLE checkout): 7/7 [propext, Classical.choice, Quot.sound]</span>
+<span class="section">  (foldMap_not_odd: [propext] only). No sorryAx.</span>
   </div>
 </section>
 <!-- ══════════════════════════════════ REFS ══════════════════════════════════ -->
