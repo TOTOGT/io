@@ -11,7 +11,8 @@
             · renamed September 2026 (header/comments only, no
             re-verification needed -- comments do not affect
             compilation or any theorem's content)
-  Zenodo  : 10.5281/zenodo.22851704 (V5; until 2026-09-21 this line cited 19117399, a different work)
+  Zenodo  : 10.5281/zenodo.22929142 (V6, reserved 2026-09-24); V5 was 10.5281/zenodo.22851704
+            (until 2026-09-21 this line cited 19117399, a different work)
   AXLE    : github.com/TOTOGT/AXLE
 
   Renamed September 2026: this file previously called itself

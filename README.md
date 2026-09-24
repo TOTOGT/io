@@ -31,8 +31,8 @@ Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) 
 ## Scope
 
 `CatGT` is the Lean side of the paper *The Self-Trapping Selectivity Principle:
-Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects* (V6, 2026-09-24, DOI not yet
-reserved; V5 is Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)). The paper uses a
+Zeolite Shape-Selectivity and Pt–Sn Ensemble Effects* (V6, 2026-09-24, Zenodo
+[10.5281/zenodo.22929142](https://doi.org/10.5281/zenodo.22929142); V5 is [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704)). The paper uses a
 contact-manifold model of catalytic reaction pathways for coordinates, and names an
 operator pipeline `G = U ∘ F ∘ K ∘ C` (compression, constraint, fold, stabilization).
 The operators and any fixed point of `G` are labels: they are not defined as objects
@@ -119,7 +119,7 @@ dependencies (and the absence of `sorryAx`) are visible in every run's log:
 
 Pablo Nogueira Grossi · G6 LLC, Newark NJ ·
 ORCID [0009-0000-6496-2186](https://orcid.org/0009-0000-6496-2186) ·
-Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704) (V5 paper; V6 DOI pending) ·
+Zenodo [10.5281/zenodo.22851704](https://doi.org/10.5281/zenodo.22851704) (V5 paper) · [10.5281/zenodo.22929142](https://doi.org/10.5281/zenodo.22929142) (V6) ·
 [Google Scholar](https://scholar.google.com/citations?hl=en&user=LRR8YIAAAAAJ) ·
 Series: [github.com/TOTOGT/AXLE](https://github.com/TOTOGT/AXLE)
 
