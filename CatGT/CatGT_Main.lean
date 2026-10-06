@@ -100,13 +100,16 @@
   is the right physical scaling (see the open item below).
   Still OPEN (honest prose, NOT theorems): Corollary 2 disk optimality
   (κ_stab maximiser); which Pt–Sn law ((1-x)² vs 1-(r*/r_pore)²) is
-  physical; whether r* = a√(J/λ) is the right DNLS self-trapping scaling at
-  all — the continuum DNLS ground state has width ≈ 4Ja/(λP) at fixed norm
+  physical; which normalisation the physical problem realises — the
+  continuum DNLS ground state has width ≈ 4Ja/(λP) at fixed norm
   P = Σ|ψ|² (linear in J/λ, not √), and ≈ a√(2J/λ)/A only at fixed peak
-  amplitude A; the √ form therefore encodes an unstated normalisation
-  choice (2026-09-20, hand-derived and checked numerically on a 400-site
-  chain, not yet in the paper). Full continuous DNLS norm conservation
-  (ODE) — open, awaits Mathlib ODE.
+  amplitude A; the √ form therefore encodes a normalisation choice
+  (2026-09-20, hand-derived and checked numerically on a 400-site chain).
+  Since 2026-09-23/24 this is in the paper (index.html and paper.tex adopt
+  fixed norm as primary and keep the √ form as the A = √2 fixed-amplitude
+  convention; see §4b–§4c below). What remains open is which convention a
+  real zeolite channel realises, not whether the choice is stated. Full
+  continuous DNLS norm conservation (ODE) — open, awaits Mathlib ODE.
 
   Addition (September 2026), §9, NOT yet re-verified in a kernel: a
   genuinely dissipative relaxation map (relaxStep) with a real Lyapunov
@@ -145,7 +148,9 @@ noncomputable def IPR {N : ℕ} (c : DNLSChain N) : ℝ :=
     depends on what is held fixed (see the 2026-09-20 note in the header).
     CONVENTION (2026-09-23): this is the FIXED-AMPLITUDE branch, A = √2
     (criticalRadius_eq_fixedAmplitude, §4b); the fixed-norm branch is
-    criticalRadiusNorm. -/
+    criticalRadiusNorm, which is the paper's PRIMARY convention since
+    2026-09-23/24. The name `criticalRadius` is kept for citation stability
+    only; it is NOT the paper's primary r*. -/
 noncomputable def criticalRadius (a J lam : ℝ) (ha : 0 < a) (hJ : 0 < J)
     (hlam : 0 < lam) : ℝ :=
   a * Real.sqrt (J / lam)
@@ -443,6 +448,104 @@ theorem sech_width_fixed_norm_of_stationary (J a lam A w ω P : ℝ)
     w = 4 * J * a / (lam * P) :=
   sech_width_fixed_norm a J lam A w P ha hlam hP
     (sech_stationary_forces J a lam A w ω hw hA h).1 h_norm
+
+/-! ## §4d  PROPOSED (UNTESTED — not run against any kernel): fixed-norm confinement,
+  and the missing links named in the 2026-10-05 audit
+
+  Hand-derived 2026-10-05; written without a Lean toolchain.  Each item says
+  what it does and does not state.  If adopted, the theorem count in CI,
+  `axioms.txt`, the README, the page and paper.tex (currently 23) must be
+  updated together.  Proposed here as separable blocks: adopt any subset.
+
+  (1) `withinTubeNorm`, `radius_le_criticalRadiusNorm_of_sq_le`,
+      `withinTubeNorm_antitone` — fixed-norm counterparts of
+      `withinAttractor` and `helical_selectivity`.  NAMING: `withinAttractor`
+      is a legacy name; per Theorem 1(i) the tube is a coordinate region,
+      NOT an attracting set.  The counterpart is therefore called a "tube".
+      `radius_le_criticalRadiusNorm_of_sq_le` is, exactly like
+      `helical_selectivity`, sqrt-monotonicity: its hypothesis is the squared
+      form of its conclusion; it carries NO DNLS dynamics.
+  (2) `sechProfile_deriv_deriv` — the closed form `sechProfile''` really is
+      the second derivative of `sechProfile` (closes the gap that §4c used
+      two separate `HasDerivAt` facts without combining them).
+  (3) `sech_width_fixed_amplitude_of_stationary` — a stationary sech state
+      of amplitude A > 0 has width w = (a/A)√(2J/λ), for GENERAL A (nothing
+      hard-coded); `criticalRadius_is_sech_width_at_sqrt2` specialises to
+      A = √2 and equals `criticalRadius`.  This is the statement that
+      links `criticalRadius_eq_fixedAmplitude` to the soliton, which that
+      theorem alone does only in its docstring.  Remaining hypotheses: w > 0
+      (the width is a positive length), and the stationary equation at every
+      x in the closed-form `sechProfile''`.  Still NOT derived: the
+      continuum limit and the norm relation P = 2A²w/a. -/
+
+/-- Fixed-norm analogue of `withinAttractor`: the pathway's radial coordinate
+    stays inside the fixed-norm self-trapping tube r ≤ r*_P at all times.
+    A coordinate-region condition, not an attracting set. -/
+def withinTubeNorm (N : ℕ) (γ : ReactionPathway N) (a J lam P : ℝ) : Prop :=
+  ∀ t : ℝ, γ.r t ≤ criticalRadiusNorm a J lam P
+
+/-- Fixed-norm analogue of `helical_selectivity`: r² ≤ r*_P² and r ≥ 0 give
+    r ≤ r*_P.  Sqrt-monotonicity only: no DNLS dynamics. -/
+theorem radius_le_criticalRadiusNorm_of_sq_le (a J lam P : ℝ) (ha : 0 < a)
+    (hJ : 0 < J) (hlam : 0 < lam) (hP : 0 < P) (r_state : ℝ) (hr : 0 ≤ r_state)
+    (h_confined : r_state ^ 2 ≤ criticalRadiusNorm a J lam P ^ 2) :
+    r_state ≤ criticalRadiusNorm a J lam P := by
+  have hc : 0 ≤ criticalRadiusNorm a J lam P :=
+    (criticalRadiusNorm_pos a J lam P ha hJ hlam hP).le
+  have h1 : r_state ≤ Real.sqrt (criticalRadiusNorm a J lam P ^ 2) := by
+    rw [← Real.sqrt_sq hr]; exact Real.sqrt_le_sqrt h_confined
+  rw [Real.sqrt_sq hc] at h1
+  exact h1
+
+/-- Larger λ shrinks the fixed-norm tube: confinement within the tube at
+    λ₂ implies confinement within the (larger) tube at λ₁ ≤ λ₂. -/
+theorem withinTubeNorm_antitone (N : ℕ) (γ : ReactionPathway N)
+    (a J P : ℝ) (ha : 0 < a) (hJ : 0 < J) (hP : 0 < P)
+    (lam1 lam2 : ℝ) (h1 : 0 < lam1) (hle : lam1 ≤ lam2)
+    (h : withinTubeNorm N γ a J lam2 P) :
+    withinTubeNorm N γ a J lam1 P := by
+  intro t
+  exact le_trans (h t) (criticalRadiusNorm_antitone a J P ha hJ hP lam1 lam2 h1 hle)
+
+/-- `sechProfile''` is the second derivative of `sechProfile`. -/
+theorem sechProfile_deriv_deriv (A w x : ℝ) (hw : w ≠ 0) :
+    deriv (deriv (sechProfile A w)) x = sechProfile'' A w x := by
+  have h1 : deriv (sechProfile A w) = sechProfile' A w := by
+    funext y; exact (sechProfile_hasDerivAt A w y hw).deriv
+  rw [h1]
+  exact (sechProfile'_hasDerivAt A w x hw).deriv
+
+/-- **Fixed-amplitude width of a stationary sech state, general A.**
+    If A·sech(x/w) (A > 0, w > 0) solves the stationary continuum equation at
+    every x, then w = (a/A)·√(2J/λ).  Continuum limit and norm relation not
+    involved. -/
+theorem sech_width_fixed_amplitude_of_stationary (J a lam A w ω : ℝ)
+    (ha : 0 < a) (hJ : 0 < J) (hlam : 0 < lam) (hw : 0 < w) (hA : 0 < A)
+    (h : ∀ x, -(J * a ^ 2) * sechProfile'' A w x - lam * sechProfile A w x ^ 3
+      = ω * sechProfile A w x) :
+    w = a / A * Real.sqrt (2 * (J / lam)) := by
+  have hm : 2 * J * a ^ 2 = lam * A ^ 2 * w ^ 2 :=
+    (sech_stationary_forces J a lam A w ω hw.ne' hA.ne' h).1
+  have hA2 : A ^ 2 ≠ 0 := pow_ne_zero 2 hA.ne'
+  have hl : lam ≠ 0 := hlam.ne'
+  have hw2 : w ^ 2 = (a / A) ^ 2 * (2 * (J / lam)) := by
+    calc w ^ 2 = (lam * A ^ 2 * w ^ 2) / (lam * A ^ 2) := by field_simp <;> ring
+      _ = (2 * J * a ^ 2) / (lam * A ^ 2) := by rw [hm]
+      _ = (a / A) ^ 2 * (2 * (J / lam)) := by field_simp <;> ring
+  rw [← Real.sqrt_sq hw.le, hw2, Real.sqrt_mul (sq_nonneg _),
+    Real.sqrt_sq (div_pos ha hA).le]
+
+/-- At A = √2 that width is `criticalRadius`: the fixed-amplitude form of the
+    paper's V5 r* is the width of a stationary sech state of amplitude √2. -/
+theorem criticalRadius_is_sech_width_at_sqrt2 (J a lam w ω : ℝ)
+    (ha : 0 < a) (hJ : 0 < J) (hlam : 0 < lam) (hw : 0 < w)
+    (h : ∀ x, -(J * a ^ 2) * sechProfile'' (Real.sqrt 2) w x
+        - lam * sechProfile (Real.sqrt 2) w x ^ 3
+      = ω * sechProfile (Real.sqrt 2) w x) :
+    w = criticalRadius a J lam ha hJ hlam :=
+  (sech_width_fixed_amplitude_of_stationary J a lam (Real.sqrt 2) w ω ha hJ hlam hw
+      (Real.sqrt_pos.2 (by norm_num)) h).trans
+    (criticalRadius_eq_fixedAmplitude a J lam ha hJ hlam).symm
 
 /-! ## §5  Computational scaffold — DNLS iterator -/
 
