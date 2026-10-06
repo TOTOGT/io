@@ -21,3 +21,8 @@
 'sech_solves_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
 'sech_stationary_forces' depends on axioms: [propext, Classical.choice, Quot.sound]
 'sech_width_fixed_norm_of_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
+'radius_le_criticalRadiusNorm_of_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'withinTubeNorm_antitone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sechProfile_deriv_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'sech_width_fixed_amplitude_of_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
+'criticalRadius_is_sech_width_at_sqrt2' depends on axioms: [propext, Classical.choice, Quot.sound]

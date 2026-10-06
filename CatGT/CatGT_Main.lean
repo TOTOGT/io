@@ -449,13 +449,16 @@ theorem sech_width_fixed_norm_of_stationary (J a lam A w ω P : ℝ)
   sech_width_fixed_norm a J lam A w P ha hlam hP
     (sech_stationary_forces J a lam A w ω hw hA h).1 h_norm
 
-/-! ## §4d  PROPOSED (UNTESTED — not run against any kernel): fixed-norm confinement,
-  and the missing links named in the 2026-10-05 audit
+/-! ## §4d  Fixed-norm confinement, and the missing links named in the 2026-10-05 audit
 
-  Hand-derived 2026-10-05; written without a Lean toolchain.  Each item says
-  what it does and does not state.  If adopted, the theorem count in CI,
-  `axioms.txt`, the README, the page and paper.tex (currently 23) must be
-  updated together.  Proposed here as separable blocks: adopt any subset.
+  Hand-derived 2026-10-05, written without a Lean toolchain.  KERNEL-CHECKED
+  2026-10-06 on both pins: v4.14.0 (`lake env lean`, AXLE checkout) and
+  v4.32.0 (`lake build CatGT`, geometry mirror, 8656 jobs); no errors, all 5
+  `#print axioms` on [propext, Classical.choice, Quot.sound].  Warnings only:
+  unused `hJ` in `sech_width_fixed_amplitude_of_stationary`, and the `ring`
+  after `field_simp <;>` in its calc is never reached.  Adopted in full: the
+  theorem count in CI, `axioms.txt`, the README and the page went from 23 to 28.
+  Each item says what it does and does not state.
 
   (1) `withinTubeNorm`, `radius_le_criticalRadiusNorm_of_sq_le`,
       `withinTubeNorm_antitone` — fixed-norm counterparts of
@@ -740,6 +743,11 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #check @sech_solves_stationary
 #check @sech_stationary_forces
 #check @sech_width_fixed_norm_of_stationary
+#check @radius_le_criticalRadiusNorm_of_sq_le
+#check @withinTubeNorm_antitone
+#check @sechProfile_deriv_deriv
+#check @sech_width_fixed_amplitude_of_stationary
+#check @criticalRadius_is_sech_width_at_sqrt2
 
 #print axioms ipr_between_zero_and_one
 #print axioms helical_selectivity
@@ -764,3 +772,8 @@ theorem relax_iterate_dist (k r_star r : ℝ) (n : ℕ) :
 #print axioms sech_solves_stationary
 #print axioms sech_stationary_forces
 #print axioms sech_width_fixed_norm_of_stationary
+#print axioms radius_le_criticalRadiusNorm_of_sq_le
+#print axioms withinTubeNorm_antitone
+#print axioms sechProfile_deriv_deriv
+#print axioms sech_width_fixed_amplitude_of_stationary
+#print axioms criticalRadius_is_sech_width_at_sqrt2

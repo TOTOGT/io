@@ -121,6 +121,11 @@ jobs:
           #print axioms sech_solves_stationary
           #print axioms sech_stationary_forces
           #print axioms sech_width_fixed_norm_of_stationary
+          #print axioms radius_le_criticalRadiusNorm_of_sq_le
+          #print axioms withinTubeNorm_antitone
+          #print axioms sechProfile_deriv_deriv
+          #print axioms sech_width_fixed_amplitude_of_stationary
+          #print axioms criticalRadius_is_sech_width_at_sqrt2
           LEAN
           lake env lean /tmp/CheckCatGT.lean
 
