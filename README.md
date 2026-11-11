@@ -28,7 +28,7 @@ Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) 
 `#print axioms` is printed by CI for the 35 theorems of `CatGT` (28) and `Theorem53` (7); it reports only
 `[propext, Classical.choice, Quot.sound]` — no `sorryAx` anywhere. `ContactMorphism` (1) is built by CI;
 `ReebNoAttractor` (9 kernel-audited of 9 written) and `ReebFlowExtDeriv` (11 kernel-audited of 13 written) and `ReebFlow` (8 kernel-audited of 11 written; `reeb_alpha_eq_one` is a verbatim duplicate of the `CatGT_Main` theorem, so 10 unique statements) and `ZeoliteCommutation` (3) are counted above as kernel-checked by paste, not CI-gated.
-The geometry mirror (`TOTOGT/geometry`) builds `ReebFlow`, `ReebFlowExtDeriv` and `ReebBridge` as a `lean_lib` under `v4.32.0` and has a CI step that prints axioms for 21 Reeb theorems (8 `ReebFlow`, 11 `ReebFlowExt`, 2 bridge); that step was gated locally and had not yet run in CI at the time of writing. Nothing of this is gated in this repo.
+The geometry mirror (`TOTOGT/geometry`) builds `ReebFlow`, `ReebFlowExtDeriv` and `ReebBridge` as a `lean_lib` under `v4.32.0` and has a CI step that prints axioms for 21 Reeb theorems (8 `ReebFlow`, 11 `ReebFlowExt`, 2 bridge); that step passed in geometry CI on 2026-11-11 (run #911, commit 6b390d88). Nothing of this is gated in this repo.
 
 ## Scope
 
