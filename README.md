@@ -109,7 +109,14 @@ Earlier Lean drafts `CatGT_PROOFS_COMPLETE.lean` (17 `sorry`s) and `CatGT_v2.lea
 (25) were removed on 2026-07-17: they compiled only because `sorry` compiles.
 `CatGT_PROOFS_COMPLETE.fixed.lean` (a rewrite with only true statements) has not yet
 been run. The quantitative comparison with the measured selectivities of Sousa et al.
-(2014) is **open**; no such numbers are used or claimed anywhere here.
+(2014) has been run once, as an **exploratory** check, and it is negative: using
+the HZSM-5 and HMCM-22 product distributions from Table 4.2.3 of Z. Sousa's 2013
+thesis (500 °C, WHSV 6.5 g/g/h), the one-parameter relation σ = 1 − (r\*/r_pore)²
+does not give a single r\* for both zeolites (R ≈ 5.5–6.2 at 10 min and 10.9–12.1 at
+270 min with the 7.1 Å supercage). σ and the pore radius were not fixed before
+computing, so this is not a test of the principle in either direction; the pore-size
+definition, which product σ tracks, and whether MCM-22 shows a threshold rather than
+a width are open. No such numbers are used in the Lean files.
 
 ## Build and verify locally
 
