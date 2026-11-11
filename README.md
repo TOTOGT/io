@@ -17,6 +17,7 @@ author by paste — the table says which is which.
 | — | `CatGT/ReebFlowExtDeriv.lean` | 11 audited (13 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 11 axiom lines on the standard three; linter warnings only, no errors). Proves the `d(alpha)` of `ReebFlow.lean` equals Mathlib's `extDeriv` of `alpha_cat` as a 1-form; `d(alpha) = -2r dr∧dθ`; `contactVol` on the coordinate frame = `-2r`. `alphaCat` / `dAlpha` / `contactVol` are verbatim copies from `ReebFlow.lean` (statement-level duplicates). The wedge is still an explicit formula, not a Mathlib wedge. Not in `lakefile.toml`; not run under `v4.14.0`; header still says UNTESTED (predates the run). |
 | — | `CatGT/ReebNoAttractor.lean` | 9 audited (9 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 9 axiom lines on the standard three; second revision of the file). Corrected no-attractor statement: `measure_le_of_attractor` (mu(U) <= mu(A) for measure-preserving maps, closed A with finite-measure thickening), Reeb flow as isometry and Lebesgue-measure-preserving translation, no proper closed invariant attractor, no compact invariant set, and `univ_attracts` (the unqualified claim is false). Model = (r,theta,z) chart; contact volume = const x Lebesgue by hand; no theorem instantiates Part B at `reebFlow`. Not run under v4.14.0. |
 | — | `CatGT/ReebFlow.lean` | 8 audited (11 written) | 0 | **no** | Kernel-checked by paste (Lean `v4.32.0` / Mathlib `v4.32.0`, 2026-09-21; 8 axiom lines on the standard three, no warnings). Reeb flow of `alpha_cat` in an elementary coordinate model: flow law, `phi_t^*alpha = alpha`, `i_R d(alpha) = 0`, preservation of `alpha ^ d(alpha)`. `d(alpha)` is defined by the constant-field formula, not yet checked against Mathlib's `extDeriv` (`ReebFlowExtDeriv.lean`, written, not yet green). Not in `lakefile.toml`; not run under `v4.14.0`; the file header still says UNTESTED (predates the run). `alphaCat` / `reebR` are verbatim copies of `CatGT_Main.lean`. |
+| — | `CatGT/ReebBridge.lean` | 2 | 0 | **no** | Built clean by the owner under Lean/Mathlib `v4.32.0` in the geometry mirror (`lean_lib ReebFlow`, commit 699dc515); **not yet built under this repo's `v4.14.0` pin**, and not in `lakefile.toml`. Connects the two halves: `reebOrbit_eq_reebFlow` (the explicitly defined curve `reebOrbit` of `CatGT_Main` equals `ReebFlow.reebFlow`) and `reebOrbit_hasDerivAt` (it has derivative `reebR` at every `t`, so it is an integral curve of the Reeb field). This closes the gap between `CatGT_Main`'s `reebOrbit` and the flow in `ReebFlow.lean`; it does not make the orbit a solution of an ODE solver, and `reebOrbit` is still defined as (r₀, θ₀, z₀ + t), not derived. |
 | — | `zeolite_operator_order/ZeoliteCommutation.lean` | 3 | 0 | **no** | Kernel-checked by paste (Lean `v4.33.0-rc1`, 2026-07-18). Not in `lakefile.toml`; standalone and self-contained |
 
 The CI-gated targets build against Lean `v4.14.0` / Mathlib `v4.14.0`
@@ -27,6 +28,7 @@ Lean `v4.32.0` / Mathlib `v4.32.0` (the CatGT library and the three Reeb files) 
 `#print axioms` is printed by CI for the 35 theorems of `CatGT` (28) and `Theorem53` (7); it reports only
 `[propext, Classical.choice, Quot.sound]` — no `sorryAx` anywhere. `ContactMorphism` (1) is built by CI;
 `ReebNoAttractor` (9 kernel-audited of 9 written) and `ReebFlowExtDeriv` (11 kernel-audited of 13 written) and `ReebFlow` (8 kernel-audited of 11 written; `reeb_alpha_eq_one` is a verbatim duplicate of the `CatGT_Main` theorem, so 10 unique statements) and `ZeoliteCommutation` (3) are counted above as kernel-checked by paste, not CI-gated.
+The geometry mirror (`TOTOGT/geometry`) builds `ReebFlow`, `ReebFlowExtDeriv` and `ReebBridge` as a `lean_lib` under `v4.32.0` and has a CI step that prints axioms for 21 Reeb theorems (8 `ReebFlow`, 11 `ReebFlowExt`, 2 bridge); that step was gated locally and had not yet run in CI at the time of writing. Nothing of this is gated in this repo.
 
 ## Scope
 
@@ -49,7 +51,7 @@ width (`scripts/cage_threshold_check.py`). The confinement is modelled on DNLS
 self-trapping, not on the Reeb flow. The Reeb-flow
 files (`ReebFlow`, `ReebFlowExtDeriv`, `ReebNoAttractor`) verify in an elementary
 coordinate model that the flow is z-translation, preserves `α ∧ dα`, and admits no
-closed attracting set of smaller measure than its basin.
+closed attracting set of smaller measure than its basin. `ReebBridge` links the `reebOrbit` curve of `CatGT_Main` to that flow.
 
 `Theorem53` establishes that the operator chain is **order-dependent in general**
 (firing order changes the outcome) while proving this is *not* universal: specific
@@ -68,6 +70,7 @@ CatGT/ContactMorphism.lean               dilation preserves α_cat (CI-built)
 CatGT/ReebFlow.lean (+ .axioms.txt)      Reeb flow in a coordinate model (by paste, not CI)
 CatGT/ReebFlowExtDeriv.lean (+ .axioms.txt)   dα equals Mathlib's extDeriv (by paste, not CI)
 CatGT/ReebNoAttractor.lean (+ .axioms.txt)    no closed attractor of smaller measure (by paste, not CI)
+CatGT/ReebBridge.lean                    reebOrbit = reebFlow, derivative reebR (built in geometry, not here)
 PrincipiaOrthogona1/Theorem53...lean     Theorem 5.3 non-commutativity (CI-verified)
 zeolite_operator_order/
   ZeoliteCommutation.lean                3 commutation theorems (verified, not in CI)
