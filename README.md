@@ -108,10 +108,10 @@ per-claim status: `zeolite_operator_order/OPERATOR_ORDER_DERIVATIONS_AND_STATUS.
 Earlier Lean drafts `CatGT_PROOFS_COMPLETE.lean` (17 `sorry`s) and `CatGT_v2.lean`
 (25) were removed on 2026-07-17: they compiled only because `sorry` compiles.
 `CatGT_PROOFS_COMPLETE.fixed.lean` (a rewrite with only true statements) has not yet
-been run. The quantitative comparison with the measured selectivities of Sousa et al.
-(2014) has been run once, as an **exploratory** check, and it is negative: using
-the HZSM-5 and HMCM-22 product distributions from Table 4.2.3 of Z. Sousa's 2013
-thesis (500 °C, WHSV 6.5 g/g/h), the one-parameter relation σ = 1 − (r\*/r_pore)²
+been run. The quantitative comparison with the measured selectivities of Sousa, Cesar,
+Henriques and Teixeira da Silva (2014, *Catal. Today* 234, 182–191) has been run once, as an **exploratory** check, and it is negative: using
+the HZSM-5 and HMCM-22 product distributions from Table 4.2.3 of Zilacleide da Silva
+Barros Sousa's 2013 COPPE/UFRJ thesis (advisors Henriques and Teixeira da Silva) (500 °C, WHSV 6.5 g/g/h), the one-parameter relation σ = 1 − (r\*/r_pore)²
 does not give a single r\* for both zeolites (R ≈ 5.5–6.2 at 10 min and 10.9–12.1 at
 270 min with the 7.1 Å supercage). σ and the pore radius were not fixed before
 computing, so this is not a test of the principle in either direction; the pore-size
