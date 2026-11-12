@@ -1,6 +1,10 @@
 /-
-  ReebFlow.lean  (2026-09-21)  --  UNTESTED: written without a Lean toolchain.
-  Run it against a real kernel and fix against what the compiler says.
+  ReebFlow.lean  (2026-09-21; header updated 2026-11-11, comment only)  --  kernel-checked by the
+  author under Lean/Mathlib v4.32.0: by paste on 2026-09-21 (8 theorems audited on [propext,
+  Classical.choice, Quot.sound], no warnings) and again as part of `lake build ReebFlow` in the
+  geometry repo on 2026-11-11 (8659 jobs; CI run 911). NOT run under the v4.14.0 pin of the io repo.
+  The text below was written before those runs; where it says a statement is derived or checked,
+  that is what the runs established, no more.
 
   PURPOSE. Close, in the same elementary style as ContactMorphism.lean, the items the V5
   paper currently marks [DERIVED] (by hand) about the Reeb field of

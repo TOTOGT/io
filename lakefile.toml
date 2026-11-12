@@ -25,3 +25,10 @@ roots = ["PrincipiaOrthogona1.Theorem53NonCommutativity"]
 [[lean_lib]]
 name = "ContactMorphism"
 roots = ["CatGT.ContactMorphism"]
+
+# Not a default target; built on request: `lake build ReebFlow`. Added 2026-11-11 to test the
+# elementary Reeb files under this repo's v4.14.0 pin. ReebFlowExtDeriv.lean is deliberately NOT a
+# root: the pinned Mathlib has no `extDeriv`, so it cannot build here.
+[[lean_lib]]
+name = "ReebFlow"
+roots = ["CatGT.ReebFlow", "CatGT.ReebNoAttractor", "CatGT.ReebBridge"]

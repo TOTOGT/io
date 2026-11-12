@@ -1,6 +1,11 @@
 /-
-  ReebFlowExtDeriv.lean  (2026-09-21)  --  UNTESTED: written without a Lean toolchain.
-  Run it against a real kernel and fix against what the compiler says.
+  ReebFlowExtDeriv.lean  (2026-09-21; header updated 2026-11-11, comment only)  --  kernel-checked by
+  the author under Lean/Mathlib v4.32.0: by paste on 2026-09-21 (11 theorems audited on [propext,
+  Classical.choice, Quot.sound]; linter warnings only) and again in `lake build ReebFlow` in the
+  geometry repo on 2026-11-11. It CANNOT be built under the v4.14.0 pin of the io repo: the Mathlib
+  commit pinned there (4bbdccd) has no `extDeriv` (no Analysis/Calculus/DifferentialForm), so this
+  file needs a Mathlib that has it (v4.32.0 is the version checked). Two of the 13 written theorems
+  are not in the audited 11. The text below was written before those runs.
 
   PURPOSE. Close the caveat left in ReebFlow.lean: there, d(alpha) is DEFINED by the constant-field
   formula `dAlpha`, and nothing checks it against Mathlib's exterior derivative. Here:

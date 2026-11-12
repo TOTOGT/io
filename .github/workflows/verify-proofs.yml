@@ -134,3 +134,14 @@ jobs:
         run: |
           echo "CatGT build: ${{ steps.build_catgt.outcome }}"
           exit 1
+
+      # Informational, NOT a gate (added 2026-11-11). Builds the elementary Reeb files
+      # (ReebFlow, ReebNoAttractor, ReebBridge) under this repo's v4.14.0 pin, which has never
+      # been run for them (they were kernel-checked under v4.32.0). continue-on-error: a red
+      # result here must not turn the CatGT / Theorem53 results red. ReebFlowExtDeriv.lean is
+      # not a root: the pinned Mathlib has no `extDeriv`. Read the log; do not cite this step
+      # as a verification until it has been seen green and the axiom lines read.
+      - name: Reeb files under the v4.14.0 pin (informational, non-gating)
+        if: steps.build_catgt.outcome == 'success'
+        continue-on-error: true
+        run: lake build ReebFlow
